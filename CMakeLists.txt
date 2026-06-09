@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.14)
 
 # Project
-set(ProjectName "Project-Name")
+set(ProjectName "Game-Boy-Reborn")
 project(${ProjectName})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${ProjectName})
 
