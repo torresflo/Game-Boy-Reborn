@@ -1,0 +1,38 @@
+#pragma once
+
+#include "Common.h"
+
+#include "Cartdrige.h"
+#include "CentralProcessingUnit.h"
+#include "MemoryBus.h"
+#include "PixelProcessingUnit.h"
+#include "Timer.h"
+
+/**
+ * Emulator components : Cart, CPU, Address Bus, PPU (Pixel-Processing Unit), Timer
+ */
+
+enum class EmulatorError
+{
+    InvalidRomFile,
+    CPUError,
+    None
+};
+
+class Emulator
+{
+public:
+    EmulatorError run(std::string path);
+
+private:
+    void delay(u32 ms);
+
+    Cartdrige cartridge;
+    CentralProcessingUnit CPU;
+    MemoryBus bus;
+    PixelProcessingUnit PPU;
+
+    bool paused = false;
+    bool running = false;
+    u64 cycles = 0;
+};

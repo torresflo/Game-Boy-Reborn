@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.14)
+cmake_minimum_required(VERSION 3.28)
 
 # Project
 set(ProjectName "Game-Boy-Reborn")
 project(${ProjectName})
 set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${ProjectName})
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Select build system and set compile options
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/BuildSetting.cmake)
@@ -32,3 +35,7 @@ else()
 	message("\n-> SFML directory not found. Set SFML_ROOT to SFML's top-level path (containing \"include\" and \"lib\" directories).")
 	message("-> Make sure the SFML libraries with the same configuration (Release/Debug, Static/Dynamic) exist.\n")
 endif()
+
+target_compile_features(${ProjectName} PUBLIC cxx_std_20)
+
+message(STATUS "Sources: ${PROJECT_SOURCES}")
