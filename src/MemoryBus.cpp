@@ -1,5 +1,5 @@
 #include "MemoryBus.h"
-#include "Cartdrige.h"
+#include "Cartridge.h"
 
 // 0x0000 - 0x3FFF : ROM Bank 0
 // 0x4000 - 0x7FFF : ROM Bank 1 - Switchable
@@ -39,7 +39,7 @@ void MemoryBus::write(u16 address, u8 value)
     Log::print(LogLevel::Error, "Unimplemented writing.");
 }
 
-void MemoryBus::setCartridge(Cartdrige* cartridgePtr)
+void MemoryBus::setCartridge(Cartridge* cartridgePtr)
 {
     cartridge = cartridgePtr;
 }

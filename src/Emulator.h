@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-#include "Cartdrige.h"
+#include "Cartridge.h"
 #include "CentralProcessingUnit.h"
 #include "MemoryBus.h"
 #include "PixelProcessingUnit.h"
@@ -20,7 +20,7 @@ public:
 private:
     void delay(u32 ms);
 
-    Cartdrige cartridge;
+    Cartridge cartridge;
     CentralProcessingUnit CPU;
     MemoryBus bus;
     PixelProcessingUnit PPU;

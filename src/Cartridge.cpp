@@ -1,9 +1,9 @@
-#include "Cartdrige.h"
+#include "Cartridge.h"
 
 #include <fstream>
 #include <format>
 
-const std::vector<std::string> Cartdrige::RomTypes =
+const std::vector<std::string> Cartridge::RomTypes =
 {
     "ROM ONLY",
     "MBC1",
@@ -42,7 +42,7 @@ const std::vector<std::string> Cartdrige::RomTypes =
     "MBC7+SENSOR+RUMBLE+RAM+BATTERY"
 };
 
-const std::map<u8, std::string> Cartdrige::LicenceCodes =
+const std::map<u8, std::string> Cartridge::LicenceCodes =
 {
     {0x00, "None"},
     {0x01, "Nintendo R&D1"},
@@ -101,13 +101,13 @@ const std::map<u8, std::string> Cartdrige::LicenceCodes =
     {0x92, "Video system"},
     {0x93, "Ocean/Acclaim"},
     {0x95, "Varie"},
-    {0x96, "Yonezawa/s’pal"},
+    {0x96, "Yonezawa/s'pal"},
     {0x97, "Kaneko"},
     {0x99, "Pack in soft"},
     {0xA4, "Konami (Yu-Gi-Oh!)"}
 };
 
-bool Cartdrige::loadROM(std::string path)
+bool Cartridge::loadROM(std::string path)
 {
     std::ifstream file(path, std::ios::binary);
     if(!file.is_open())
@@ -142,7 +142,7 @@ bool Cartdrige::loadROM(std::string path)
     return true;
 }
 
-std::string Cartdrige::getRomTypeName(u8 type)
+std::string Cartridge::getRomTypeName(u8 type)
 {
     if(type < RomTypes.size())
         return RomTypes[type];
@@ -150,15 +150,15 @@ std::string Cartdrige::getRomTypeName(u8 type)
     return std::string("Unknown type: ") + std::to_string(type);
 }
 
-std::string Cartdrige::getLicenceName(u8 code)
+std::string Cartridge::getLicenceName(u8 code)
 {
     if(LicenceCodes.find(code) != LicenceCodes.end())
         return LicenceCodes.at(code);
 
-    return std::string("Unknown licence: ") + std::to_string(code); 
+    return std::string("Unknown licence: ") + std::to_string(code);
 }
 
-bool Cartdrige::checkHeaderChecksum()
+bool Cartridge::checkHeaderChecksum()
 {
     u16 checksum = 0;
     for(u16 i = 0x0134; i <= 0x014C; i++)
@@ -169,13 +169,13 @@ bool Cartdrige::checkHeaderChecksum()
     return checksum & 0xFF;
 }
 
-u8 Cartdrige::read(u16 address)
+u8 Cartridge::read(u16 address)
 {
     //For now, just ROM ONLY type supported
     return ROMData[address];
 }
 
-void Cartdrige::write(u16 address, u8 value)
+void Cartridge::write(u16 address, u8 value)
 {
     UNUSED(address);
     UNUSED(value);

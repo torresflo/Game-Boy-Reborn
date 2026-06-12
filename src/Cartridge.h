@@ -10,7 +10,7 @@ struct CartridgeHeader
 {
     u8 entry[4];
     u8 logo[0x30];
-    
+
     char title[16];
     u16 newLicenceCode;
     u8 sgbFlag;
@@ -24,7 +24,7 @@ struct CartridgeHeader
     u16 globalChecksum;
 };
 
-class Cartdrige
+class Cartridge
 {
 public:
     bool loadROM(std::string path);
