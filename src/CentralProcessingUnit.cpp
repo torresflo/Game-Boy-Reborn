@@ -2,6 +2,17 @@
 
 #include <format>
 
+#include "MathUtils.h"
+
+const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> CentralProcessingUnit::InstructionFuncs = []() {
+    std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> arr{};
+    arr[static_cast<size_t>(InstructionType::NONE)] = &CentralProcessingUnit::noneInstruction;
+    arr[static_cast<size_t>(InstructionType::NOP)]  = &CentralProcessingUnit::nopInstruction;
+    arr[static_cast<size_t>(InstructionType::LD)]   = &CentralProcessingUnit::ldInstruction;
+    arr[static_cast<size_t>(InstructionType::JP)]   = &CentralProcessingUnit::jpInstruction;
+    return arr;
+}();
+
 void CentralProcessingUnit::initialize(MemoryBus* bus)
 {
     memoryBus = bus;
@@ -17,10 +28,10 @@ u8 CentralProcessingUnit::step()
         u16 pc = registers.PC;
 
         fetchInstruction();
-        consumedCycles = fetchData();
-        execute();
+        consumedCycles += fetchData();
+        consumedCycles += execute();
     
-        Log::print(LogLevel::Debug, "Executing opcode: ", std::format("{:02X}", currentOPCode), " - PC = ", std::format("{:04X}", pc));
+        Log::print(LogLevel::Debug, toString(currentInstruction.type), " (", std::format("{:02X}", currentOPCode), ") - PC = ", std::format("{:04X}", pc));
     }
 
     return consumedCycles;
@@ -68,25 +79,27 @@ u8 CentralProcessingUnit::fetchData()
             break;
         }
         default:
-            NO_IMPLEMENTATION
+            Log::print(LogLevel::Error, "Unimplemented address mode.");
             break;
     }
 
     return consumedCycles;
 }
 
-void CentralProcessingUnit::execute()
+u8 CentralProcessingUnit::execute()
 {
+    InstructionFunc instructionFunc = getInstructionFunc(currentInstruction.type);
+    if(instructionFunc == nullptr)
+    {
+        Log::print(LogLevel::Error, "Unimplemented instruction: ", toString(currentInstruction.type), " (", std::format("{:02X}", currentOPCode), ")");
+        return 0;
+    }
+    return (this->*instructionFunc)();
 }
 
 const Instruction &CentralProcessingUnit::getInstructionFromOpCode(u8 opcode)
 {
-    auto it = Instructions.find(opcode);
-    if(it != Instructions.end())
-        return it->second;
-
-    static Instruction none;
-    return none;
+    return Instructions[opcode];
 }
 
 u16 CentralProcessingUnit::readRegister(RegisterType type)
@@ -122,7 +135,7 @@ u16 CentralProcessingUnit::readRegister(RegisterType type)
         case RegisterType::PC:
             return registers.PC;
         default:
-            NO_IMPLEMENTATION
+            Log::print(LogLevel::Error, "Unimplemented register type");
             return 0;
     }
 }
@@ -130,4 +143,64 @@ u16 CentralProcessingUnit::readRegister(RegisterType type)
 u16 CentralProcessingUnit::reverse(u16 value) const
 {
     return (value & 0xFF00) >> 8 | (value & 0x00FF) << 8;
+}
+
+CentralProcessingUnit::InstructionFunc CentralProcessingUnit::getInstructionFunc(InstructionType type)
+{
+    return InstructionFuncs[static_cast<size_t>(type)];
+}
+
+u8 CentralProcessingUnit::noneInstruction()
+{
+    Log::print(LogLevel::Error, "None instruction called");
+    exit(-1);
+}
+
+u8 CentralProcessingUnit::nopInstruction()
+{
+    return 0;
+}
+
+u8 CentralProcessingUnit::ldInstruction()
+{
+    return 0;
+}
+
+u8 CentralProcessingUnit::jpInstruction()
+{
+    if(checkCondition())
+    {
+        registers.PC = data;
+        return 1;
+    }
+    return 0;
+}
+
+bool CentralProcessingUnit::checkCondition() const
+{
+    switch(currentInstruction.condition)
+    {
+        case ConditionType::NONE:
+            return true;
+        case ConditionType::C:
+            return flagC();
+        case ConditionType::NC:
+            return !flagC();
+        case ConditionType::Z:
+            return flagZ();
+        case ConditionType::NZ:
+            return !flagZ();
+    }
+
+    return false;
+}
+
+bool CentralProcessingUnit::flagZ() const
+{
+    return MathUtils<u8>::getBitValue(registers.F, 7);
+}
+
+bool CentralProcessingUnit::flagC() const
+{
+    return MathUtils<u8>::getBitValue(registers.F, 4);
 }

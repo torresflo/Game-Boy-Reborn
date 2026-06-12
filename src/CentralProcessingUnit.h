@@ -27,7 +27,7 @@ public:
 private:
     void fetchInstruction();
     u8 fetchData(); //Return consumed cycles
-    void execute();
+    u8 execute();  //Return consumed cycles
     
     const Instruction& getInstructionFromOpCode(u8 opcode);
 
@@ -35,15 +35,31 @@ private:
 
     u16 reverse(u16 value) const;
 
+    // CPU Instructions
+    using InstructionFunc = u8 (CentralProcessingUnit::*)();
+    InstructionFunc getInstructionFunc(InstructionType type);
+
+    u8 noneInstruction();
+    u8 nopInstruction();
+    u8 ldInstruction();
+    u8 jpInstruction();
+
+    bool checkCondition() const;
+
+    bool flagZ() const;
+    bool flagC() const;
+    
     Registers registers;
     u16 data;
     bool destinationIsMemory;
     u16 memoryDestination;
     u8 currentOPCode;
     Instruction currentInstruction;
-
+    
     bool halted = false;
     bool stepping = false;
-
+    
     MemoryBus* memoryBus;
+
+    static const std::array<InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> InstructionFuncs;
 };

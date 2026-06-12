@@ -179,5 +179,4 @@ void Cartdrige::write(u16 address, u8 value)
 {
     UNUSED(address);
     UNUSED(value);
-    NO_IMPLEMENTATION
 }

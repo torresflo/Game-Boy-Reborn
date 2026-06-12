@@ -37,5 +37,4 @@ inline void Log::print(LogLevel level, Args &&...args)
     }
 }
 
-#define NO_IMPLEMENTATION Log::print(LogLevel::Error, "NOT YET IMPLEMENTED");
 #define UNUSED(x) (void)(x)

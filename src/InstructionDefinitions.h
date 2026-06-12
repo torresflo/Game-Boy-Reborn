@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <array>
 
 #include "Common.h"
 
@@ -88,18 +88,76 @@ enum class InstructionType
     RST,
     ERR,
     //CB instructions
-    RLC, 
+    RLC,
     RRC,
-    RL, 
+    RL,
     RR,
-    SLA, 
+    SLA,
     SRA,
-    SWAP, 
+    SWAP,
     SRL,
-    BIT, 
-    RES, 
-    SET
+    BIT,
+    RES,
+    SET,
+    COUNT
 };
+
+inline const char* toString(InstructionType type)
+{
+    switch(type)
+    {
+        case InstructionType::NONE:  return "NONE";
+        case InstructionType::NOP:   return "NOP";
+        case InstructionType::LD:    return "LD";
+        case InstructionType::INC:   return "INC";
+        case InstructionType::DEC:   return "DEC";
+        case InstructionType::RLCA:  return "RLCA";
+        case InstructionType::ADD:   return "ADD";
+        case InstructionType::RRCA:  return "RRCA";
+        case InstructionType::STOP:  return "STOP";
+        case InstructionType::RLA:   return "RLA";
+        case InstructionType::JR:    return "JR";
+        case InstructionType::RRA:   return "RRA";
+        case InstructionType::DAA:   return "DAA";
+        case InstructionType::CPL:   return "CPL";
+        case InstructionType::SCF:   return "SCF";
+        case InstructionType::CCF:   return "CCF";
+        case InstructionType::HALT:  return "HALT";
+        case InstructionType::ADC:   return "ADC";
+        case InstructionType::SUB:   return "SUB";
+        case InstructionType::SBC:   return "SBC";
+        case InstructionType::AND:   return "AND";
+        case InstructionType::XOR:   return "XOR";
+        case InstructionType::OR:    return "OR";
+        case InstructionType::CP:    return "CP";
+        case InstructionType::POP:   return "POP";
+        case InstructionType::JP:    return "JP";
+        case InstructionType::PUSH:  return "PUSH";
+        case InstructionType::RET:   return "RET";
+        case InstructionType::CB:    return "CB";
+        case InstructionType::CALL:  return "CALL";
+        case InstructionType::RETI:  return "RETI";
+        case InstructionType::LDH:   return "LDH";
+        case InstructionType::JPHL:  return "JPHL";
+        case InstructionType::DI:    return "DI";
+        case InstructionType::EI:    return "EI";
+        case InstructionType::RST:   return "RST";
+        case InstructionType::ERR:   return "ERR";
+        case InstructionType::RLC:   return "RLC";
+        case InstructionType::RRC:   return "RRC";
+        case InstructionType::RL:    return "RL";
+        case InstructionType::RR:    return "RR";
+        case InstructionType::SLA:   return "SLA";
+        case InstructionType::SRA:   return "SRA";
+        case InstructionType::SWAP:  return "SWAP";
+        case InstructionType::SRL:   return "SRL";
+        case InstructionType::BIT:   return "BIT";
+        case InstructionType::RES:   return "RES";
+        case InstructionType::SET:   return "SET";
+        case InstructionType::COUNT: return "COUNT";
+    }
+    return "UNKNOWN";
+}
 
 enum class ConditionType
 {
@@ -120,11 +178,12 @@ struct Instruction
     u8 param = 0;
 };
 
-const std::map<u8, Instruction> Instructions =
-{
-    {0x00, {InstructionType::NOP}},
-    {0x05, {InstructionType::DEC, AdressMode::R, RegisterType::B}},
-    {0x0E, {InstructionType::LD, AdressMode::R_D8, RegisterType::C}},
-    {0xAF, {InstructionType::XOR, AdressMode::R, RegisterType::A}},
-    {0xC3, {InstructionType::JP, AdressMode::D16}},
-};
+inline const std::array<Instruction, 256> Instructions = []() {
+    std::array<Instruction, 256> arr{};
+    arr[0x00] = {InstructionType::NOP};
+    arr[0x05] = {InstructionType::DEC, AdressMode::R, RegisterType::B};
+    arr[0x0E] = {InstructionType::LD, AdressMode::R_D8, RegisterType::C};
+    arr[0xAF] = {InstructionType::XOR, AdressMode::R, RegisterType::A};
+    arr[0xC3] = {InstructionType::JP, AdressMode::D16};
+    return arr;
+}();

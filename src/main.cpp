@@ -8,7 +8,7 @@ int main()
     Log::setLevel(LogLevel::All);
 
     Emulator emulator;
-    emulator.run("../../roms/dmg-acid2.gb");
+    emulator.run("../../roms/mem_timing.gb");
 
     // sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
     // sf::CircleShape shape(100.f);

@@ -23,7 +23,7 @@ u8 MemoryBus::read(u16 address)
             return cartridge->read(address);
     }
 
-    NO_IMPLEMENTATION
+    Log::print(LogLevel::Error, "Unimplemented reading.");
     return u8();
 }
 
@@ -36,7 +36,7 @@ void MemoryBus::write(u16 address, u8 value)
         return;
     }
 
-    NO_IMPLEMENTATION
+    Log::print(LogLevel::Error, "Unimplemented writing.");
 }
 
 void MemoryBus::setCartridge(Cartdrige* cartridgePtr)
