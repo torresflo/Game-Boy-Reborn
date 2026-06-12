@@ -3,8 +3,6 @@
 #include <fstream>
 #include <format>
 
-#include "DebugHelpers.h"
-
 const std::vector<std::string> Cartdrige::RomTypes =
 {
     "ROM ONLY",
@@ -169,4 +167,17 @@ bool Cartdrige::checkHeaderChecksum()
     }
 
     return checksum & 0xFF;
+}
+
+u8 Cartdrige::read(u16 address)
+{
+    //For now, just ROM ONLY type supported
+    return ROMData[address];
+}
+
+void Cartdrige::write(u16 address, u8 value)
+{
+    UNUSED(address);
+    UNUSED(value);
+    NO_IMPLEMENTATION
 }

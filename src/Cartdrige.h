@@ -4,7 +4,7 @@
 #include <map>
 #include <vector>
 
-#include "TypeDefinitions.h"
+#include "Common.h"
 
 struct CartridgeHeader
 {
@@ -34,6 +34,9 @@ private:
     std::string getLicenceName(u8 code);
     bool checkHeaderChecksum();
 
+    u8 read(u16 address);
+    void write(u16 address, u8 value);
+
     std::string ROMPath;
     u32 ROMSize;
     std::vector<u8> ROMData;
@@ -41,4 +44,6 @@ private:
 
     static const std::vector<std::string> RomTypes;
     static const std::map<u8, std::string> LicenceCodes;
+
+    friend class MemoryBus;
 };

@@ -3,16 +3,15 @@
 #include <chrono>
 #include <thread>
 
-#include "DebugHelpers.h"
-
-EmulatorError Emulator::run(std::string path)
+void Emulator::run(std::string path)
 {
     if(!cartridge.loadROM(path))
-        return EmulatorError::InvalidRomFile;
+        return;
 
     Log::print(LogLevel::Info, "ROM loaded successfully");
 
-    CPU.initialize();
+    bus.setCartridge(&cartridge);
+    CPU.initialize(&bus);
 
     running = true;
     paused = false;
@@ -26,13 +25,10 @@ EmulatorError Emulator::run(std::string path)
             continue;
         }
 
-        if(!CPU.step())
-            return EmulatorError::CPUError;
+        cycles += CPU.step();
 
         cycles++;
     };
-
-    return EmulatorError::None;
 }
 
 void Emulator::delay(u32 ms)

@@ -12,17 +12,10 @@
  * Emulator components : Cart, CPU, Address Bus, PPU (Pixel-Processing Unit), Timer
  */
 
-enum class EmulatorError
-{
-    InvalidRomFile,
-    CPUError,
-    None
-};
-
 class Emulator
 {
 public:
-    EmulatorError run(std::string path);
+    void run(std::string path);
 
 private:
     void delay(u32 ms);

@@ -1,8 +1,7 @@
 #include <SFML/Graphics.hpp>
 
+#include "Common.h"
 #include "Emulator.h"
-
-#include "DebugHelpers.h"
 
 int main()
 {
