@@ -10,6 +10,8 @@ const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(Ins
     arr[static_cast<size_t>(InstructionType::NOP)]  = &CentralProcessingUnit::nopInstruction;
     arr[static_cast<size_t>(InstructionType::LD)]   = &CentralProcessingUnit::ldInstruction;
     arr[static_cast<size_t>(InstructionType::JP)]   = &CentralProcessingUnit::jpInstruction;
+    arr[static_cast<size_t>(InstructionType::DI)]   = &CentralProcessingUnit::diInstruction;
+    arr[static_cast<size_t>(InstructionType::XOR)]   = &CentralProcessingUnit::xorInstruction;
     return arr;
 }();
 
@@ -17,7 +19,9 @@ void CentralProcessingUnit::initialize(MemoryBus* bus)
 {
     memoryBus = bus;
 
+    registers = {0};
     registers.PC = 0x100;
+    registers.A = 0x01;
 }
 
 u8 CentralProcessingUnit::step()
@@ -29,9 +33,13 @@ u8 CentralProcessingUnit::step()
 
         fetchInstruction();
         consumedCycles += fetchData();
+        
+        Log::print(LogLevel::Debug,  std::format("{:04X} -> {:<4s} ({:02X} {:02X} {:02X}) A: {:02X} B: {:02X} C: {:02X}",
+            pc, toString(currentInstruction.type), currentOPCode,
+            memoryBus->read(pc + 1), memoryBus->read(pc + 2),
+            registers.A, registers.B, registers.C));
+
         consumedCycles += execute();
-    
-        Log::print(LogLevel::Debug, toString(currentInstruction.type), " (", std::format("{:02X}", currentOPCode), ") - PC = ", std::format("{:04X}", pc));
     }
 
     return consumedCycles;
@@ -42,12 +50,6 @@ void CentralProcessingUnit::fetchInstruction()
     currentOPCode = memoryBus->read(registers.PC);
     registers.PC++;
     currentInstruction = getInstructionFromOpCode(currentOPCode);
-
-    if(currentInstruction.type == InstructionType::NONE)
-    {
-        Log::print(LogLevel::Error, "Invalid opcode: ", std::format("{:02X}", currentOPCode));
-        exit(-1);
-    }
 }
 
 u8 CentralProcessingUnit::fetchData()
@@ -61,10 +63,10 @@ u8 CentralProcessingUnit::fetchData()
         case AdressMode::IMPLY:
             break;
         case AdressMode::R:
-            //fetchData = read register 
+            fetchedData = readRegister(currentInstruction.register1);
             break;
         case AdressMode::R_D8:
-            data = memoryBus->read(registers.PC);
+            fetchedData = memoryBus->read(registers.PC);
             consumedCycles++;
             registers.PC++;
             break;
@@ -74,7 +76,7 @@ u8 CentralProcessingUnit::fetchData()
             consumedCycles++;
             u16 high = memoryBus->read(registers.PC + 1);
             consumedCycles++;
-            data = (high << 8) | low;
+            fetchedData = (high << 8) | low;
             registers.PC += 2;
             break;
         }
@@ -92,7 +94,7 @@ u8 CentralProcessingUnit::execute()
     if(instructionFunc == nullptr)
     {
         Log::print(LogLevel::Error, "Unimplemented instruction: ", toString(currentInstruction.type), " (", std::format("{:02X}", currentOPCode), ")");
-        return 0;
+        exit(-1);
     }
     return (this->*instructionFunc)();
 }
@@ -170,9 +172,23 @@ u8 CentralProcessingUnit::jpInstruction()
 {
     if(checkCondition())
     {
-        registers.PC = data;
+        registers.PC = fetchedData;
         return 1;
     }
+    return 0;
+}
+
+u8 CentralProcessingUnit::diInstruction()
+{
+    interruptMasterEnabled = false;
+
+    return 0;
+}
+
+u8 CentralProcessingUnit::xorInstruction()
+{
+    registers.A ^= (fetchedData & 0xFF);
+    setFlagValues(registers.A, 0, 0, 0);
     return 0;
 }
 
@@ -203,4 +219,19 @@ bool CentralProcessingUnit::flagZ() const
 bool CentralProcessingUnit::flagC() const
 {
     return MathUtils<u8>::getBitValue(registers.F, 4);
+}
+
+void CentralProcessingUnit::setFlagValues(s8 z, s8 n, s8 h, s8 c)
+{
+    if(z != -1)
+        MathUtils<u8>::setBitValue(registers.F, 7, z);
+
+    if(n != -1)
+        MathUtils<u8>::setBitValue(registers.F, 6, n);
+
+    if(h != -1)
+        MathUtils<u8>::setBitValue(registers.F, 5, h);
+
+    if(c != -1)
+        MathUtils<u8>::setBitValue(registers.F, 4, c);
 }

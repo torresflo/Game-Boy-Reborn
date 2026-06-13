@@ -15,7 +15,7 @@
 // 0xFF00 - 0xFF7F : I/O Registers
 // 0xFF80 - 0xFFFE : Zero Page
 
-u8 MemoryBus::read(u16 address)
+u8 MemoryBus::read(u16 address) const
 {
     if(cartridge != nullptr)
     {

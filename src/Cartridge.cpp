@@ -169,7 +169,7 @@ bool Cartridge::checkHeaderChecksum()
     return checksum & 0xFF;
 }
 
-u8 Cartridge::read(u16 address)
+u8 Cartridge::read(u16 address) const
 {
     //For now, just ROM ONLY type supported
     return ROMData[address];

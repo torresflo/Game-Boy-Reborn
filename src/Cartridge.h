@@ -34,7 +34,7 @@ private:
     std::string getLicenceName(u8 code);
     bool checkHeaderChecksum();
 
-    u8 read(u16 address);
+    u8 read(u16 address) const;
     void write(u16 address, u8 value);
 
     std::string ROMPath;

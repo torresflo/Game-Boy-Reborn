@@ -43,19 +43,24 @@ private:
     u8 nopInstruction();
     u8 ldInstruction();
     u8 jpInstruction();
+    u8 diInstruction();
+    u8 xorInstruction();
 
     bool checkCondition() const;
 
     bool flagZ() const;
     bool flagC() const;
+    void setFlagValues(s8 z, s8 n, s8 h, s8 c);
     
     Registers registers;
-    u16 data;
+    u16 fetchedData;
     bool destinationIsMemory;
     u16 memoryDestination;
     u8 currentOPCode;
     Instruction currentInstruction;
     
+    bool interruptMasterEnabled = true;
+
     bool halted = false;
     bool stepping = false;
     

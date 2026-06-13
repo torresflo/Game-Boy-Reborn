@@ -185,5 +185,6 @@ inline const std::array<Instruction, 256> Instructions = []() {
     arr[0x0E] = {InstructionType::LD, AdressMode::R_D8, RegisterType::C};
     arr[0xAF] = {InstructionType::XOR, AdressMode::R, RegisterType::A};
     arr[0xC3] = {InstructionType::JP, AdressMode::D16};
+    arr[0xF3] = {InstructionType::DI};
     return arr;
 }();
