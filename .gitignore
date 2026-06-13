@@ -38,3 +38,7 @@ build/
 
 # Project specific
 roms/officials/*
+
+# AI
+CLAUDE.md
+GEMINI.md
