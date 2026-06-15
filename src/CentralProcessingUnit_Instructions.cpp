@@ -43,6 +43,20 @@ u8 CentralProcessingUnit::ldInstruction()
     return consumedCycles;
 }
 
+u8 CentralProcessingUnit::ldhInstruction()
+{
+    if(currentInstruction.register1 == RegisterType::A)
+    {
+        writeRegister(currentInstruction.register1, memoryBus->read(0xFF00 | fetchedData));
+    }
+    else
+    {
+        memoryBus->write(0xFF00 | fetchedData, registers.A);
+    }
+
+    return 1;
+}
+
 u8 CentralProcessingUnit::jpInstruction()
 {
     if(checkCondition())

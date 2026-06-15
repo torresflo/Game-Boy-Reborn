@@ -43,6 +43,7 @@ private:
     u8 noneInstruction();
     u8 nopInstruction();
     u8 ldInstruction();
+    u8 ldhInstruction();
     u8 jpInstruction();
     u8 diInstruction();
     u8 xorInstruction();

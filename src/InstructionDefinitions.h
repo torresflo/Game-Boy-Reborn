@@ -293,10 +293,12 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0xC3] = {InstructionType::JP, AddressMode::D16};
     
     //0xEx
+    arr[0xE0] = {InstructionType::LDH, AddressMode::A8_R, RegisterType::NONE, RegisterType::A};
     arr[0xE2] = {InstructionType::LD, AddressMode::MR_R, RegisterType::C, RegisterType::A};
     arr[0xEA] = {InstructionType::LD, AddressMode::A16_R, RegisterType::NONE, RegisterType::A};
 
     //0xFx
+    arr[0xF0] = {InstructionType::LDH, AddressMode::R_A8, RegisterType::A};
     arr[0xF2] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::C};
     arr[0xF3] = {InstructionType::DI};
     arr[0xFA] = {InstructionType::LD, AddressMode::R_A16, RegisterType::A};

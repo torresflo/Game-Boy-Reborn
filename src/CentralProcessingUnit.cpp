@@ -7,6 +7,7 @@ const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(Ins
     arr[static_cast<size_t>(InstructionType::NONE)] = &CentralProcessingUnit::noneInstruction;
     arr[static_cast<size_t>(InstructionType::NOP)]  = &CentralProcessingUnit::nopInstruction;
     arr[static_cast<size_t>(InstructionType::LD)]   = &CentralProcessingUnit::ldInstruction;
+    arr[static_cast<size_t>(InstructionType::LDH)]   = &CentralProcessingUnit::ldhInstruction;
     arr[static_cast<size_t>(InstructionType::JP)]   = &CentralProcessingUnit::jpInstruction;
     arr[static_cast<size_t>(InstructionType::DI)]   = &CentralProcessingUnit::diInstruction;
     arr[static_cast<size_t>(InstructionType::XOR)]  = &CentralProcessingUnit::xorInstruction;
@@ -32,10 +33,10 @@ u8 CentralProcessingUnit::step()
         fetchInstruction();
         consumedCycles += fetchData();
 
-        Log::print(LogLevel::Debug, std::format("{:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} B: {:02X} C: {:02X}",
+        Log::print(LogLevel::Debug, std::format("{:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} BC: {:02X}{:02X}, DE: {:02X}{:02X} HL: {:02X}{:02X}",
             pc, toString(currentInstruction.type), currentOPCode,
             memoryBus->read(pc + 1), memoryBus->read(pc + 2),
-            registers.A, registers.B, registers.C));
+            registers.A, registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
 
         consumedCycles += execute();
     }
