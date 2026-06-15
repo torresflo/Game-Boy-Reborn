@@ -8,7 +8,7 @@ int main()
     Log::setLevel(LogLevel::All);
 
     Emulator emulator;
-    emulator.run("../../roms/officials/Tetris (World) (Rev A).gb");
+    emulator.run("../../roms/cpu_instrs.gb");
 
     // sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
     // sf::CircleShape shape(100.f);

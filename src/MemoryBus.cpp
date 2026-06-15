@@ -23,8 +23,23 @@ u8 MemoryBus::read(u16 address) const
             return cartridge->read(address);
     }
 
-    Log::print(LogLevel::Error, "Unimplemented reading.");
+    Log::print(LogLevel::Error, "Unimplemented bus reading.");
     return u8();
+}
+
+u16 MemoryBus::read16(u16 address) const
+{
+    //Implicit conversion to 16 bits
+    u16 lo = read(address);
+    u16 hi = read(address +1);
+
+    return (hi << 8) | lo;
+}
+
+void MemoryBus::write16(u16 address, u16 value)
+{
+    write(address + 1, (value >> 8) & 0xFF);
+    write(address, value & 0xFF);
 }
 
 void MemoryBus::write(u16 address, u8 value)
@@ -36,7 +51,7 @@ void MemoryBus::write(u16 address, u8 value)
         return;
     }
 
-    Log::print(LogLevel::Error, "Unimplemented writing.");
+    Log::print(LogLevel::Error, "Unimplemented bus writing.");
 }
 
 void MemoryBus::setCartridge(Cartridge* cartridgePtr)

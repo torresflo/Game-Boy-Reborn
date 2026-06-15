@@ -37,4 +37,4 @@ inline void Log::print(LogLevel level, Args &&...args)
     }
 }
 
-#define UNUSED(x) (void)(x)
+#define UNUSED(x) (void)(x);

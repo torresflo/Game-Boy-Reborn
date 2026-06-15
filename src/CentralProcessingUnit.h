@@ -29,9 +29,10 @@ private:
     u8 fetchData(); //Return consumed cycles
     u8 execute();  //Return consumed cycles
     
-    const Instruction& getInstructionFromOpCode(u8 opcode);
+    const InstructionData& getInstructionFromOpCode(u8 opcode);
 
     u16 readRegister(RegisterType type);
+    void writeRegister(RegisterType type, u16 value);
 
     u16 reverse(u16 value) const;
 
@@ -57,7 +58,7 @@ private:
     bool destinationIsMemory;
     u16 memoryDestination;
     u8 currentOPCode;
-    Instruction currentInstruction;
+    InstructionData currentInstruction;
     
     bool interruptMasterEnabled = true;
 

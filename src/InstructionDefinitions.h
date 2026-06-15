@@ -4,7 +4,7 @@
 
 #include "Common.h"
 
-enum class AdressMode
+enum class AddressMode
 {
     IMPLY,
     R_D16,
@@ -106,7 +106,7 @@ inline const char* toString(InstructionType type)
 {
     switch(type)
     {
-        case InstructionType::NONE:  return "NONE";
+        case InstructionType::NONE:  return "<NONE>";
         case InstructionType::NOP:   return "NOP";
         case InstructionType::LD:    return "LD";
         case InstructionType::INC:   return "INC";
@@ -168,23 +168,138 @@ enum class ConditionType
     C
 };
 
-struct Instruction
+struct InstructionData
 {
     InstructionType type = InstructionType::NONE;
-    AdressMode addressMode = AdressMode::IMPLY;
+    AddressMode addressMode = AddressMode::IMPLY;
     RegisterType register1 = RegisterType::NONE;
     RegisterType register2 = RegisterType::NONE;
     ConditionType condition = ConditionType::NONE;
     u8 param = 0;
 };
 
-inline const std::array<Instruction, 256> Instructions = []() {
-    std::array<Instruction, 256> arr{};
+inline const std::array<InstructionData, 256> Instructions = []() {
+    std::array<InstructionData, 256> arr{};
+    //0x0x
     arr[0x00] = {InstructionType::NOP};
-    arr[0x05] = {InstructionType::DEC, AdressMode::R, RegisterType::B};
-    arr[0x0E] = {InstructionType::LD, AdressMode::R_D8, RegisterType::C};
-    arr[0xAF] = {InstructionType::XOR, AdressMode::R, RegisterType::A};
-    arr[0xC3] = {InstructionType::JP, AdressMode::D16};
+    arr[0x01] = {InstructionType::LD, AddressMode::R_D16, RegisterType::BC};
+    arr[0x02] = {InstructionType::LD, AddressMode::MR_R, RegisterType::BC, RegisterType::A};
+    arr[0x05] = {InstructionType::DEC, AddressMode::R, RegisterType::B};
+    arr[0x06] = {InstructionType::LD, AddressMode::R_D8, RegisterType::B};
+    arr[0x08] = {InstructionType::LD, AddressMode::A16_R, RegisterType::NONE, RegisterType::SP};
+    arr[0x0A] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::BC};
+    arr[0x0E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::C};
+
+    //0x1x
+    arr[0x11] = {InstructionType::LD, AddressMode::R_D16, RegisterType::DE};
+    arr[0x12] = {InstructionType::LD, AddressMode::MR_R, RegisterType::DE, RegisterType::A};
+    arr[0x05] = {InstructionType::DEC, AddressMode::R, RegisterType::D};
+    arr[0x16] = {InstructionType::LD, AddressMode::R_D8, RegisterType::D};
+    arr[0x1A] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::DE};
+    arr[0x1E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::E};
+
+    //0x2x
+    arr[0x21] = {InstructionType::LD, AddressMode::R_D16, RegisterType::HL};
+    arr[0x22] = {InstructionType::LD, AddressMode::HLI_R, RegisterType::HL, RegisterType::A};
+    arr[0x25] = {InstructionType::DEC, AddressMode::R, RegisterType::H};
+    arr[0x26] = {InstructionType::LD, AddressMode::R_D8, RegisterType::H};
+    arr[0x2A] = {InstructionType::LD, AddressMode::R_HLI, RegisterType::A, RegisterType::HL};
+    arr[0x2E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::L};
+
+    //0x3x
+    arr[0x31] = {InstructionType::LD, AddressMode::R_D16, RegisterType::SP};
+    arr[0x32] = {InstructionType::LD, AddressMode::HLD_R, RegisterType::SP, RegisterType::A};
+    arr[0x35] = {InstructionType::DEC, AddressMode::R, RegisterType::HL};
+    arr[0x36] = {InstructionType::LD, AddressMode::MR_D8, RegisterType::HL};
+    arr[0x3A] = {InstructionType::LD, AddressMode::R_HLD, RegisterType::A, RegisterType::HL};
+    arr[0x3E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::A};
+
+    //0x4x
+    arr[0x40] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::B};
+    arr[0x41] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::C};
+    arr[0x42] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::D};
+    arr[0x43] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::E};
+    arr[0x44] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::H};
+    arr[0x45] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::L};
+    arr[0x46] = {InstructionType::LD, AddressMode::R_MR, RegisterType::B, RegisterType::HL};
+    arr[0x47] = {InstructionType::LD, AddressMode::R_R, RegisterType::B, RegisterType::A};
+    arr[0x48] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::B};
+    arr[0x49] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::C};
+    arr[0x4A] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::D};
+    arr[0x4B] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::E};
+    arr[0x4C] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::H};
+    arr[0x4D] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::L};
+    arr[0x4E] = {InstructionType::LD, AddressMode::R_MR, RegisterType::C, RegisterType::HL};
+    arr[0x4F] = {InstructionType::LD, AddressMode::R_R, RegisterType::C, RegisterType::A};
+
+    //0x5x
+    arr[0x50] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::B};
+    arr[0x51] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::C};
+    arr[0x52] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::D};
+    arr[0x53] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::E};
+    arr[0x54] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::H};
+    arr[0x55] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::L};
+    arr[0x56] = {InstructionType::LD, AddressMode::R_MR, RegisterType::D, RegisterType::HL};
+    arr[0x57] = {InstructionType::LD, AddressMode::R_R, RegisterType::D, RegisterType::A};
+    arr[0x58] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::B};
+    arr[0x59] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::C};
+    arr[0x5A] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::D};
+    arr[0x5B] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::E};
+    arr[0x5C] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::H};
+    arr[0x5D] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::L};
+    arr[0x5E] = {InstructionType::LD, AddressMode::R_MR, RegisterType::E, RegisterType::HL};
+    arr[0x5F] = {InstructionType::LD, AddressMode::R_R, RegisterType::E, RegisterType::A};
+
+    //0x6x
+    arr[0x60] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::B};
+    arr[0x61] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::C};
+    arr[0x62] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::D};
+    arr[0x63] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::E};
+    arr[0x64] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::H};
+    arr[0x65] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::L};
+    arr[0x66] = {InstructionType::LD, AddressMode::R_MR, RegisterType::H, RegisterType::HL};
+    arr[0x67] = {InstructionType::LD, AddressMode::R_R, RegisterType::H, RegisterType::A};
+    arr[0x68] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::B};
+    arr[0x69] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::C};
+    arr[0x6A] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::D};
+    arr[0x6B] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::E};
+    arr[0x6C] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::H};
+    arr[0x6D] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::L};
+    arr[0x6E] = {InstructionType::LD, AddressMode::R_MR, RegisterType::L, RegisterType::HL};
+    arr[0x6F] = {InstructionType::LD, AddressMode::R_R, RegisterType::L, RegisterType::A};
+
+    //0x7x
+    arr[0x70] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::B};
+    arr[0x71] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::C};
+    arr[0x72] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::D};
+    arr[0x73] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::E};
+    arr[0x74] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::H};
+    arr[0x75] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::L};
+    arr[0x76] = {InstructionType::HALT};
+    arr[0x77] = {InstructionType::LD, AddressMode::MR_R, RegisterType::HL, RegisterType::A};
+    arr[0x78] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::B};
+    arr[0x79] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::C};
+    arr[0x7A] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::D};
+    arr[0x7B] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::E};
+    arr[0x7C] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::H};
+    arr[0x7D] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::L};
+    arr[0x7E] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::HL};
+    arr[0x7F] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::A};
+
+    //0xAx
+    arr[0xAF] = {InstructionType::XOR, AddressMode::R, RegisterType::A};
+    
+    //0xCx
+    arr[0xC3] = {InstructionType::JP, AddressMode::D16};
+    
+    //0xEx
+    arr[0xE2] = {InstructionType::LD, AddressMode::MR_R, RegisterType::C, RegisterType::A};
+    arr[0xEA] = {InstructionType::LD, AddressMode::A16_R, RegisterType::NONE, RegisterType::A};
+
+    //0xFx
+    arr[0xF2] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::C};
     arr[0xF3] = {InstructionType::DI};
+    arr[0xFA] = {InstructionType::LD, AddressMode::R_A16, RegisterType::A};
+
     return arr;
 }();
