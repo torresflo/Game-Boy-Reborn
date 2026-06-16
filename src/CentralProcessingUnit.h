@@ -45,15 +45,28 @@ private:
     u8 ldInstruction();
     u8 ldhInstruction();
     u8 jpInstruction();
+    u8 jrInstruction();
+    u8 callInstruction();
+    u8 retInstruction();
+    u8 retiInstruction();
+    u8 rstInstruction();
+    u8 popInstruction();
+    u8 pushInstruction();
     u8 diInstruction();
     u8 xorInstruction();
 
+    u8 gotoAddress(u16 address, bool pushPC);
     bool checkCondition() const;
 
     bool flagZ() const;
     bool flagC() const;
     void setFlagValues(s8 z, s8 n, s8 h, s8 c);
-    
+
+    void stackPush(u8 data);
+    void stackPush16(u16 data);
+    u8 stackPop();
+    u16 stackPop16();
+
     Registers registers;
     u16 fetchedData;
     bool destinationIsMemory;

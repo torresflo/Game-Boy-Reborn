@@ -2,6 +2,25 @@
 
 #include "MathUtils.h"
 
+const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> CentralProcessingUnit::InstructionFuncs = []() {
+    std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> arr{};
+    arr[static_cast<size_t>(InstructionType::NONE)] = &CentralProcessingUnit::noneInstruction;
+    arr[static_cast<size_t>(InstructionType::NOP)]  = &CentralProcessingUnit::nopInstruction;
+    arr[static_cast<size_t>(InstructionType::LD)]   = &CentralProcessingUnit::ldInstruction;
+    arr[static_cast<size_t>(InstructionType::LDH)]   = &CentralProcessingUnit::ldhInstruction;
+    arr[static_cast<size_t>(InstructionType::JP)]   = &CentralProcessingUnit::jpInstruction;
+    arr[static_cast<size_t>(InstructionType::JR)]   = &CentralProcessingUnit::jrInstruction;
+    arr[static_cast<size_t>(InstructionType::CALL)]   = &CentralProcessingUnit::callInstruction;
+    arr[static_cast<size_t>(InstructionType::RET)]   = &CentralProcessingUnit::retInstruction;
+    arr[static_cast<size_t>(InstructionType::RETI)]   = &CentralProcessingUnit::retiInstruction;
+    arr[static_cast<size_t>(InstructionType::RST)]   = &CentralProcessingUnit::rstInstruction;
+    arr[static_cast<size_t>(InstructionType::DI)]   = &CentralProcessingUnit::diInstruction;
+    arr[static_cast<size_t>(InstructionType::POP)]   = &CentralProcessingUnit::popInstruction;
+    arr[static_cast<size_t>(InstructionType::PUSH)]   = &CentralProcessingUnit::pushInstruction;
+    arr[static_cast<size_t>(InstructionType::XOR)]  = &CentralProcessingUnit::xorInstruction;
+    return arr;
+}();
+
 u8 CentralProcessingUnit::noneInstruction()
 {
     Log::print(LogLevel::Error, "None instruction called");
@@ -53,18 +72,89 @@ u8 CentralProcessingUnit::ldhInstruction()
     {
         memoryBus->write(0xFF00 | fetchedData, registers.A);
     }
-
     return 1;
 }
 
 u8 CentralProcessingUnit::jpInstruction()
 {
+    return gotoAddress(fetchedData, false);
+}
+
+u8 CentralProcessingUnit::jrInstruction()
+{
+    s8 relative = static_cast<s8>(fetchedData & 0xFF);
+    u16 address = registers.PC + relative;
+    return gotoAddress(address, false);
+}
+
+u8 CentralProcessingUnit::callInstruction()
+{
+    return gotoAddress(fetchedData, true);
+}
+
+u8 CentralProcessingUnit::retInstruction()
+{
+    u8 consumedCycles = 0;
+    if(currentInstruction.condition != ConditionType::NONE)
+        consumedCycles++;
+
     if(checkCondition())
     {
-        registers.PC = fetchedData;
-        return 1;
+        u16 lo = stackPop();
+        consumedCycles++;
+        u16 hi = stackPop();
+        consumedCycles++;
+
+        u16 value = (hi << 8) | lo;
+        registers.PC = value;
+        consumedCycles++;
     }
-    return 0;
+
+    return consumedCycles;
+}
+
+u8 CentralProcessingUnit::retiInstruction()
+{
+    interruptMasterEnabled = true;
+    return retInstruction();
+}
+
+u8 CentralProcessingUnit::rstInstruction()
+{
+    return gotoAddress(currentInstruction.param, true);
+}
+
+u8 CentralProcessingUnit::popInstruction()
+{
+    u8 consumedCycles = 0;
+    u16 lo = stackPop();
+    consumedCycles++;
+    u16 hi = stackPop();
+    consumedCycles++;
+
+    u16 value = (hi << 8) | lo;
+    if(currentInstruction.register1 == RegisterType::AF)
+        writeRegister(currentInstruction.register1, value & 0xFFF0);
+    else
+        writeRegister(currentInstruction.register1, value);
+
+    return consumedCycles;
+}
+
+u8 CentralProcessingUnit::pushInstruction()
+{
+    u8 consumedCycles = 0;
+
+    u16 hi = (readRegister(currentInstruction.register1) >> 8) & 0xFF;
+    consumedCycles++;
+    stackPush(static_cast<u8>(hi));
+
+    u16 lo = readRegister(currentInstruction.register1) & 0xFF;
+    consumedCycles++;
+    stackPush(static_cast<u8>(lo));
+
+    consumedCycles++;
+    return consumedCycles;
 }
 
 u8 CentralProcessingUnit::diInstruction()
@@ -79,6 +169,23 @@ u8 CentralProcessingUnit::xorInstruction()
     registers.A ^= (fetchedData & 0xFF);
     setFlagValues(registers.A, 0, 0, 0);
     return 0;
+}
+
+u8 CentralProcessingUnit::gotoAddress(u16 address, bool pushPC)
+{
+    u8 consumedCycles = 0;
+    if(checkCondition())
+    {
+        if(pushPC)
+        {
+            stackPush16(registers.PC);
+            consumedCycles += 2;
+        }
+
+        registers.PC = address;
+        consumedCycles++;
+    }
+    return consumedCycles;
 }
 
 bool CentralProcessingUnit::checkCondition() const

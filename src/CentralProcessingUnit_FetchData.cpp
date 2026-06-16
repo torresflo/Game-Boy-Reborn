@@ -20,6 +20,7 @@ u8 CentralProcessingUnit::fetchData()
             fetchedData = readRegister(currentInstruction.register2);
             break;
         }
+        case AddressMode::D8:
         case AddressMode::R_D8:
         {
             fetchedData = memoryBus->read(registers.PC);
@@ -30,11 +31,11 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::R_D16:
         case AddressMode::D16:
         {
-            u16 low = memoryBus->read(registers.PC);
+            u16 lo = memoryBus->read(registers.PC);
             consumedCycles++;
-            u16 high = memoryBus->read(registers.PC + 1);
+            u16 hi = memoryBus->read(registers.PC + 1);
             consumedCycles++;
-            fetchedData = (high << 8) | low;
+            fetchedData = (hi << 8) | lo;
             registers.PC += 2;
             break;
         }
@@ -108,11 +109,11 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::A16_R:
         case AddressMode::D16_R:
         {
-            u16 low = memoryBus->read(registers.PC);
+            u16 lo = memoryBus->read(registers.PC);
             consumedCycles++;
-            u16 high = memoryBus->read(registers.PC + 1);
+            u16 hi = memoryBus->read(registers.PC + 1);
             consumedCycles++;
-            memoryDestination = (high << 8) | low;
+            memoryDestination = (hi << 8) | lo;
             destinationIsMemory = true;
             registers.PC += 2;
             fetchedData = readRegister(currentInstruction.register2);
@@ -137,11 +138,11 @@ u8 CentralProcessingUnit::fetchData()
         }
         case AddressMode::R_A16:
         {
-            u16 low = memoryBus->read(registers.PC);
+            u16 lo = memoryBus->read(registers.PC);
             consumedCycles++;
-            u16 high = memoryBus->read(registers.PC + 1);
+            u16 hi = memoryBus->read(registers.PC + 1);
             consumedCycles++;
-            u16 address = (high << 8) | low;
+            u16 address = (hi << 8) | lo;
             fetchedData = memoryBus->read(address);
             consumedCycles++;
             break;
