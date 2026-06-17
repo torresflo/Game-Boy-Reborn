@@ -96,4 +96,6 @@ private:
     MemoryBus* memoryBus;
 
     static const std::array<InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> InstructionFuncs;
+
+    friend class CentralProcessingUnitTestFixture;
 };

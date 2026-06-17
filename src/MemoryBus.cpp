@@ -20,52 +20,57 @@
 
 u8 MemoryBus::read(u16 address) const
 {
-    if(cartridge != nullptr)
+    if(address < 0x8000)
     {
-        if(address < 0x8000)
-        {
-            //ROM Banks
+        //ROM Banks
+        if(cartridge != nullptr)
             return cartridge->read(address);
-        }
-        else if(address < 0xA000)
-        {
-            //Char/Map Data
-            Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
-        }
-        else if(address < 0xC000)
-        {
-            //Cartridge RAM
+
+        Log::print(LogLevel::Error, std::format("Reading ROM (0x{:4X}) with no cartridge attached.", address));
+        return 0xFF;
+    }
+    else if(address < 0xA000)
+    {
+        //Char/Map Data
+        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+    }
+    else if(address < 0xC000)
+    {
+        //Cartridge RAM
+        if(cartridge != nullptr)
             return cartridge->read(address);
-        }
-        else if(address < 0xE000)
-        {
-            //RAM Banks - WRAM (working RAM)
-            return readWRAM(address);
-        }
-        else if(address < 0xFE00)
-        {
-            //Reserved Echo RAM
-            Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
-        }
-        else if(address < 0xFEA0)
-        {
-            //OAM
-            Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
-        }
-        else if(address < 0xFF00)
-        {
-            //Reserved, unusable
-            Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
-        }
-        else if(address < 0xFF80)
-        {
-            //IO Registers
-            Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
-        }
-        else if(address == 0xFFFF)
-        {
-            return readInterruptEnableRegister();
-        }
+
+        Log::print(LogLevel::Error, std::format("Reading cartridge RAM (0x{:4X}) with no cartridge attached.", address));
+        return 0xFF;
+    }
+    else if(address < 0xE000)
+    {
+        //RAM Banks - WRAM (working RAM)
+        return readWRAM(address);
+    }
+    else if(address < 0xFE00)
+    {
+        //Reserved Echo RAM
+        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+    }
+    else if(address < 0xFEA0)
+    {
+        //OAM
+        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+    }
+    else if(address < 0xFF00)
+    {
+        //Reserved, unusable
+        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+    }
+    else if(address < 0xFF80)
+    {
+        //IO Registers
+        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+    }
+    else if(address == 0xFFFF)
+    {
+        return readInterruptEnableRegister();
     }
 
     return readHRAM(address);
@@ -82,56 +87,59 @@ u16 MemoryBus::read16(u16 address) const
 
 void MemoryBus::write(u16 address, u8 value)
 {
-    if(cartridge != nullptr)
+    if(address <= 0x8000)
     {
-        if(address <= 0x8000)
-        {
+        if(cartridge != nullptr)
             cartridge->write(address, value);
-        }
-        else if(address < 0xA000)
-        {
-            //Char/Map Data
-            Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
-        }
-        else if(address < 0xC000)
-        {
-            //Cartridge RAM
-            cartridge->write(address, value);
-        }
-        else if(address < 0xE000)
-        {
-            //RAM Banks - WRAM (working RAM)
-            return writeWRAM(address, value);
-        }
-        else if(address < 0xFE00)
-        {
-            //Reserved Echo RAM
-            Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
-        }
-        else if(address < 0xFEA0)
-        {
-            //OAM
-            Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
-        }
-        else if(address < 0xFF00)
-        {
-            //Reserved, unusable
-            Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
-        }
-        else if(address < 0xFF80)
-        {
-            //IO Registers
-            Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
-        }
-        else if(address == 0xFFFF)
-        {
-            //CPU Enable Register
-            writeInterruptEnableRegister(value);
-        }
         else
-        {
-            writeHRAM(address, value);
-        }
+            Log::print(LogLevel::Error, std::format("Writing ROM (0x{:4X}) with no cartridge attached.", address));
+    }
+    else if(address < 0xA000)
+    {
+        //Char/Map Data
+        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+    }
+    else if(address < 0xC000)
+    {
+        //Cartridge RAM
+        if(cartridge != nullptr)
+            cartridge->write(address, value);
+        else
+            Log::print(LogLevel::Error, std::format("Writing cartridge RAM (0x{:4X}) with no cartridge attached.", address));
+    }
+    else if(address < 0xE000)
+    {
+        //RAM Banks - WRAM (working RAM)
+        writeWRAM(address, value);
+    }
+    else if(address < 0xFE00)
+    {
+        //Reserved Echo RAM
+        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+    }
+    else if(address < 0xFEA0)
+    {
+        //OAM
+        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+    }
+    else if(address < 0xFF00)
+    {
+        //Reserved, unusable
+        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+    }
+    else if(address < 0xFF80)
+    {
+        //IO Registers
+        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+    }
+    else if(address == 0xFFFF)
+    {
+        //CPU Enable Register
+        writeInterruptEnableRegister(value);
+    }
+    else
+    {
+        writeHRAM(address, value);
     }
 }
 

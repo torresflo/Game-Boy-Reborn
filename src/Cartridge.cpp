@@ -42,6 +42,10 @@ const std::vector<std::string> Cartridge::RomTypes =
     "MBC7+SENSOR+RUMBLE+RAM+BATTERY"
 };
 
+// The 0xNN keys below are int literals narrowing to u8; harmless since they're
+// all <= 0xFF, but MSVC's C4244 flags it under /W4 /WX.
+#pragma warning(push)
+#pragma warning(disable : 4244)
 const std::map<u8, std::string> Cartridge::LicenceCodes =
 {
     {0x00, "None"},
@@ -106,6 +110,7 @@ const std::map<u8, std::string> Cartridge::LicenceCodes =
     {0x99, "Pack in soft"},
     {0xA4, "Konami (Yu-Gi-Oh!)"}
 };
+#pragma warning(pop)
 
 bool Cartridge::loadROM(std::string path)
 {

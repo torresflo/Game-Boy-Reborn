@@ -14,9 +14,17 @@ include(${CMAKE_CURRENT_LIST_DIR}/cmake/BuildSetting.cmake)
 file (GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file (GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS "src/*.h")
 
+set(CORE_SOURCES ${PROJECT_SOURCES})
+list(REMOVE_ITEM CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+
+# Core emulator code, shared by the executable and the test suite
+add_library(GameBoyCore STATIC ${CORE_SOURCES})
+target_include_directories(GameBoyCore PUBLIC "src")
+target_compile_features(GameBoyCore PUBLIC cxx_std_20)
+
 # Create executable file
-add_executable(${ProjectName} ${PROJECT_SOURCES})
-target_include_directories(${ProjectName} PRIVATE "src")
+add_executable(${ProjectName} "src/main.cpp")
+target_link_libraries(${ProjectName} PRIVATE GameBoyCore)
 
 # Find SFML
 set(SFML_STATIC_LIBRARIES TRUE)
@@ -39,3 +47,10 @@ endif()
 target_compile_features(${ProjectName} PUBLIC cxx_std_20)
 
 message(STATUS "Sources: ${PROJECT_SOURCES}")
+
+enable_testing()
+add_subdirectory(tests)
+
+# Building the main project also builds the test executable, so it's ready
+# to run without needing a separate build step.
+add_dependencies(${ProjectName} Game-Boy-Reborn-Tests)
