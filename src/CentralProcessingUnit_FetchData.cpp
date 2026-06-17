@@ -1,10 +1,9 @@
 #include "CentralProcessingUnit.h"
 
-u8 CentralProcessingUnit::fetchData()
+void CentralProcessingUnit::fetchData()
 {
     memoryDestination = 0;
     destinationIsMemory = false;
-    u8 consumedCycles = 0;
 
     switch(currentInstruction.addressMode)
     {
@@ -24,7 +23,7 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::R_D8:
         {
             fetchedData = memoryBus->read(registers.PC);
-            consumedCycles++;
+            emulateCycles(1);
             registers.PC++;
             break;
         }
@@ -32,9 +31,9 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::D16:
         {
             u16 lo = memoryBus->read(registers.PC);
-            consumedCycles++;
+            emulateCycles(1);
             u16 hi = memoryBus->read(registers.PC + 1);
-            consumedCycles++;
+            emulateCycles(1);
             fetchedData = (hi << 8) | lo;
             registers.PC += 2;
             break;
@@ -58,20 +57,20 @@ u8 CentralProcessingUnit::fetchData()
                 address |= 0xFF00;
             }
             fetchedData = memoryBus->read(address);
-            consumedCycles++;
+            emulateCycles(1);
             break;
         }
         case AddressMode::R_HLI:
         {
             fetchedData = memoryBus->read(readRegister(currentInstruction.register2));
-            consumedCycles++;
+            emulateCycles(1);
             writeRegister(RegisterType::HL, readRegister(RegisterType::HL) + 1);
             break;
         }
         case AddressMode::R_HLD:
         {
             fetchedData = memoryBus->read(readRegister(currentInstruction.register2));
-            consumedCycles++;
+            emulateCycles(1);
             writeRegister(RegisterType::HL, readRegister(RegisterType::HL) - 1);
             break;
         }
@@ -94,7 +93,7 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::R_A8:
         {
             fetchedData = memoryBus->read(registers.PC);
-            consumedCycles++;
+            emulateCycles(1);
             registers.PC++;
             break;
         }
@@ -102,7 +101,7 @@ u8 CentralProcessingUnit::fetchData()
         {
             memoryDestination = memoryBus->read(registers.PC) | 0xFF00;
             destinationIsMemory = true;
-            consumedCycles++;
+            emulateCycles(1);
             registers.PC++;
             break;
         }
@@ -110,9 +109,9 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::D16_R:
         {
             u16 lo = memoryBus->read(registers.PC);
-            consumedCycles++;
+            emulateCycles(1);
             u16 hi = memoryBus->read(registers.PC + 1);
-            consumedCycles++;
+            emulateCycles(1);
             memoryDestination = (hi << 8) | lo;
             destinationIsMemory = true;
             registers.PC += 2;
@@ -122,7 +121,7 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::MR_D8:
         {
             fetchedData = memoryBus->read(registers.PC);
-            consumedCycles++;
+            emulateCycles(1);
             registers.PC++;
             memoryDestination = readRegister(currentInstruction.register1);
             destinationIsMemory = true;
@@ -133,26 +132,24 @@ u8 CentralProcessingUnit::fetchData()
             memoryDestination = readRegister(currentInstruction.register1);
             destinationIsMemory = true;
             fetchedData = memoryBus->read(memoryDestination);
-            consumedCycles++;
+            emulateCycles(1);
             break;
         }
         case AddressMode::R_A16:
         {
             u16 lo = memoryBus->read(registers.PC);
-            consumedCycles++;
+            emulateCycles(1);
             u16 hi = memoryBus->read(registers.PC + 1);
-            consumedCycles++;
+            emulateCycles(1);
             u16 address = (hi << 8) | lo;
-            
+
             registers.PC += 2;
             fetchedData = memoryBus->read(address);
-            consumedCycles++;
+            emulateCycles(1);
             break;
         }
         default:
             Log::print(LogLevel::Error, "Unimplemented address mode.");
             break;
     }
-
-    return consumedCycles;
 }

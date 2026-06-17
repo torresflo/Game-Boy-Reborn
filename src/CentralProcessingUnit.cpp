@@ -11,27 +11,29 @@ void CentralProcessingUnit::initialize(MemoryBus* bus)
     registers.A = 0x01;
 }
 
-u8 CentralProcessingUnit::step()
+void CentralProcessingUnit::step()
 {
-    u8 consumedCycles = 0;
     if(!halted)
     {
         u16 pc = registers.PC;
 
         fetchInstruction();
-        consumedCycles += fetchData();
+        fetchData();
 
-        Log::print(LogLevel::Debug, std::format("{:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
-            pc, toString(currentInstruction.type), currentOPCode,
+        Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
+            cycles, pc, toString(currentInstruction.type), currentOPCode,
             memoryBus->read(pc + 1), memoryBus->read(pc + 2),
             registers.A,
             flagZ() ? 'Z' : '-', flagN() ? 'N' : '-', flagH() ? 'H' : '-', flagC() ? 'C' : '-',
             registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
 
-        consumedCycles += execute();
+        execute();
     }
 
-    return consumedCycles;
+    // The clock always advances by at least one cycle per step, even while halted, so that
+    // peripherals keep progressing while the CPU waits for an interrupt.
+    //emulateCycles(1);
+    cycles++;
 }
 
 void CentralProcessingUnit::fetchInstruction()
@@ -41,7 +43,7 @@ void CentralProcessingUnit::fetchInstruction()
     currentInstruction = getInstructionFromOpCode(currentOPCode);
 }
 
-u8 CentralProcessingUnit::execute()
+void CentralProcessingUnit::execute()
 {
     InstructionFunc instructionFunc = getInstructionFunc(currentInstruction.type);
     if(instructionFunc == nullptr)
@@ -49,7 +51,7 @@ u8 CentralProcessingUnit::execute()
         Log::print(LogLevel::Error, "Unimplemented instruction: ", toString(currentInstruction.type), " (", std::format("{:02X}", currentOPCode), ")");
         exit(-1);
     }
-    return (this->*instructionFunc)();
+    (this->*instructionFunc)();
 }
 
 const InstructionData& CentralProcessingUnit::getInstructionFromOpCode(u8 opcode) const
@@ -156,6 +158,10 @@ void CentralProcessingUnit::writeRegister(RegisterType type, u16 value)
 u16 CentralProcessingUnit::reverse(u16 value) const
 {
     return (value & 0xFF00) >> 8 | (value & 0x00FF) << 8;
+}
+
+void CentralProcessingUnit::emulateCycles([[maybe_unused]] u8 cycleCount)
+{
 }
 
 CentralProcessingUnit::InstructionFunc CentralProcessingUnit::getInstructionFunc(InstructionType type)

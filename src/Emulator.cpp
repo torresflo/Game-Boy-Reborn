@@ -15,7 +15,6 @@ void Emulator::run(std::string path)
 
     running = true;
     paused = false;
-    cycles = 0;
 
     while(running)
     {
@@ -25,9 +24,7 @@ void Emulator::run(std::string path)
             continue;
         }
 
-        cycles += CPU.step();
-
-        cycles++;
+        CPU.step();
     };
 }
 

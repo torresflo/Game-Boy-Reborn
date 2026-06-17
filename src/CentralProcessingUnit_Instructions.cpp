@@ -27,32 +27,29 @@ const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(Ins
     return arr;
 }();
 
-u8 CentralProcessingUnit::noneInstruction()
+void CentralProcessingUnit::noneInstruction()
 {
     Log::print(LogLevel::Error, "None instruction called");
     exit(-1);
 }
 
-u8 CentralProcessingUnit::nopInstruction()
+void CentralProcessingUnit::nopInstruction()
 {
-    return 0;
 }
 
-u8 CentralProcessingUnit::ldInstruction()
+void CentralProcessingUnit::ldInstruction()
 {
-    u8 consumedCycles = 0;
-
     if(destinationIsMemory) //Example: LD (BC), A
     {
         if(is16BitsRegister(currentInstruction.register2))
         {
             memoryBus->write16(memoryDestination, fetchedData);
-            consumedCycles++;
+            emulateCycles(1);
         }
         else
             memoryBus->write(memoryDestination, static_cast<u8>(fetchedData));
 
-        consumedCycles++;
+        emulateCycles(1);
     }
     else if(currentInstruction.addressMode == AddressMode::HL_SPR)
     {
@@ -66,11 +63,9 @@ u8 CentralProcessingUnit::ldInstruction()
     {
         writeRegister(currentInstruction.register1, fetchedData);
     }
-
-    return consumedCycles;
 }
 
-u8 CentralProcessingUnit::ldhInstruction()
+void CentralProcessingUnit::ldhInstruction()
 {
     if(currentInstruction.register1 == RegisterType::A)
     {
@@ -80,65 +75,61 @@ u8 CentralProcessingUnit::ldhInstruction()
     {
         memoryBus->write(memoryDestination, registers.A);
     }
-    return 1;
+    emulateCycles(1);
 }
 
-u8 CentralProcessingUnit::jpInstruction()
+void CentralProcessingUnit::jpInstruction()
 {
-    return gotoAddress(fetchedData, false);
+    gotoAddress(fetchedData, false);
 }
 
-u8 CentralProcessingUnit::jrInstruction()
+void CentralProcessingUnit::jrInstruction()
 {
     s8 relative = static_cast<s8>(fetchedData & 0xFF);
     u16 address = registers.PC + relative;
-    return gotoAddress(address, false);
+    gotoAddress(address, false);
 }
 
-u8 CentralProcessingUnit::callInstruction()
+void CentralProcessingUnit::callInstruction()
 {
-    return gotoAddress(fetchedData, true);
+    gotoAddress(fetchedData, true);
 }
 
-u8 CentralProcessingUnit::retInstruction()
+void CentralProcessingUnit::retInstruction()
 {
-    u8 consumedCycles = 0;
     if(currentInstruction.condition != ConditionType::NONE)
-        consumedCycles++;
+        emulateCycles(1);
 
     if(checkCondition())
     {
         u16 lo = stackPop();
-        consumedCycles++;
+        emulateCycles(1);
         u16 hi = stackPop();
-        consumedCycles++;
+        emulateCycles(1);
 
         u16 value = (hi << 8) | lo;
         registers.PC = value;
-        consumedCycles++;
+        emulateCycles(1);
     }
-
-    return consumedCycles;
 }
 
-u8 CentralProcessingUnit::retiInstruction()
+void CentralProcessingUnit::retiInstruction()
 {
     interruptMasterEnabled = true;
-    return retInstruction();
+    retInstruction();
 }
 
-u8 CentralProcessingUnit::rstInstruction()
+void CentralProcessingUnit::rstInstruction()
 {
-    return gotoAddress(currentInstruction.param, true);
+    gotoAddress(currentInstruction.param, true);
 }
 
-u8 CentralProcessingUnit::popInstruction()
+void CentralProcessingUnit::popInstruction()
 {
-    u8 consumedCycles = 0;
     u16 lo = stackPop();
-    consumedCycles++;
+    emulateCycles(1);
     u16 hi = stackPop();
-    consumedCycles++;
+    emulateCycles(1);
 
     u16 value = (hi << 8) | lo;
 
@@ -146,37 +137,31 @@ u8 CentralProcessingUnit::popInstruction()
 
     if(currentInstruction.register1 == RegisterType::AF)
         writeRegister(currentInstruction.register1, value & 0xFFF0);
-
-    return consumedCycles;
 }
 
-u8 CentralProcessingUnit::pushInstruction()
+void CentralProcessingUnit::pushInstruction()
 {
-    u8 consumedCycles = 0;
-
     u16 hi = (readRegister(currentInstruction.register1) >> 8) & 0xFF;
-    consumedCycles++;
+    emulateCycles(1);
     stackPush(static_cast<u8>(hi));
 
     u16 lo = readRegister(currentInstruction.register1) & 0xFF;
-    consumedCycles++;
+    emulateCycles(1);
     stackPush(static_cast<u8>(lo));
 
-    consumedCycles++;
-    return consumedCycles;
+    emulateCycles(1);
 }
 
-u8 CentralProcessingUnit::incInstruction()
+void CentralProcessingUnit::incInstruction()
 {
-    u8 consumedCycles = 0;
     u16 value = readRegister(currentInstruction.register1) + 1;
 
     if(is16BitsRegister(currentInstruction.register1))
-        consumedCycles++;
+        emulateCycles(1);
 
     if(currentInstruction.register1 == RegisterType::HL
         && currentInstruction.addressMode == AddressMode::MR)
-    {  
+    {
         u16 address = readRegister(RegisterType::HL);
         value = memoryBus->read(address) + 1;
         value &= 0xFF;
@@ -189,23 +174,21 @@ u8 CentralProcessingUnit::incInstruction()
     }
 
     if((currentOPCode & 0x03) == 0x03)
-        return consumedCycles;
+        return;
 
     setFlagValues(value == 0, 0, (value & 0x0F) == 0, -1);
-    return consumedCycles;
 }
 
-u8 CentralProcessingUnit::decInstruction()
+void CentralProcessingUnit::decInstruction()
 {
-    u8 consumedCycles = 0;
     u16 value = readRegister(currentInstruction.register1) - 1;
 
     if(is16BitsRegister(currentInstruction.register1))
-        consumedCycles++;
+        emulateCycles(1);
 
     if(currentInstruction.register1 == RegisterType::HL
         && currentInstruction.addressMode == AddressMode::MR)
-    {  
+    {
         u16 address = readRegister(RegisterType::HL);
         value = memoryBus->read(address) - 1;
         memoryBus->write(address, static_cast<u8>(value));
@@ -217,21 +200,19 @@ u8 CentralProcessingUnit::decInstruction()
     }
 
     if((currentOPCode & 0x0B) == 0x0B)
-        return consumedCycles;
+        return;
 
     setFlagValues(value == 0, 1, (value & 0x0F) == 0x0F, -1);
-    return consumedCycles;
 }
 
-u8 CentralProcessingUnit::addInstruction()
+void CentralProcessingUnit::addInstruction()
 {
-    u8 consumedCycles = 0;
     u32 value = readRegister(currentInstruction.register1) + fetchedData;
     bool isUsing16BitsRegister = is16BitsRegister(currentInstruction.register1);
-    
+
     if(isUsing16BitsRegister)
     {
-        consumedCycles++;
+        emulateCycles(1);
     }
 
     if(currentInstruction.register1 == RegisterType::SP)
@@ -260,11 +241,9 @@ u8 CentralProcessingUnit::addInstruction()
 
     writeRegister(currentInstruction.register1, value & 0xFFFF);
     setFlagValues(zFlag, 0, hFlag, cFlag);
-
-    return consumedCycles;
 }
 
-u8 CentralProcessingUnit::adcInstruction()
+void CentralProcessingUnit::adcInstruction()
 {
     u16 data = fetchedData;
     u16 registerA = readRegister(RegisterType::A);
@@ -272,10 +251,9 @@ u8 CentralProcessingUnit::adcInstruction()
 
     writeRegister(RegisterType::A, (registerA + data + cFlag) & 0xFF);
     setFlagValues(readRegister(RegisterType::A) == 0, 0, (registerA & 0xF) + (data & 0xF) + cFlag > 0xF, registerA + data + cFlag > 0xFF);
-    return 0;
 }
 
-u8 CentralProcessingUnit::subInstruction()
+void CentralProcessingUnit::subInstruction()
 {
     u16 value = readRegister(currentInstruction.register1) - fetchedData;
     bool zFlag = value == 0;
@@ -284,10 +262,9 @@ u8 CentralProcessingUnit::subInstruction()
 
     writeRegister(currentInstruction.register1, value);
     setFlagValues(zFlag, 1, hFlag, cFlag);
-    return 0;
 }
 
-u8 CentralProcessingUnit::sbcInstruction()
+void CentralProcessingUnit::sbcInstruction()
 {
     u8 value = static_cast<u8>(fetchedData + flagC());
     u16 registerValue = readRegister(currentInstruction.register1) - value;
@@ -297,38 +274,32 @@ u8 CentralProcessingUnit::sbcInstruction()
 
     writeRegister(currentInstruction.register1, registerValue);
     setFlagValues(zFlag, 1, hFlag, cFlag);
-    return 0;
 }
 
-u8 CentralProcessingUnit::diInstruction()
+void CentralProcessingUnit::diInstruction()
 {
     interruptMasterEnabled = false;
-
-    return 0;
 }
 
-u8 CentralProcessingUnit::xorInstruction()
+void CentralProcessingUnit::xorInstruction()
 {
     registers.A ^= (fetchedData & 0xFF);
     setFlagValues(registers.A == 0, 0, 0, 0);
-    return 0;
 }
 
-u8 CentralProcessingUnit::gotoAddress(u16 address, bool pushPC)
+void CentralProcessingUnit::gotoAddress(u16 address, bool pushPC)
 {
-    u8 consumedCycles = 0;
     if(checkCondition())
     {
         if(pushPC)
         {
             stackPush16(registers.PC);
-            consumedCycles += 2;
+            emulateCycles(2);
         }
 
         registers.PC = address;
-        consumedCycles++;
+        emulateCycles(1);
     }
-    return consumedCycles;
 }
 
 bool CentralProcessingUnit::checkCondition() const

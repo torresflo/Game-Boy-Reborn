@@ -27,5 +27,4 @@ private:
 
     bool paused = false;
     bool running = false;
-    u64 cycles = 0;
 };
