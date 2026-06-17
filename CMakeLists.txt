@@ -26,23 +26,19 @@ target_compile_features(GameBoyCore PUBLIC cxx_std_20)
 add_executable(${ProjectName} "src/main.cpp")
 target_link_libraries(${ProjectName} PRIVATE GameBoyCore)
 
-# Find SFML
-set(SFML_STATIC_LIBRARIES TRUE)
+# Fetch SFML and build it as a static library alongside the project
+include(FetchContent)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
-if(MSVC_VERSION)
-    set(SFML_ROOT "C:/SFML-2.6.1/")
-endif()
+FetchContent_Declare(
+    SFML
+    GIT_REPOSITORY https://github.com/SFML/SFML.git
+    GIT_TAG 2.6.1
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(SFML)
 
-find_package(SFML 2.6 COMPONENTS system window graphics audio REQUIRED)
-
-# If found, include and link; otherwise output error message
-if(SFML_FOUND)
-	target_link_libraries(${ProjectName} PUBLIC sfml-system sfml-window sfml-graphics sfml-audio )	
-else()
-	set(SFML_ROOT "" CACHE PATH "SFML top-level directory")
-	message("\n-> SFML directory not found. Set SFML_ROOT to SFML's top-level path (containing \"include\" and \"lib\" directories).")
-	message("-> Make sure the SFML libraries with the same configuration (Release/Debug, Static/Dynamic) exist.\n")
-endif()
+target_link_libraries(${ProjectName} PUBLIC sfml-system sfml-window sfml-graphics sfml-audio)
 
 target_compile_features(${ProjectName} PUBLIC cxx_std_20)
 
