@@ -53,7 +53,7 @@ u8 CentralProcessingUnit::fetchData()
         case AddressMode::R_MR:
         {
             u16 address = readRegister(currentInstruction.register2);
-            if(currentInstruction.register1 == RegisterType::C)
+            if(currentInstruction.register2 == RegisterType::C)
             {
                 address |= 0xFF00;
             }
@@ -143,6 +143,8 @@ u8 CentralProcessingUnit::fetchData()
             u16 hi = memoryBus->read(registers.PC + 1);
             consumedCycles++;
             u16 address = (hi << 8) | lo;
+            
+            registers.PC += 2;
             fetchedData = memoryBus->read(address);
             consumedCycles++;
             break;

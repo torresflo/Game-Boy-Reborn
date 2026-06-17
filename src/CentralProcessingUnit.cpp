@@ -21,10 +21,12 @@ u8 CentralProcessingUnit::step()
         fetchInstruction();
         consumedCycles += fetchData();
 
-        Log::print(LogLevel::Debug, std::format("{:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} BC: {:02X}{:02X}, DE: {:02X}{:02X} HL: {:02X}{:02X}",
+        Log::print(LogLevel::Debug, std::format("{:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
             pc, toString(currentInstruction.type), currentOPCode,
             memoryBus->read(pc + 1), memoryBus->read(pc + 2),
-            registers.A, registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
+            registers.A,
+            flagZ() ? 'Z' : '-', flagN() ? 'N' : '-', flagH() ? 'H' : '-', flagC() ? 'C' : '-',
+            registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
 
         consumedCycles += execute();
     }
@@ -50,12 +52,12 @@ u8 CentralProcessingUnit::execute()
     return (this->*instructionFunc)();
 }
 
-const InstructionData& CentralProcessingUnit::getInstructionFromOpCode(u8 opcode)
+const InstructionData& CentralProcessingUnit::getInstructionFromOpCode(u8 opcode) const
 {
     return Instructions[opcode];
 }
 
-u16 CentralProcessingUnit::readRegister(RegisterType type)
+u16 CentralProcessingUnit::readRegister(RegisterType type) const
 {
     switch (type)
     {
@@ -159,4 +161,9 @@ u16 CentralProcessingUnit::reverse(u16 value) const
 CentralProcessingUnit::InstructionFunc CentralProcessingUnit::getInstructionFunc(InstructionType type)
 {
     return InstructionFuncs[static_cast<size_t>(type)];
+}
+
+bool CentralProcessingUnit::is16BitsRegister(RegisterType type) const
+{
+    return type >= RegisterType::AF;
 }

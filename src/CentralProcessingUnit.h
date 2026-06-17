@@ -29,9 +29,9 @@ private:
     u8 fetchData(); //Return consumed cycles
     u8 execute();  //Return consumed cycles
     
-    const InstructionData& getInstructionFromOpCode(u8 opcode);
+    const InstructionData& getInstructionFromOpCode(u8 opcode) const;
 
-    u16 readRegister(RegisterType type);
+    u16 readRegister(RegisterType type) const;
     void writeRegister(RegisterType type, u16 value);
 
     u16 reverse(u16 value) const;
@@ -52,6 +52,12 @@ private:
     u8 rstInstruction();
     u8 popInstruction();
     u8 pushInstruction();
+    u8 incInstruction();
+    u8 decInstruction();
+    u8 addInstruction();
+    u8 adcInstruction();
+    u8 subInstruction();
+    u8 sbcInstruction();
     u8 diInstruction();
     u8 xorInstruction();
 
@@ -59,13 +65,17 @@ private:
     bool checkCondition() const;
 
     bool flagZ() const;
+    bool flagN() const;
+    bool flagH() const;
     bool flagC() const;
-    void setFlagValues(s8 z, s8 n, s8 h, s8 c);
+    void setFlagValues(s8 zFlag, s8 nFlag, s8 hFlag, s8 cFlag);
 
     void stackPush(u8 data);
     void stackPush16(u16 data);
     u8 stackPop();
     u16 stackPop16();
+
+    bool is16BitsRegister(RegisterType type) const;
 
     Registers registers;
     u16 fetchedData;

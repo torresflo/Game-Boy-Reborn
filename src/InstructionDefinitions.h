@@ -184,39 +184,63 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0x00] = {InstructionType::NOP};
     arr[0x01] = {InstructionType::LD, AddressMode::R_D16, RegisterType::BC};
     arr[0x02] = {InstructionType::LD, AddressMode::MR_R, RegisterType::BC, RegisterType::A};
+    arr[0x03] = {InstructionType::INC, AddressMode::R, RegisterType::BC};
+    arr[0x04] = {InstructionType::INC, AddressMode::R, RegisterType::B};
     arr[0x05] = {InstructionType::DEC, AddressMode::R, RegisterType::B};
     arr[0x06] = {InstructionType::LD, AddressMode::R_D8, RegisterType::B};
     arr[0x08] = {InstructionType::LD, AddressMode::A16_R, RegisterType::NONE, RegisterType::SP};
+    arr[0x09] = {InstructionType::ADD, AddressMode::R_R, RegisterType::HL, RegisterType::BC};
     arr[0x0A] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::BC};
+    arr[0x0B] = {InstructionType::DEC, AddressMode::R, RegisterType::BC};
+    arr[0x0C] = {InstructionType::INC, AddressMode::R, RegisterType::C};
+    arr[0x0D] = {InstructionType::DEC, AddressMode::R, RegisterType::C};
     arr[0x0E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::C};
 
     //0x1x
     arr[0x11] = {InstructionType::LD, AddressMode::R_D16, RegisterType::DE};
     arr[0x12] = {InstructionType::LD, AddressMode::MR_R, RegisterType::DE, RegisterType::A};
+    arr[0x13] = {InstructionType::INC, AddressMode::R, RegisterType::DE};
+    arr[0x14] = {InstructionType::INC, AddressMode::R, RegisterType::D};
     arr[0x15] = {InstructionType::DEC, AddressMode::R, RegisterType::D};
     arr[0x16] = {InstructionType::LD, AddressMode::R_D8, RegisterType::D};
     arr[0x18] = {InstructionType::JR, AddressMode::D8};
+    arr[0x19] = {InstructionType::ADD, AddressMode::R_R, RegisterType::HL, RegisterType::DE};
     arr[0x1A] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::DE};
+    arr[0x1B] = {InstructionType::DEC, AddressMode::R, RegisterType::DE};
+    arr[0x1C] = {InstructionType::INC, AddressMode::R, RegisterType::E};
+    arr[0x1D] = {InstructionType::DEC, AddressMode::R, RegisterType::E};
     arr[0x1E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::E};
 
     //0x2x
     arr[0x20] = {InstructionType::JR, AddressMode::D8, RegisterType::NONE, RegisterType::NONE, ConditionType::NZ};
     arr[0x21] = {InstructionType::LD, AddressMode::R_D16, RegisterType::HL};
     arr[0x22] = {InstructionType::LD, AddressMode::HLI_R, RegisterType::HL, RegisterType::A};
+    arr[0x23] = {InstructionType::INC, AddressMode::R, RegisterType::HL};
+    arr[0x24] = {InstructionType::INC, AddressMode::R, RegisterType::H};
     arr[0x25] = {InstructionType::DEC, AddressMode::R, RegisterType::H};
     arr[0x26] = {InstructionType::LD, AddressMode::R_D8, RegisterType::H};
     arr[0x28] = {InstructionType::JR, AddressMode::D8, RegisterType::NONE, RegisterType::NONE, ConditionType::Z};
+    arr[0x29] = {InstructionType::ADD, AddressMode::R_R, RegisterType::HL, RegisterType::HL};
     arr[0x2A] = {InstructionType::LD, AddressMode::R_HLI, RegisterType::A, RegisterType::HL};
+    arr[0x2B] = {InstructionType::DEC, AddressMode::R, RegisterType::HL};
+    arr[0x2C] = {InstructionType::INC, AddressMode::R, RegisterType::L};
+    arr[0x2D] = {InstructionType::DEC, AddressMode::R, RegisterType::L};
     arr[0x2E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::L};
 
     //0x3x
     arr[0x30] = {InstructionType::JR, AddressMode::D8, RegisterType::NONE, RegisterType::NONE, ConditionType::NC};
     arr[0x31] = {InstructionType::LD, AddressMode::R_D16, RegisterType::SP};
     arr[0x32] = {InstructionType::LD, AddressMode::HLD_R, RegisterType::HL, RegisterType::A};
+    arr[0x33] = {InstructionType::INC, AddressMode::R, RegisterType::SP};
+    arr[0x34] = {InstructionType::INC, AddressMode::MR, RegisterType::HL};
     arr[0x35] = {InstructionType::DEC, AddressMode::MR, RegisterType::HL};
     arr[0x36] = {InstructionType::LD, AddressMode::MR_D8, RegisterType::HL};
     arr[0x38] = {InstructionType::JR, AddressMode::D8, RegisterType::NONE, RegisterType::NONE, ConditionType::C};
+    arr[0x39] = {InstructionType::ADD, AddressMode::R_R, RegisterType::HL, RegisterType::SP};
     arr[0x3A] = {InstructionType::LD, AddressMode::R_HLD, RegisterType::A, RegisterType::HL};
+    arr[0x3B] = {InstructionType::DEC, AddressMode::R, RegisterType::SP};
+    arr[0x3C] = {InstructionType::INC, AddressMode::R, RegisterType::A};
+    arr[0x3D] = {InstructionType::DEC, AddressMode::R, RegisterType::A};
     arr[0x3E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::A};
 
     //0x4x
@@ -291,6 +315,42 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0x7E] = {InstructionType::LD, AddressMode::R_MR, RegisterType::A, RegisterType::HL};
     arr[0x7F] = {InstructionType::LD, AddressMode::R_R, RegisterType::A, RegisterType::A};
 
+    //0x8x
+    arr[0x80] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::B};
+    arr[0x81] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::C};
+    arr[0x82] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::D};
+    arr[0x83] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::E};
+    arr[0x84] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::H};
+    arr[0x85] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::L};
+    arr[0x86] = {InstructionType::ADD, AddressMode::R_MR, RegisterType::A, RegisterType::HL};
+    arr[0x87] = {InstructionType::ADD, AddressMode::R_R, RegisterType::A, RegisterType::A};
+    arr[0x88] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::B};
+    arr[0x89] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::C};
+    arr[0x8A] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::D};
+    arr[0x8B] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::E};
+    arr[0x8C] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::H};
+    arr[0x8D] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::L};
+    arr[0x8E] = {InstructionType::ADC, AddressMode::R_MR, RegisterType::A, RegisterType::HL};
+    arr[0x8F] = {InstructionType::ADC, AddressMode::R_R, RegisterType::A, RegisterType::A};
+
+    //0x9x
+    arr[0x90] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::B};
+    arr[0x91] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::C};
+    arr[0x92] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::D};
+    arr[0x93] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::E};
+    arr[0x94] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::H};
+    arr[0x95] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::L};
+    arr[0x96] = {InstructionType::SUB, AddressMode::R_MR, RegisterType::A, RegisterType::HL};
+    arr[0x97] = {InstructionType::SUB, AddressMode::R_R, RegisterType::A, RegisterType::A};
+    arr[0x98] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::B};
+    arr[0x99] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::C};
+    arr[0x9A] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::D};
+    arr[0x9B] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::E};
+    arr[0x9C] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::H};
+    arr[0x9D] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::L};
+    arr[0x9E] = {InstructionType::SBC, AddressMode::R_MR, RegisterType::A, RegisterType::HL};
+    arr[0x9F] = {InstructionType::SBC, AddressMode::R_R, RegisterType::A, RegisterType::A};
+
     //0xAx
     arr[0xAF] = {InstructionType::XOR, AddressMode::R, RegisterType::A};
     
@@ -301,12 +361,14 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0xC3] = {InstructionType::JP, AddressMode::D16};
     arr[0xC4] = {InstructionType::CALL, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::NZ};
     arr[0xC5] = {InstructionType::PUSH, AddressMode::R, RegisterType::BC};
+    arr[0xC6] = {InstructionType::ADD, AddressMode::R_D8, RegisterType::A};
     arr[0xC7] = {InstructionType::RST, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::NONE, 0x00};
     arr[0xC8] = {InstructionType::RET, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::Z};
     arr[0xC9] = {InstructionType::RET};
     arr[0xCA] = {InstructionType::JP, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::Z};
     arr[0xCC] = {InstructionType::CALL, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::Z};
     arr[0xCD] = {InstructionType::CALL, AddressMode::D16};
+    arr[0xCE] = {InstructionType::ADC, AddressMode::R_D8, RegisterType::A};
     arr[0xCF] = {InstructionType::RST, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::NONE, 0x08};
     
     //0xDx
@@ -328,7 +390,8 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0xE2] = {InstructionType::LD, AddressMode::MR_R, RegisterType::C, RegisterType::A};
     arr[0xE5] = {InstructionType::PUSH, AddressMode::R, RegisterType::HL};
     arr[0xE7] = {InstructionType::RST, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::NONE, 0x20};
-    arr[0xE9] = {InstructionType::JP, AddressMode::MR, RegisterType::HL};
+    arr[0xE8] = {InstructionType::ADD, AddressMode::R_D8, RegisterType::SP};
+    arr[0xE9] = {InstructionType::JP, AddressMode::R, RegisterType::HL};
     arr[0xEA] = {InstructionType::LD, AddressMode::A16_R, RegisterType::NONE, RegisterType::A};
     arr[0xEF] = {InstructionType::RST, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::NONE, 0x28};
 
