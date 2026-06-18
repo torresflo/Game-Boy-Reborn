@@ -210,7 +210,7 @@ void CentralProcessingUnit::incInstruction()
         && currentInstruction.addressMode == AddressMode::MR)
     {
         u16 address = readRegister(RegisterType::HL);
-        value = memoryBus->read(address) + 1;
+        value = fetchedData + 1;
         value &= 0xFF;
         memoryBus->write(address, static_cast<u8>(value));
     }
@@ -237,7 +237,7 @@ void CentralProcessingUnit::decInstruction()
         && currentInstruction.addressMode == AddressMode::MR)
     {
         u16 address = readRegister(RegisterType::HL);
-        value = memoryBus->read(address) - 1;
+        value = fetchedData - 1;
         memoryBus->write(address, static_cast<u8>(value));
     }
     else
@@ -379,6 +379,7 @@ void CentralProcessingUnit::daaInstruction()
     }
 
     registerA += (flagN() ? -value : value);
+    registerA &= 0xFF;
     writeRegister(RegisterType::A, registerA);
     setFlagValues(registerA == 0, -1, 0, cFlag);
 }

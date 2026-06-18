@@ -8,12 +8,14 @@ class Cartridge;
 class MemoryBus
 {
 public:
+    virtual ~MemoryBus() = default;
+
     void setCartridge(Cartridge* cartridge);
 
-    u8 read(u16 address) const;
+    virtual u8 read(u16 address) const;
     u16 read16(u16 address) const;
-    
-    void write(u16 address, u8 value);
+
+    virtual void write(u16 address, u8 value);
     void write16(u16 address, u16 value);
 
 private:

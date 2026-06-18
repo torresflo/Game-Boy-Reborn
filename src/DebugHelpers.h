@@ -20,8 +20,9 @@ class Log
 public:
     template<typename ...Args>
     static void print(LogLevel level, Args&& ... args);
-    
+
     static void setLevel(LogLevel level);
+    static bool isEnabled(LogLevel level);
 
 private:
     static LogLevel currentLevel;
@@ -30,7 +31,7 @@ private:
 template <typename ...Args>
 inline void Log::print(LogLevel level, Args &&...args)
 {
-    if(level >= Log::currentLevel)
+    if(Log::isEnabled(level))
     {
         (std::cout << ... << args);
         std::cout << std::endl;

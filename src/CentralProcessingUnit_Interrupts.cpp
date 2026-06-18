@@ -41,7 +41,7 @@ bool CentralProcessingUnit::handleInterrupt(InterruptType type, u16 address)
     return false;
 }
 
-void CentralProcessingUnit::requestInterrupt(InterruptType type)
+void CentralProcessingUnit::requestInterrupt([[maybe_unused]] InterruptType type)
 {
 
 }

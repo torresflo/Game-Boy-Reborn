@@ -149,8 +149,8 @@ void MemoryBus::write(u16 address, u8 value)
 
 void MemoryBus::write16(u16 address, u16 value)
 {
-    write(address + 1, (value >> 8) & 0xFF);
     write(address, value & 0xFF);
+    write(address + 1, (value >> 8) & 0xFF);
 }
 
 u8 MemoryBus::readWRAM(u16 address) const

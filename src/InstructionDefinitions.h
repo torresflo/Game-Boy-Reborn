@@ -196,7 +196,7 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0x0C] = {InstructionType::INC, AddressMode::R, RegisterType::C};
     arr[0x0D] = {InstructionType::DEC, AddressMode::R, RegisterType::C};
     arr[0x0E] = {InstructionType::LD, AddressMode::R_D8, RegisterType::C};
-    arr[0x0E] = {InstructionType::RRCA};
+    arr[0x0F] = {InstructionType::RRCA};
 
     //0x1x
     arr[0x10] = {InstructionType::STOP};
@@ -420,13 +420,13 @@ inline const std::array<InstructionData, 256> Instructions = []() {
     arr[0xD2] = {InstructionType::JP, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::NC};
     arr[0xD4] = {InstructionType::CALL, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::NC};
     arr[0xD5] = {InstructionType::PUSH, AddressMode::R, RegisterType::DE};
-    arr[0xD6] = {InstructionType::SUB, AddressMode::D8};
+    arr[0xD6] = {InstructionType::SUB, AddressMode::D8, RegisterType::A};
     arr[0xD7] = {InstructionType::RST, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::NONE, 0x10};
     arr[0xD8] = {InstructionType::RET, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::C};
     arr[0xD9] = {InstructionType::RETI};
     arr[0xDA] = {InstructionType::JP, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::C};
     arr[0xDC] = {InstructionType::CALL, AddressMode::D16, RegisterType::NONE, RegisterType::NONE, ConditionType::C};
-    arr[0xDF] = {InstructionType::SBC, AddressMode::R_D8, RegisterType::A};
+    arr[0xDE] = {InstructionType::SBC, AddressMode::R_D8, RegisterType::A};
     arr[0xDF] = {InstructionType::RST, AddressMode::IMPLY, RegisterType::NONE, RegisterType::NONE, ConditionType::NONE, 0x18};
 
     //0xEx

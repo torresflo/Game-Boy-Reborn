@@ -13,6 +13,12 @@ void CentralProcessingUnit::initialize(MemoryBus* bus)
 
 void CentralProcessingUnit::step()
 {
+    if(enablingInterruptMaster)
+    {
+        interruptMasterEnabled = true;
+        enablingInterruptMaster = false;
+    }
+
     if(!halted)
     {
         u16 pc = registers.PC;
@@ -21,12 +27,15 @@ void CentralProcessingUnit::step()
         emulateCycles(1);
         fetchData();
 
-        Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
-            cycles, pc, toString(currentInstruction.type), currentOPCode,
-            memoryBus->read(pc + 1), memoryBus->read(pc + 2),
-            registers.A,
-            flagZ() ? 'Z' : '-', flagN() ? 'N' : '-', flagH() ? 'H' : '-', flagC() ? 'C' : '-',
-            registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
+        if(Log::isEnabled(LogLevel::Debug))
+        {
+            Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
+                cycles, pc, toString(currentInstruction.type), currentOPCode,
+                memoryBus->read(pc + 1), memoryBus->read(pc + 2),
+                registers.A,
+                flagZ() ? 'Z' : '-', flagN() ? 'N' : '-', flagH() ? 'H' : '-', flagC() ? 'C' : '-',
+                registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
+        }
 
         execute();
     }
@@ -41,12 +50,6 @@ void CentralProcessingUnit::step()
     if(interruptMasterEnabled)
     {
         handleInterrupts();
-        enablingInterruptMaster = false;
-    }
-
-    if(enablingInterruptMaster)
-    {
-        interruptMasterEnabled = true;
     }
 }
 
@@ -174,8 +177,9 @@ u16 CentralProcessingUnit::reverse(u16 value) const
     return (value & 0xFF00) >> 8 | (value & 0x00FF) << 8;
 }
 
-void CentralProcessingUnit::emulateCycles([[maybe_unused]] u8 cycleCount)
+void CentralProcessingUnit::emulateCycles(u8 cycleCount)
 {
+    cycles += cycleCount;
 }
 
 CentralProcessingUnit::InstructionFunc CentralProcessingUnit::getInstructionFunc(InstructionType type)

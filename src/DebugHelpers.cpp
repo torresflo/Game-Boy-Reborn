@@ -8,3 +8,8 @@ void Log::setLevel(LogLevel level)
 {
     Log::currentLevel = level;
 }
+
+bool Log::isEnabled(LogLevel level)
+{
+    return level >= Log::currentLevel;
+}

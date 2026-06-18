@@ -135,6 +135,13 @@ void CentralProcessingUnit::fetchData()
             emulateCycles(1);
             break;
         }
+        case AddressMode::HL_SPR:
+        {
+            fetchedData = memoryBus->read(registers.PC);
+            emulateCycles(1);
+            registers.PC++;
+            break;
+        }
         case AddressMode::R_A16:
         {
             u16 lo = memoryBus->read(registers.PC);
