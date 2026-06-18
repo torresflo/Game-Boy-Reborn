@@ -18,6 +18,7 @@ void CentralProcessingUnit::step()
         u16 pc = registers.PC;
 
         fetchInstruction();
+        emulateCycles(1);
         fetchData();
 
         Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
@@ -29,11 +30,24 @@ void CentralProcessingUnit::step()
 
         execute();
     }
+    else
+    {
+        emulateCycles(1);
 
-    // The clock always advances by at least one cycle per step, even while halted, so that
-    // peripherals keep progressing while the CPU waits for an interrupt.
-    //emulateCycles(1);
-    cycles++;
+        if(interruptFlags != 0)
+            halted = false;
+    }
+
+    if(interruptMasterEnabled)
+    {
+        handleInterrupts();
+        enablingInterruptMaster = false;
+    }
+
+    if(enablingInterruptMaster)
+    {
+        interruptMasterEnabled = true;
+    }
 }
 
 void CentralProcessingUnit::fetchInstruction()

@@ -1,22 +1,9 @@
 #pragma once
 
 #include "Common.h"
+#include "CentralProcessingUnitTypes.h"
 #include "InstructionDefinitions.h"
 #include "MemoryBus.h"
-
-struct Registers 
-{
-    u8 A;
-    u8 F;
-    u8 B;
-    u8 C;
-    u8 D;
-    u8 E;
-    u8 H;
-    u8 L;
-    u16 SP; //Stack Pointer
-    u16 PC; //Program Counter
-};
 
 class CentralProcessingUnit
 {
@@ -64,8 +51,19 @@ private:
     void adcInstruction();
     void subInstruction();
     void sbcInstruction();
+    void eiInstruction();
     void diInstruction();
     void cbInstruction();
+    void rlcaInstruction();
+    void rrcaInstruction();
+    void rlaInstruction();
+    void rraInstruction();
+    void daaInstruction();
+    void cplInstruction();
+    void scfInstruction();
+    void ccfInstruction();
+    void haltInstruction();
+    void stopInstruction();
 
     u8 readRegisterForCBInstruction(RegisterType type) const;
     void writeRegisterForCBInstruction(RegisterType type, u8 value);
@@ -79,13 +77,18 @@ private:
     bool flagC() const;
     void setFlagValues(s8 zFlag, s8 nFlag, s8 hFlag, s8 cFlag);
 
+    u8 getInterruptFlags() const;
+    void setInterruptFlags(u8 value);
+    void handleInterrupts();
+    bool handleInterrupt(InterruptType type, u16 address);
+    void requestInterrupt(InterruptType type);
+
     void stackPush(u8 data);
     void stackPush16(u16 data);
     u8 stackPop();
     u16 stackPop16();
 
     bool is16BitsRegister(RegisterType type) const;
-
 
     Registers registers;
     u16 fetchedData;
@@ -94,7 +97,11 @@ private:
     u8 currentOPCode;
     InstructionData currentInstruction;
     
-    bool interruptMasterEnabled = true;
+    bool interruptMasterEnabled = false;
+    bool enablingInterruptMaster = false;
+
+    u8 interruptEnable = 0; //IE
+    u8 interruptFlags = 0; //IF
 
     bool halted = false;
     bool stepping = false;

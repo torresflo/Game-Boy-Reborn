@@ -26,8 +26,19 @@ const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(Ins
     arr[static_cast<size_t>(InstructionType::SBC)]  = &CentralProcessingUnit::sbcInstruction;
     arr[static_cast<size_t>(InstructionType::PUSH)] = &CentralProcessingUnit::pushInstruction;
     arr[static_cast<size_t>(InstructionType::POP)]  = &CentralProcessingUnit::popInstruction;
+    arr[static_cast<size_t>(InstructionType::EI)]   = &CentralProcessingUnit::eiInstruction;
     arr[static_cast<size_t>(InstructionType::DI)]   = &CentralProcessingUnit::diInstruction;
     arr[static_cast<size_t>(InstructionType::CB)]   = &CentralProcessingUnit::cbInstruction;
+    arr[static_cast<size_t>(InstructionType::RLCA)]   = &CentralProcessingUnit::rlcaInstruction;
+    arr[static_cast<size_t>(InstructionType::RRCA)]   = &CentralProcessingUnit::rrcaInstruction;
+    arr[static_cast<size_t>(InstructionType::RLA)]   = &CentralProcessingUnit::rlaInstruction;
+    arr[static_cast<size_t>(InstructionType::RRA)]   = &CentralProcessingUnit::rraInstruction;
+    arr[static_cast<size_t>(InstructionType::DAA)]   = &CentralProcessingUnit::daaInstruction;
+    arr[static_cast<size_t>(InstructionType::CPL)]   = &CentralProcessingUnit::cplInstruction;
+    arr[static_cast<size_t>(InstructionType::SCF)]   = &CentralProcessingUnit::scfInstruction;
+    arr[static_cast<size_t>(InstructionType::CCF)]   = &CentralProcessingUnit::ccfInstruction;
+    arr[static_cast<size_t>(InstructionType::HALT)]   = &CentralProcessingUnit::haltInstruction;
+    arr[static_cast<size_t>(InstructionType::STOP)]   = &CentralProcessingUnit::stopInstruction;
     return arr;
 }();
 
@@ -312,6 +323,99 @@ void CentralProcessingUnit::sbcInstruction()
     setFlagValues(zFlag, 1, hFlag, cFlag);
 }
 
+void CentralProcessingUnit::rlcaInstruction()
+{
+    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    bool cFlag = MathUtils<u8>::getBitValue(registerA, 7);
+    registerA = (registerA << 1) | static_cast<u8>(cFlag);
+    writeRegister(RegisterType::A, registerA);
+    setFlagValues(0, 0, 0, cFlag);
+}
+
+void CentralProcessingUnit::rrcaInstruction()
+{
+    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    u8 b = static_cast<u8>(MathUtils<u8>::getBitValue(registerA, 0));
+    registerA >>= 1;
+    registerA |= (b << 7);
+    writeRegister(RegisterType::A, registerA);
+    setFlagValues(0, 0, 0, b);
+}
+
+void CentralProcessingUnit::rlaInstruction()
+{
+    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    bool cFlag = flagC();
+    bool cFlagRegisterA = MathUtils<u8>::getBitValue(registerA, 7);
+
+    writeRegister(RegisterType::A, (registerA << 1) | static_cast<u8>(cFlag));
+    setFlagValues(0, 0, 0, cFlagRegisterA);
+}
+
+void CentralProcessingUnit::rraInstruction()
+{
+    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    bool cFlag = flagC();
+    bool newCFlag = MathUtils<u8>::getBitValue(registerA, 0);
+    registerA >>= 1;
+    registerA |= (cFlag << 7);
+    writeRegister(RegisterType::A, registerA);
+    setFlagValues(0, 0, 0, newCFlag);
+}
+
+void CentralProcessingUnit::daaInstruction()
+{
+    u16 registerA = readRegister(RegisterType::A);
+    u8 value = 0;
+    bool cFlag = false;
+    
+    if(flagH() || (!flagN() && (registerA & 0xF) > 9))
+        value = 6;
+    
+    if(flagC() || (!flagN() && registerA > 0x99))
+    {
+        value |= 0x60;
+        cFlag = true;
+    }
+
+    registerA += (flagN() ? -value : value);
+    writeRegister(RegisterType::A, registerA);
+    setFlagValues(registerA == 0, -1, 0, cFlag);
+}
+
+void CentralProcessingUnit::cplInstruction()
+{
+    u16 registerA = readRegister(RegisterType::A);
+    registerA = ~registerA;
+    writeRegister(RegisterType::A, registerA);
+    setFlagValues(-1, 1, 1, -1);
+}
+
+void CentralProcessingUnit::scfInstruction()
+{
+    setFlagValues(-1, 0, 0, 1);
+}
+
+void CentralProcessingUnit::ccfInstruction()
+{
+    setFlagValues(-1, 0, 0, flagC() ^ 1);
+}
+
+void CentralProcessingUnit::haltInstruction()
+{
+    halted = true;
+}
+
+void CentralProcessingUnit::stopInstruction()
+{
+    Log::print(LogLevel::Error, "STOP instruction is not implemented yet.");
+}
+
+void CentralProcessingUnit::eiInstruction()
+{
+    enablingInterruptMaster = true;
+}
+
 void CentralProcessingUnit::diInstruction()
 {
     interruptMasterEnabled = false;
@@ -384,4 +488,19 @@ void CentralProcessingUnit::setFlagValues(s8 zFlag, s8 nFlag, s8 hFlag, s8 cFlag
 
     if(cFlag != -1)
         MathUtils<u8>::setBitValue(registers.F, 4, cFlag);
+}
+
+u8 CentralProcessingUnit::getInterruptFlags() const
+{
+    return interruptFlags;
+}
+
+void CentralProcessingUnit::setInterruptFlags(u8 value)
+{
+    interruptFlags = value;
+}
+
+void CentralProcessingUnit::handleInterrupts()
+{
+    
 }
