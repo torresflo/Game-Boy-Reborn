@@ -2,7 +2,7 @@
 
 #include "Common.h"
 
-struct Registers 
+struct Registers
 {
     u8 A;
     u8 F;
@@ -14,6 +14,13 @@ struct Registers
     u8 L;
     u16 SP; //Stack Pointer
     u16 PC; //Program Counter
+
+    u16 getHL() const { return (static_cast<u16>(H) << 8) | L; }
+    void setHL(u16 value)
+    {
+        H = static_cast<u8>(value >> 8);
+        L = static_cast<u8>(value & 0xFF);
+    }
 };
 
 enum InterruptType

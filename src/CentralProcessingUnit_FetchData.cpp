@@ -64,14 +64,14 @@ void CentralProcessingUnit::fetchData()
         {
             fetchedData = memoryBus->read(readRegister(currentInstruction.register2));
             emulateCycles(1);
-            writeRegister(RegisterType::HL, readRegister(RegisterType::HL) + 1);
+            registers.setHL(registers.getHL() + 1);
             break;
         }
         case AddressMode::R_HLD:
         {
             fetchedData = memoryBus->read(readRegister(currentInstruction.register2));
             emulateCycles(1);
-            writeRegister(RegisterType::HL, readRegister(RegisterType::HL) - 1);
+            registers.setHL(registers.getHL() - 1);
             break;
         }
         case AddressMode::HLI_R:
@@ -79,7 +79,7 @@ void CentralProcessingUnit::fetchData()
             fetchedData = readRegister(currentInstruction.register2);
             memoryDestination = readRegister(currentInstruction.register1);
             destinationIsMemory = true;
-            writeRegister(RegisterType::HL, readRegister(RegisterType::HL) + 1);
+            registers.setHL(registers.getHL() + 1);
             break;
         }
         case AddressMode::HLD_R:
@@ -87,7 +87,7 @@ void CentralProcessingUnit::fetchData()
             fetchedData = readRegister(currentInstruction.register2);
             memoryDestination = readRegister(currentInstruction.register1);
             destinationIsMemory = true;
-            writeRegister(RegisterType::HL, readRegister(RegisterType::HL) - 1);
+            registers.setHL(registers.getHL() - 1);
             break;
         }
         case AddressMode::R_A8:

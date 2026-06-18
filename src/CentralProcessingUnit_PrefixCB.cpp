@@ -45,7 +45,7 @@ u8 CentralProcessingUnit::readRegisterForCBInstruction(RegisterType type) const
         case RegisterType::L:
             return registers.L;
         case RegisterType::HL:
-            return memoryBus->read(readRegister(RegisterType::HL));
+            return memoryBus->read(registers.getHL());
         default:
             Log::print(LogLevel::Error, "Invalid register type (read)");
             return 0;
@@ -81,7 +81,7 @@ void CentralProcessingUnit::writeRegisterForCBInstruction(RegisterType type, u8 
             registers.L = value & 0xFF;
             break;
         case RegisterType::HL:
-            memoryBus->write(readRegister(RegisterType::HL), value);
+            memoryBus->write(registers.getHL(), value);
             break;
         default:
             Log::print(LogLevel::Error, "Invalid register type (write)");

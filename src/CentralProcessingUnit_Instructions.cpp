@@ -54,31 +54,31 @@ void CentralProcessingUnit::nopInstruction()
 
 void CentralProcessingUnit::andInstruction()
 {
-    u16 value = readRegister(RegisterType::A);
+    u16 value = registers.A;
     value &= fetchedData;
-    writeRegister(RegisterType::A, value);
+    registers.A = static_cast<u8>(value);
     setFlagValues(registers.A == 0, 0, 1, 0);
 }
 
 void CentralProcessingUnit::orInstruction()
 {
-    u16 value = readRegister(RegisterType::A);
+    u16 value = registers.A;
     value |= fetchedData;
-    writeRegister(RegisterType::A, value);
+    registers.A = static_cast<u8>(value);
     setFlagValues(registers.A == 0, 0, 0, 0);
 }
 
 void CentralProcessingUnit::xorInstruction()
 {
-    u16 value = readRegister(RegisterType::A);
+    u16 value = registers.A;
     value ^= (fetchedData & 0xFF);
-    writeRegister(RegisterType::A, value);
+    registers.A = static_cast<u8>(value);
     setFlagValues(registers.A == 0, 0, 0, 0);
 }
 
 void CentralProcessingUnit::cpInstruction()
 {
-    s32 registerA = static_cast<s32>(readRegister(RegisterType::A));
+    s32 registerA = static_cast<s32>(registers.A);
     s32 data = static_cast<s32>(fetchedData);
     s32 value = registerA - data;
     setFlagValues(value == 0, 1, (registerA & 0x0F) - (data & 0x0F) < 0, value < 0);
@@ -209,7 +209,7 @@ void CentralProcessingUnit::incInstruction()
     if(currentInstruction.register1 == RegisterType::HL
         && currentInstruction.addressMode == AddressMode::MR)
     {
-        u16 address = readRegister(RegisterType::HL);
+        u16 address = registers.getHL();
         value = fetchedData + 1;
         value &= 0xFF;
         memoryBus->write(address, static_cast<u8>(value));
@@ -236,7 +236,7 @@ void CentralProcessingUnit::decInstruction()
     if(currentInstruction.register1 == RegisterType::HL
         && currentInstruction.addressMode == AddressMode::MR)
     {
-        u16 address = readRegister(RegisterType::HL);
+        u16 address = registers.getHL();
         value = fetchedData - 1;
         memoryBus->write(address, static_cast<u8>(value));
     }
@@ -293,11 +293,11 @@ void CentralProcessingUnit::addInstruction()
 void CentralProcessingUnit::adcInstruction()
 {
     u16 data = fetchedData;
-    u16 registerA = readRegister(RegisterType::A);
+    u16 registerA = registers.A;
     u16 cFlag = flagC();
 
-    writeRegister(RegisterType::A, (registerA + data + cFlag) & 0xFF);
-    setFlagValues(readRegister(RegisterType::A) == 0, 0, (registerA & 0xF) + (data & 0xF) + cFlag > 0xF, registerA + data + cFlag > 0xFF);
+    registers.A = static_cast<u8>((registerA + data + cFlag) & 0xFF);
+    setFlagValues(registers.A == 0, 0, (registerA & 0xF) + (data & 0xF) + cFlag > 0xF, registerA + data + cFlag > 0xFF);
 }
 
 void CentralProcessingUnit::subInstruction()
@@ -325,53 +325,53 @@ void CentralProcessingUnit::sbcInstruction()
 
 void CentralProcessingUnit::rlcaInstruction()
 {
-    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    u8 registerA = registers.A;
     bool cFlag = MathUtils<u8>::getBitValue(registerA, 7);
     registerA = (registerA << 1) | static_cast<u8>(cFlag);
-    writeRegister(RegisterType::A, registerA);
+    registers.A = registerA;
     setFlagValues(0, 0, 0, cFlag);
 }
 
 void CentralProcessingUnit::rrcaInstruction()
 {
-    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    u8 registerA = registers.A;
     u8 b = static_cast<u8>(MathUtils<u8>::getBitValue(registerA, 0));
     registerA >>= 1;
     registerA |= (b << 7);
-    writeRegister(RegisterType::A, registerA);
+    registers.A = registerA;
     setFlagValues(0, 0, 0, b);
 }
 
 void CentralProcessingUnit::rlaInstruction()
 {
-    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    u8 registerA = registers.A;
     bool cFlag = flagC();
     bool cFlagRegisterA = MathUtils<u8>::getBitValue(registerA, 7);
 
-    writeRegister(RegisterType::A, (registerA << 1) | static_cast<u8>(cFlag));
+    registers.A = (registerA << 1) | static_cast<u8>(cFlag);
     setFlagValues(0, 0, 0, cFlagRegisterA);
 }
 
 void CentralProcessingUnit::rraInstruction()
 {
-    u8 registerA = static_cast<u8>(readRegister(RegisterType::A));
+    u8 registerA = registers.A;
     bool cFlag = flagC();
     bool newCFlag = MathUtils<u8>::getBitValue(registerA, 0);
     registerA >>= 1;
     registerA |= (cFlag << 7);
-    writeRegister(RegisterType::A, registerA);
+    registers.A = registerA;
     setFlagValues(0, 0, 0, newCFlag);
 }
 
 void CentralProcessingUnit::daaInstruction()
 {
-    u16 registerA = readRegister(RegisterType::A);
+    u16 registerA = registers.A;
     u8 value = 0;
     bool cFlag = false;
-    
+
     if(flagH() || (!flagN() && (registerA & 0xF) > 9))
         value = 6;
-    
+
     if(flagC() || (!flagN() && registerA > 0x99))
     {
         value |= 0x60;
@@ -380,15 +380,15 @@ void CentralProcessingUnit::daaInstruction()
 
     registerA += (flagN() ? -value : value);
     registerA &= 0xFF;
-    writeRegister(RegisterType::A, registerA);
+    registers.A = static_cast<u8>(registerA);
     setFlagValues(registerA == 0, -1, 0, cFlag);
 }
 
 void CentralProcessingUnit::cplInstruction()
 {
-    u16 registerA = readRegister(RegisterType::A);
+    u16 registerA = registers.A;
     registerA = ~registerA;
-    writeRegister(RegisterType::A, registerA);
+    registers.A = static_cast<u8>(registerA);
     setFlagValues(-1, 1, 1, -1);
 }
 
@@ -489,19 +489,4 @@ void CentralProcessingUnit::setFlagValues(s8 zFlag, s8 nFlag, s8 hFlag, s8 cFlag
 
     if(cFlag != -1)
         MathUtils<u8>::setBitValue(registers.F, 4, cFlag);
-}
-
-u8 CentralProcessingUnit::getInterruptFlags() const
-{
-    return interruptFlags;
-}
-
-void CentralProcessingUnit::setInterruptFlags(u8 value)
-{
-    interruptFlags = value;
-}
-
-void CentralProcessingUnit::handleInterrupts()
-{
-    
 }

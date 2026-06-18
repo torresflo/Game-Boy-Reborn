@@ -30,8 +30,8 @@ bool CentralProcessingUnit::handleInterrupt(InterruptType type, u16 address)
     if(MathUtils<u8>::getBitValue(interruptFlags, type)
         && MathUtils<u8>::getBitValue(interruptEnable, type))
     {
-        stackPush16(readRegister(RegisterType::PC));
-        writeRegister(RegisterType::PC, address);
+        stackPush16(registers.PC);
+        registers.PC = address;
         interruptFlags &= ~type;
         halted = false;
         interruptMasterEnabled = false;
