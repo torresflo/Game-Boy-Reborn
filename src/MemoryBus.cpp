@@ -72,8 +72,12 @@ u8 MemoryBus::read(u16 address) const
     {
         return readInterruptEnableRegister();
     }
+    else
+    {
+        return readHRAM(address);
+    }
 
-    return readHRAM(address);
+    return 0xFF;
 }
 
 u16 MemoryBus::read16(u16 address) const
@@ -151,26 +155,50 @@ void MemoryBus::write16(u16 address, u16 value)
 
 u8 MemoryBus::readWRAM(u16 address) const
 {
-    address -= 0xC000;
-    return WRAM[address];
+    u16 offset = address - 0xC000;
+    if(offset >= WRAM.size())
+    {
+        Log::print(LogLevel::Fatal, std::format("WRAM read out of range (0x{:4X}).", address));
+        exit(-1);
+    }
+
+    return WRAM[offset];
 }
 
 void MemoryBus::writeWRAM(u16 address, u8 value)
 {
-    address -= 0xC000;
-    WRAM[address] = value;
+    u16 offset = address - 0xC000;
+    if(offset >= WRAM.size())
+    {
+        Log::print(LogLevel::Fatal, std::format("WRAM write out of range (0x{:4X}).", address));
+        exit(-1);
+    }
+
+    WRAM[offset] = value;
 }
 
 u8 MemoryBus::readHRAM(u16 address) const
 {
-    address -= 0xFF80;
-    return HRAM[address];
+    u16 offset = address - 0xFF80;
+    if(offset >= HRAM.size())
+    {
+        Log::print(LogLevel::Fatal, std::format("HRAM read out of range (0x{:4X}).", address));
+        exit(-1);
+    }
+
+    return HRAM[offset];
 }
 
 void MemoryBus::writeHRAM(u16 address, u8 value)
 {
-    address -= 0xFF80;
-    HRAM[address] = value;
+    u16 offset = address - 0xFF80;
+    if(offset >= HRAM.size())
+    {
+        Log::print(LogLevel::Fatal, std::format("HRAM write out of range (0x{:4X}).", address));
+        exit(-1);
+    }
+
+    HRAM[offset] = value;
 }
 
 u8 MemoryBus::readInterruptEnableRegister() const

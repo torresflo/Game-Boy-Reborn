@@ -6,6 +6,10 @@ const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(Ins
     std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> arr{};
     arr[static_cast<size_t>(InstructionType::NONE)] = &CentralProcessingUnit::noneInstruction;
     arr[static_cast<size_t>(InstructionType::NOP)]  = &CentralProcessingUnit::nopInstruction;
+    arr[static_cast<size_t>(InstructionType::AND)]  = &CentralProcessingUnit::andInstruction;
+    arr[static_cast<size_t>(InstructionType::OR)]  = &CentralProcessingUnit::orInstruction;
+    arr[static_cast<size_t>(InstructionType::XOR)]  = &CentralProcessingUnit::xorInstruction;
+    arr[static_cast<size_t>(InstructionType::CP)]  = &CentralProcessingUnit::cpInstruction;
     arr[static_cast<size_t>(InstructionType::LD)]   = &CentralProcessingUnit::ldInstruction;
     arr[static_cast<size_t>(InstructionType::LDH)]  = &CentralProcessingUnit::ldhInstruction;
     arr[static_cast<size_t>(InstructionType::JP)]   = &CentralProcessingUnit::jpInstruction;
@@ -15,15 +19,15 @@ const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(Ins
     arr[static_cast<size_t>(InstructionType::RETI)] = &CentralProcessingUnit::retiInstruction;
     arr[static_cast<size_t>(InstructionType::RST)]  = &CentralProcessingUnit::rstInstruction;
     arr[static_cast<size_t>(InstructionType::INC)]  = &CentralProcessingUnit::incInstruction;
+    arr[static_cast<size_t>(InstructionType::DEC)]  = &CentralProcessingUnit::decInstruction;
     arr[static_cast<size_t>(InstructionType::ADD)]  = &CentralProcessingUnit::addInstruction;
     arr[static_cast<size_t>(InstructionType::ADC)]  = &CentralProcessingUnit::adcInstruction;
     arr[static_cast<size_t>(InstructionType::SUB)]  = &CentralProcessingUnit::subInstruction;
     arr[static_cast<size_t>(InstructionType::SBC)]  = &CentralProcessingUnit::sbcInstruction;
-    arr[static_cast<size_t>(InstructionType::DEC)]  = &CentralProcessingUnit::decInstruction;
-    arr[static_cast<size_t>(InstructionType::DI)]   = &CentralProcessingUnit::diInstruction;
-    arr[static_cast<size_t>(InstructionType::POP)]  = &CentralProcessingUnit::popInstruction;
     arr[static_cast<size_t>(InstructionType::PUSH)] = &CentralProcessingUnit::pushInstruction;
-    arr[static_cast<size_t>(InstructionType::XOR)]  = &CentralProcessingUnit::xorInstruction;
+    arr[static_cast<size_t>(InstructionType::POP)]  = &CentralProcessingUnit::popInstruction;
+    arr[static_cast<size_t>(InstructionType::DI)]   = &CentralProcessingUnit::diInstruction;
+    arr[static_cast<size_t>(InstructionType::CB)]   = &CentralProcessingUnit::cbInstruction;
     return arr;
 }();
 
@@ -35,6 +39,38 @@ void CentralProcessingUnit::noneInstruction()
 
 void CentralProcessingUnit::nopInstruction()
 {
+}
+
+void CentralProcessingUnit::andInstruction()
+{
+    u16 value = readRegister(RegisterType::A);
+    value &= fetchedData;
+    writeRegister(RegisterType::A, value);
+    setFlagValues(registers.A == 0, 0, 1, 0);
+}
+
+void CentralProcessingUnit::orInstruction()
+{
+    u16 value = readRegister(RegisterType::A);
+    value |= fetchedData;
+    writeRegister(RegisterType::A, value);
+    setFlagValues(registers.A == 0, 0, 0, 0);
+}
+
+void CentralProcessingUnit::xorInstruction()
+{
+    u16 value = readRegister(RegisterType::A);
+    value ^= (fetchedData & 0xFF);
+    writeRegister(RegisterType::A, value);
+    setFlagValues(registers.A == 0, 0, 0, 0);
+}
+
+void CentralProcessingUnit::cpInstruction()
+{
+    s32 registerA = static_cast<s32>(readRegister(RegisterType::A));
+    s32 data = static_cast<s32>(fetchedData);
+    s32 value = registerA - data;
+    setFlagValues(value == 0, 1, (registerA & 0x0F) - (data & 0x0F) < 0, value < 0);
 }
 
 void CentralProcessingUnit::ldInstruction()
@@ -279,12 +315,6 @@ void CentralProcessingUnit::sbcInstruction()
 void CentralProcessingUnit::diInstruction()
 {
     interruptMasterEnabled = false;
-}
-
-void CentralProcessingUnit::xorInstruction()
-{
-    registers.A ^= (fetchedData & 0xFF);
-    setFlagValues(registers.A == 0, 0, 0, 0);
 }
 
 void CentralProcessingUnit::gotoAddress(u16 address, bool pushPC)

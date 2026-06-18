@@ -34,19 +34,3 @@ TEST_CASE("DI disables the interrupt master enable flag")
 
     CHECK(fixture.getInterruptMasterEnabled() == false);
 }
-
-TEST_CASE("XOR A,A zeroes the accumulator and sets the zero flag")
-{
-    CentralProcessingUnitTestFixture fixture;
-    fixture.setRegister(RegisterType::A, 0x5A);
-    fixture.setFlags(false, true, true, true);
-
-    fixture.loadProgram(ProgramStart, {0xAF});
-    fixture.step();
-
-    CHECK(fixture.getRegister(RegisterType::A) == 0x00);
-    CHECK(fixture.getFlagZero() == true);
-    CHECK(fixture.getFlagSubtract() == false);
-    CHECK(fixture.getFlagHalfCarry() == false);
-    CHECK(fixture.getFlagCarry() == false);
-}

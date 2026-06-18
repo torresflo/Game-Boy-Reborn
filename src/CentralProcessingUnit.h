@@ -44,6 +44,10 @@ private:
 
     void noneInstruction();
     void nopInstruction();
+    void andInstruction();
+    void orInstruction();
+    void xorInstruction();
+    void cpInstruction();
     void ldInstruction();
     void ldhInstruction();
     void jpInstruction();
@@ -61,7 +65,10 @@ private:
     void subInstruction();
     void sbcInstruction();
     void diInstruction();
-    void xorInstruction();
+    void cbInstruction();
+
+    u8 readRegisterForCBInstruction(RegisterType type) const;
+    void writeRegisterForCBInstruction(RegisterType type, u8 value);
 
     void gotoAddress(u16 address, bool pushPC);
     bool checkCondition() const;
@@ -78,6 +85,7 @@ private:
     u16 stackPop16();
 
     bool is16BitsRegister(RegisterType type) const;
+
 
     Registers registers;
     u16 fetchedData;
