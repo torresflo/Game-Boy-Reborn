@@ -29,12 +29,10 @@ void CentralProcessingUnit::step()
 
         if(Log::isEnabled(LogLevel::Debug))
         {
-            Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<6s} ({:02X} {:02X} {:02X}) A: {:02X} F: {:c}{:c}{:c}{:c} BC: {:02X}{:02X} DE: {:02X}{:02X} HL: {:02X}{:02X}",
-                cycles, pc, toString(currentInstruction.type), currentOPCode,
+            Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<20s} ({:02X} {:02X} {:02X}) {}",
+                cycles, pc, getInstructionString(), currentOPCode,
                 memoryBus->read(pc + 1), memoryBus->read(pc + 2),
-                registers.A,
-                flagZ() ? 'Z' : '-', flagN() ? 'N' : '-', flagH() ? 'H' : '-', flagC() ? 'C' : '-',
-                registers.B, registers.C, registers.D, registers.E, registers.H, registers.L));
+                getRegistersString()));
         }
 
         execute();

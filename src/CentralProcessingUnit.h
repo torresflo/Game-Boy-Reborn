@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "Common.h"
 #include "CentralProcessingUnitTypes.h"
 #include "InstructionDefinitions.h"
@@ -24,6 +26,13 @@ private:
     u16 reverse(u16 value) const;
 
     void emulateCycles(u8 cycleCount);
+
+    // Debug logging
+    std::string getFlagsString() const;
+    std::string getRegistersString() const;
+    std::string getInstructionString() const;
+    std::string getInstructionOperandsString() const;
+    std::string getCBInstructionString() const;
 
     // CPU Instructions
     using InstructionFunc = void (CentralProcessingUnit::*)();
