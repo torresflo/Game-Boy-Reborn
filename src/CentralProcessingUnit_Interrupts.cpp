@@ -1,15 +1,13 @@
 #include "CentralProcessingUnit.h"
 
-#include <MathUtils.h>
+#include "MemoryBus.h"
+#include "MathUtils.h"
 
-u8 CentralProcessingUnit::getInterruptFlags() const
+void CentralProcessingUnit::requestInterrupt(InterruptType type)
 {
-    return interruptFlags;
-}
-
-void CentralProcessingUnit::setInterruptFlags(u8 value)
-{
-    interruptFlags = value;
+    u8 interruptFlags = memoryBus->readInterruptFlags();
+    MathUtils<u8>::setBitValue(interruptFlags, type, true);
+    memoryBus->writeInterruptFlags(interruptFlags);
 }
 
 void CentralProcessingUnit::handleInterrupts()
@@ -27,21 +25,19 @@ void CentralProcessingUnit::handleInterrupts()
 
 bool CentralProcessingUnit::handleInterrupt(InterruptType type, u16 address)
 {
+    u8 interruptFlags = memoryBus->readInterruptFlags();
+
     if(MathUtils<u8>::getBitValue(interruptFlags, type)
-        && MathUtils<u8>::getBitValue(interruptEnable, type))
+        && MathUtils<u8>::getBitValue(memoryBus->readInterruptEnableRegister(), type))
     {
         stackPush16(registers.PC);
         registers.PC = address;
-        interruptFlags &= ~type;
+        MathUtils<u8>::setBitValue(interruptFlags, type, false);
+        memoryBus->writeInterruptFlags(interruptFlags);
         halted = false;
         interruptMasterEnabled = false;
         return true;
     }
 
     return false;
-}
-
-void CentralProcessingUnit::requestInterrupt([[maybe_unused]] InterruptType type)
-{
-
 }

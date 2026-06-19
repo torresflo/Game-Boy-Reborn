@@ -36,6 +36,9 @@ inline void Log::print(LogLevel level, Args &&...args)
         (std::cout << ... << args);
         std::cout << std::endl;
     }
+
+    if(level == LogLevel::Fatal)
+        exit(-1);
 }
 
 #define UNUSED(x) (void)(x);

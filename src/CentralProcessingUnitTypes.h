@@ -23,11 +23,12 @@ struct Registers
     }
 };
 
+// Bit positions within the IF/IE registers, for use with getBitValue/setBitValue.
 enum InterruptType
 {
-    VBlank = 1,
-    LCD = 2,
-    Timer = 4,
-    Serial = 8,
-    Joypad = 16
+    VBlank = 0,
+    LCD = 1,
+    Timer = 2,
+    Serial = 3,
+    Joypad = 4
 };

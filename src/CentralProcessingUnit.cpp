@@ -2,16 +2,37 @@
 
 #include <format>
 
+#include "MemoryBus.h"
+
 void CentralProcessingUnit::initialize(MemoryBus* bus)
 {
     memoryBus = bus;
 
-    registers = {0};
     registers.PC = 0x100;
+    registers.SP = 0xFFFE;
     registers.A = 0x01;
+    registers.F = 0xB0;
+    registers.B = 0x00;
+    registers.C = 0x13;
+    registers.D = 0x00;
+    registers.E = 0xD8;
+    registers.H = 0x01;
+    registers.L = 0x4D;
+    interruptMasterEnabled = false;
+    enablingInterruptMaster = false;
 }
 
 void CentralProcessingUnit::step()
+{
+    executeNextInstruction();
+
+    if(interruptMasterEnabled)
+    {
+        handleInterrupts();
+    }
+}
+
+void CentralProcessingUnit::executeNextInstruction()
 {
     if(enablingInterruptMaster)
     {
@@ -29,10 +50,13 @@ void CentralProcessingUnit::step()
 
         if(Log::isEnabled(LogLevel::Debug))
         {
-            Log::print(LogLevel::Debug, std::format("[{:08d}] {:04X} -> {:<20s} ({:02X} {:02X} {:02X}) {}",
+            Log::print(LogLevel::Debug, std::format("[{:08X}] {:04X} -> {:<20s} ({:02X} {:02X} {:02X}) {}",
                 cycles, pc, getInstructionString(), currentOPCode,
                 memoryBus->read(pc + 1), memoryBus->read(pc + 2),
                 getRegistersString()));
+
+            debugUpdateWithSerial();
+            debugPrintFromSerial();
         }
 
         execute();
@@ -41,13 +65,8 @@ void CentralProcessingUnit::step()
     {
         emulateCycles(1);
 
-        if(interruptFlags != 0)
+        if(memoryBus->readInterruptFlags() != 0)
             halted = false;
-    }
-
-    if(interruptMasterEnabled)
-    {
-        handleInterrupts();
     }
 }
 
@@ -177,7 +196,13 @@ u16 CentralProcessingUnit::reverse(u16 value) const
 
 void CentralProcessingUnit::emulateCycles(u8 cycleCount)
 {
-    cycles += cycleCount;
+    u32 nbOfTicks = cycleCount * 4;
+
+    cycles += nbOfTicks;
+    for(u32 i = 0; i < nbOfTicks; ++i)
+    {
+        memoryBus->tickTimer();
+    }
 }
 
 CentralProcessingUnit::InstructionFunc CentralProcessingUnit::getInstructionFunc(InstructionType type)

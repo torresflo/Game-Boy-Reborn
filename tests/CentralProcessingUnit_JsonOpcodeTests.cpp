@@ -122,7 +122,7 @@ namespace
             loadInitialState(fixture, testCase.at("initial"));
 
             fixture.resetBusLog();
-            fixture.step();
+            fixture.executeInstruction();
 
             // Snapshot before checkFinalState(), since its readMemory() calls
             // would otherwise also be recorded into the same bus access log.

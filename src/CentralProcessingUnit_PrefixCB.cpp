@@ -1,8 +1,10 @@
 #include "CentralProcessingUnit.h"
-#include "MathUtils.h"
 
 #include <format>
 #include <array>
+
+#include "MemoryBus.h"
+#include "MathUtils.h"
 
 static const std::array<RegisterType, 8> CBRegisterLookupTable =
 {

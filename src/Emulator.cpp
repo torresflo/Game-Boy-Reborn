@@ -10,7 +10,7 @@ void Emulator::run(std::string path)
 
     Log::print(LogLevel::Info, "ROM loaded successfully");
 
-    bus.setCartridge(&cartridge);
+    bus.initialize(&cartridge, &CPU);
     CPU.initialize(&bus);
 
     running = true;

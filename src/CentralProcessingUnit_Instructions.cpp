@@ -1,5 +1,6 @@
 #include "CentralProcessingUnit.h"
 
+#include "MemoryBus.h"
 #include "MathUtils.h"
 
 const std::array<CentralProcessingUnit::InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> CentralProcessingUnit::InstructionFuncs = []() {

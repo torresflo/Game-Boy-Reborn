@@ -35,6 +35,32 @@ public:
         accesses.push_back({address, value, true});
     }
 
+    // CPU interrupt dispatch polls IE/IF every step() regardless of opcode,
+    // which isn't modeled in the SM83 test vectors' cycle logs. Overriding
+    // these without logging keeps that polling out of the recorded trace,
+    // while genuine instruction-driven accesses to those same addresses
+    // (e.g. an operand byte that happens to land on 0xFF0F) still go through
+    // read()/write() above and get logged normally.
+    u8 readInterruptEnableRegister() const override
+    {
+        return memory[0xFFFF];
+    }
+
+    void writeInterruptEnableRegister(u8 value) override
+    {
+        memory[0xFFFF] = value;
+    }
+
+    u8 readInterruptFlags() const override
+    {
+        return memory[0xFF0F];
+    }
+
+    void writeInterruptFlags(u8 value) override
+    {
+        memory[0xFF0F] = value;
+    }
+
     void resetLog()
     {
         accesses.clear();

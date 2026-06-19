@@ -5,7 +5,8 @@
 #include "Common.h"
 #include "CentralProcessingUnitTypes.h"
 #include "InstructionDefinitions.h"
-#include "MemoryBus.h"
+
+class MemoryBus;
 
 class CentralProcessingUnit
 {
@@ -13,7 +14,10 @@ public:
     void initialize(MemoryBus* bus);
     void step();
 
+    void requestInterrupt(InterruptType type);
+
 private:
+    void executeNextInstruction();
     void fetchInstruction();
     void fetchData();
     void execute();
@@ -26,13 +30,6 @@ private:
     u16 reverse(u16 value) const;
 
     void emulateCycles(u8 cycleCount);
-
-    // Debug logging
-    std::string getFlagsString() const;
-    std::string getRegistersString() const;
-    std::string getInstructionString() const;
-    std::string getInstructionOperandsString() const;
-    std::string getCBInstructionString() const;
 
     // CPU Instructions
     using InstructionFunc = void (CentralProcessingUnit::*)();
@@ -86,11 +83,8 @@ private:
     bool flagC() const;
     void setFlagValues(s8 zFlag, s8 nFlag, s8 hFlag, s8 cFlag);
 
-    u8 getInterruptFlags() const;
-    void setInterruptFlags(u8 value);
     void handleInterrupts();
     bool handleInterrupt(InterruptType type, u16 address);
-    void requestInterrupt(InterruptType type);
 
     void stackPush(u8 data);
     void stackPush16(u16 data);
@@ -98,6 +92,16 @@ private:
     u16 stackPop16();
 
     bool is16BitsRegister(RegisterType type) const;
+
+    // Debug
+    std::string getFlagsString() const;
+    std::string getRegistersString() const;
+    std::string getInstructionString() const;
+    std::string getInstructionOperandsString() const;
+    std::string getCBInstructionString() const;
+    void debugUpdateWithSerial();
+    void debugPrintFromSerial();
+    std::string debugMessage;
 
     Registers registers;
     u16 fetchedData;
@@ -108,9 +112,6 @@ private:
     
     bool interruptMasterEnabled = false;
     bool enablingInterruptMaster = false;
-
-    u8 interruptEnable = 0; //IE
-    u8 interruptFlags = 0; //IF
 
     bool halted = false;
     bool stepping = false;

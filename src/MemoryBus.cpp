@@ -18,6 +18,15 @@
 // 0xFF00 - 0xFF7F : I/O Registers
 // 0xFF80 - 0xFFFE : Zero Page / HRAM
 
+void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr)
+{
+    cartridge = cartridgePtr;
+    timer.initialize(cpuPtr);
+
+    interruptEnableRegister = 0;
+    interruptFlags = 0;
+}
+
 u8 MemoryBus::read(u16 address) const
 {
     if(address < 0x8000)
@@ -66,7 +75,7 @@ u8 MemoryBus::read(u16 address) const
     else if(address < 0xFF80)
     {
         //IO Registers
-        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+        return readIO(address);
     }
     else if(address == 0xFFFF)
     {
@@ -77,7 +86,7 @@ u8 MemoryBus::read(u16 address) const
         return readHRAM(address);
     }
 
-    return 0xFF;
+    return 0;
 }
 
 u16 MemoryBus::read16(u16 address) const
@@ -134,7 +143,7 @@ void MemoryBus::write(u16 address, u8 value)
     else if(address < 0xFF80)
     {
         //IO Registers
-        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+        writeIO(address, value);
     }
     else if(address == 0xFFFF)
     {
@@ -203,15 +212,67 @@ void MemoryBus::writeHRAM(u16 address, u8 value)
 
 u8 MemoryBus::readInterruptEnableRegister() const
 {
-    return InterruptEnableRegister;
+    return interruptEnableRegister;
 }
 
 void MemoryBus::writeInterruptEnableRegister(u8 value)
 {
-    InterruptEnableRegister = value;
+    interruptEnableRegister = value;
 }
 
-void MemoryBus::setCartridge(Cartridge* cartridgePtr)
+u8 MemoryBus::readInterruptFlags() const
 {
-    cartridge = cartridgePtr;
+    return interruptFlags;
+}
+
+void MemoryBus::writeInterruptFlags(u8 value)
+{
+    interruptFlags = value;
+}
+
+void MemoryBus::tickTimer()
+{
+    timer.tick();
+}
+
+u8 MemoryBus::readIO(u16 address) const
+{
+    if(address == 0xFF01)
+        return serialData[0];
+
+    if(address == 0xFF02)
+        return serialData[1];
+
+    if(address >= 0xFF04 && address <= 0xFF07)
+        return timer.readTimer(address);
+
+    if(address == 0xFF0F)
+        return readInterruptFlags();
+
+    Log::print(LogLevel::Error, std::format("Unsupported IO reading (0x{:4X}).", address));
+    return 0;
+}
+
+void MemoryBus::writeIO(u16 address, u8 value)
+{
+    if(address == 0xFF01)
+    {
+        serialData[0] = value;
+    }
+    else if(address == 0xFF02)
+    {
+        serialData[1] = value;
+    }
+    else if(address >= 0xFF04 && address <= 0xFF07)
+    {
+        timer.writeTimer(address, value);
+    }
+    else if(address == 0xFF0F)
+    {
+        writeInterruptFlags(value);
+    }
+    else
+    {
+        Log::print(LogLevel::Error, std::format("Unsupported IO writing (0x{:4X}).", address));
+    }
 }

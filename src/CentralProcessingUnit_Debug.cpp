@@ -1,5 +1,8 @@
 #include "CentralProcessingUnit.h"
 
+#include "MemoryBus.h"
+#include "DebugHelpers.h"
+
 #include <array>
 #include <format>
 
@@ -160,5 +163,23 @@ std::string CentralProcessingUnit::getCBInstructionString() const
             return std::format("SET {}, {}", bitPosition, registerString);
         default: //Rotate/shift group
             return std::format("{} {}", toString(CBShiftInstructionLookupTable[bitPosition]), registerString);
+    }
+}
+
+void CentralProcessingUnit::debugUpdateWithSerial()
+{
+    if(memoryBus->read(0xFF02) == 0x81)
+    {
+        char c = memoryBus->read(0xFF01);
+        debugMessage += c;
+        memoryBus->write(0xFF02, 0);
+    }
+}
+
+void CentralProcessingUnit::debugPrintFromSerial()
+{
+    if(!debugMessage.empty())
+    {
+        Log::print(LogLevel::Debug, debugMessage);
     }
 }

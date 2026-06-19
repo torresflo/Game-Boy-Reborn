@@ -1,5 +1,7 @@
 #include "CentralProcessingUnit.h"
 
+#include "MemoryBus.h"
+
 void CentralProcessingUnit::fetchData()
 {
     memoryDestination = 0;

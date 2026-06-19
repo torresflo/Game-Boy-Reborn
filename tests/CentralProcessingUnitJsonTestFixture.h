@@ -39,7 +39,7 @@ public:
 
     void setInterruptEnableRegister(u8 value)
     {
-        cpu.interruptEnable = value;
+        memoryBus.write(0xFFFF, value);
     }
 
     u8 readMemory(u16 address) const
@@ -70,6 +70,14 @@ public:
     void step()
     {
         cpu.step();
+    }
+
+    // Fetches and executes one instruction only, skipping the trailing
+    // interrupt dispatch that step() performs. Matches the SM83 JSON test
+    // vectors' notion of a "step", which never folds interrupt dispatch in.
+    void executeInstruction()
+    {
+        cpu.executeNextInstruction();
     }
 
 private:
