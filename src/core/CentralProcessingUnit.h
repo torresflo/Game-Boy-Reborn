@@ -16,6 +16,16 @@ public:
 
     void requestInterrupt(InterruptType type);
 
+    const Registers& getRegisters() const;
+    bool isInterruptMasterEnabled() const;
+    bool isHalted() const;
+    u64 getCycleCount() const;
+
+    bool flagZ() const;
+    bool flagN() const;
+    bool flagH() const;
+    bool flagC() const;
+
 private:
     void executeNextInstruction();
     void fetchInstruction();
@@ -78,10 +88,6 @@ private:
     void gotoAddress(u16 address, bool pushPC);
     bool checkCondition() const;
 
-    bool flagZ() const;
-    bool flagN() const;
-    bool flagH() const;
-    bool flagC() const;
     void setFlagValues(s8 zFlag, s8 nFlag, s8 hFlag, s8 cFlag);
 
     void handleInterrupts();

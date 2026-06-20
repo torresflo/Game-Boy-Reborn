@@ -1,32 +1,12 @@
-#include <SFML/Graphics.hpp>
-
 #include "Common.h"
-#include "Emulator.h"
+#include "Application.h"
 
 int main()
 {
-    Log::setLevel(LogLevel::All);
+    Log::setLevel(LogLevel::Info);
 
-    Emulator emulator;
-    emulator.run("../../roms/cpu_instrs.gb");
-
-    // sf::RenderWindow window(sf::VideoMode(200, 200), "SFML works!");
-    // sf::CircleShape shape(100.f);
-    // shape.setFillColor(sf::Color::Green);
-
-    // while (window.isOpen())
-    // {
-    //     sf::Event event;
-    //     while (window.pollEvent(event))
-    //     {
-    //         if (event.type == sf::Event::Closed)
-    //             window.close();
-    //     }
-
-    //     window.clear();
-    //     window.draw(shape);
-    //     window.display();
-    // }
+    Application application;
+    application.run();
 
     return 0;
 }

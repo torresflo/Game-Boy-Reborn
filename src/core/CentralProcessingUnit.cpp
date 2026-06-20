@@ -32,6 +32,26 @@ void CentralProcessingUnit::step()
     }
 }
 
+const Registers& CentralProcessingUnit::getRegisters() const
+{
+    return registers;
+}
+
+bool CentralProcessingUnit::isInterruptMasterEnabled() const
+{
+    return interruptMasterEnabled;
+}
+
+bool CentralProcessingUnit::isHalted() const
+{
+    return halted;
+}
+
+u64 CentralProcessingUnit::getCycleCount() const
+{
+    return cycles;
+}
+
 void CentralProcessingUnit::executeNextInstruction()
 {
     if(enablingInterruptMaster)

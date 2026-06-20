@@ -7,8 +7,8 @@
 // 0x0000 - 0x3FFF : ROM Bank 0
 // 0x4000 - 0x7FFF : ROM Bank 1 - Switchable
 // 0x8000 - 0x97FF : CHR RAM
-// 0x9800 - 0x9BFF : BG Map 1
-// 0x9C00 - 0x9FFF : BG Map 2
+// 0x9800 - 0x9BFF : BG Map 1 (VRAM)
+// 0x9C00 - 0x9FFF : BG Map 2 (VRAM)
 // 0xA000 - 0xBFFF : Cartridge RAM
 // 0xC000 - 0xCFFF : RAM Bank 0
 // 0xD000 - 0xDFFF : RAM Bank 1-7 - switchable - Color only
@@ -40,8 +40,8 @@ u8 MemoryBus::read(u16 address) const
     }
     else if(address < 0xA000)
     {
-        //Char/Map Data
-        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+        //VRAM
+        return readVRAM(address);
     }
     else if(address < 0xC000)
     {
@@ -65,7 +65,7 @@ u8 MemoryBus::read(u16 address) const
     else if(address < 0xFEA0)
     {
         //OAM
-        Log::print(LogLevel::Error, std::format("Unsupported bus reading (0x{:4X}).", address));
+        return readOAM(address);
     }
     else if(address < 0xFF00)
     {
@@ -109,8 +109,8 @@ void MemoryBus::write(u16 address, u8 value)
     }
     else if(address < 0xA000)
     {
-        //Char/Map Data
-        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+        //VRAM
+        writeVRAM(address, value);
     }
     else if(address < 0xC000)
     {
@@ -133,7 +133,7 @@ void MemoryBus::write(u16 address, u8 value)
     else if(address < 0xFEA0)
     {
         //OAM
-        Log::print(LogLevel::Error, std::format("Unsupported bus writing (0x{:4X}).", address));
+        writeOAM(address, value);
     }
     else if(address < 0xFF00)
     {
@@ -160,6 +160,22 @@ void MemoryBus::write16(u16 address, u16 value)
 {
     write(address, value & 0xFF);
     write(address + 1, (value >> 8) & 0xFF);
+}
+
+ObjectAttributeMemoryEntry MemoryBus::readObject(u16 address) const
+{
+    if(address >= 0xFE00)
+        address -= 0xFE00;
+
+    return OAM[address];
+}
+
+void MemoryBus::writeObject(u16 address, ObjectAttributeMemoryEntry object)
+{
+    if(address >= 0xFE00)
+        address -= 0xFE00;
+    
+    OAM[address] = object;
 }
 
 u8 MemoryBus::readWRAM(u16 address) const
@@ -208,6 +224,40 @@ void MemoryBus::writeHRAM(u16 address, u8 value)
     }
 
     HRAM[offset] = value;
+}
+
+u8 MemoryBus::readOAM(u16 address) const
+{
+    if(address >= 0xFE00)
+        address -= 0xFE00;
+
+    const u8* ptr = reinterpret_cast<const u8*>(OAM.data());
+    return ptr[address];
+}
+
+void MemoryBus::writeOAM(u16 address, u8 value)
+{
+    if(address >= 0xFE00)
+        address -= 0xFE00;
+
+    u8* ptr = reinterpret_cast<u8*>(OAM.data());
+    ptr[address] = value;
+}
+
+u8 MemoryBus::readVRAM(u16 address) const
+{
+    if(address >= 0x8000)
+        address -= 0x8000;
+
+    return VRAM[address];
+}
+
+void MemoryBus::writeVRAM(u16 address, u8 value)
+{
+    if(address >= 0x8000)
+        address -= 0x8000;
+
+    VRAM[address] = value;
 }
 
 u8 MemoryBus::readInterruptEnableRegister() const

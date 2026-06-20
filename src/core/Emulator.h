@@ -15,16 +15,22 @@
 class Emulator
 {
 public:
-    void run(std::string path);
+    bool loadROM(std::string path);
+    void stepOneFrame();
+
+    bool isROMLoaded() const;
+    bool isPaused() const;
+    void setPaused(bool value);
+
+    const CentralProcessingUnit& getCPU() const;
+    const PixelProcessingUnit& getPPU() const;
 
 private:
-    void delay(u32 ms);
-
     Cartridge cartridge;
     CentralProcessingUnit CPU;
     MemoryBus bus;
     PixelProcessingUnit PPU;
 
+    bool romLoaded = false;
     bool paused = false;
-    bool running = false;
 };

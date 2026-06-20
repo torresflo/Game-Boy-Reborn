@@ -11,38 +11,86 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Select build system and set compile options
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/BuildSetting.cmake)
 
-file (GLOB_RECURSE PROJECT_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
-file (GLOB_RECURSE PROJECT_HEADERS CONFIGURE_DEPENDS "src/*.h")
-
-set(CORE_SOURCES ${PROJECT_SOURCES})
-list(REMOVE_ITEM CORE_SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/src/main.cpp")
+file (GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS "src/core/*.cpp")
+file (GLOB_RECURSE CORE_HEADERS CONFIGURE_DEPENDS "src/core/*.h")
 
 # Core emulator code, shared by the executable and the test suite
 add_library(GameBoyCore STATIC ${CORE_SOURCES})
-target_include_directories(GameBoyCore PUBLIC "src")
+target_include_directories(GameBoyCore PUBLIC "src/core")
 target_compile_features(GameBoyCore PUBLIC cxx_std_20)
 
-# Create executable file
-add_executable(${ProjectName} "src/main.cpp")
-target_link_libraries(${ProjectName} PRIVATE GameBoyCore)
-
-# Fetch SFML and build it as a static library alongside the project
 include(FetchContent)
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
 
+# SFML: windowing, input, audio and pixel blit for the UI layer. The Network
+# module (and its libssh2/mbedtls dependencies, unused by this emulator) is
+# disabled - it doesn't build cleanly under this project's /W4 /WX.
+set(SFML_BUILD_NETWORK OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 2.6.1
+    GIT_TAG 3.1.0
     GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(SFML)
 
-target_link_libraries(${ProjectName} PUBLIC sfml-system sfml-window sfml-graphics sfml-audio)
+# Dear ImGui has no CMake support upstream; just fetch its sources and point
+# imgui-sfml at them via IMGUI_DIR (it compiles them into its own target).
+FetchContent_Declare(
+    imgui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.91.9b
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(imgui)
+set(IMGUI_DIR ${imgui_SOURCE_DIR} CACHE PATH "" FORCE)
 
+# imgui-sfml: SFML 3 renderer/platform backend for Dear ImGui. Reuse the SFML
+# targets already fetched above instead of calling find_package(SFML).
+set(IMGUI_SFML_FIND_SFML OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+    imgui-sfml
+    GIT_REPOSITORY https://github.com/SFML/imgui-sfml.git
+    GIT_TAG v3.0
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(imgui-sfml)
+if(MSVC)
+    # imgui-sfml's touch handling still calls SFML's deprecated sf::Touch API;
+    # harmless, but this project's /WX turns the deprecation warning into an error.
+    target_compile_options(ImGui-SFML PRIVATE /wd4996)
+endif()
+
+# ImGuiFileDialog: ROM file picker rendered as a Dear ImGui window.
+FetchContent_Declare(
+    ImGuiFileDialog
+    GIT_REPOSITORY https://github.com/aiekick/ImGuiFileDialog.git
+    GIT_TAG v0.6.8
+    GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(ImGuiFileDialog)
+target_link_libraries(ImGuiFileDialog PUBLIC ImGui-SFML)
+if(MSVC)
+    # Vendored code triggers a harmless int->char narrowing warning under this project's /WX.
+    target_compile_options(ImGuiFileDialog PRIVATE /wd4244)
+endif()
+
+# UI layer: SFML window + Dear ImGui widgets. Kept separate from GameBoyCore
+# so emulation logic and the test executable stay free of windowing deps.
+file (GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS "src/ui/*.cpp")
+file (GLOB_RECURSE UI_HEADERS CONFIGURE_DEPENDS "src/ui/*.h")
+
+add_library(GameBoyUI STATIC ${UI_SOURCES})
+target_include_directories(GameBoyUI PUBLIC "src/ui")
+target_link_libraries(GameBoyUI PUBLIC GameBoyCore ImGui-SFML ImGuiFileDialog SFML::Audio)
+target_compile_features(GameBoyUI PUBLIC cxx_std_20)
+
+# Create executable file
+add_executable(${ProjectName} "src/main.cpp")
+target_link_libraries(${ProjectName} PRIVATE GameBoyUI)
 target_compile_features(${ProjectName} PUBLIC cxx_std_20)
 
-message(STATUS "Sources: ${PROJECT_SOURCES}")
+message(STATUS "Sources: ${CORE_SOURCES}")
 
 enable_testing()
 add_subdirectory(tests)
