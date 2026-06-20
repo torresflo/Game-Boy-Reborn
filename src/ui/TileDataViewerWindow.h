@@ -21,7 +21,7 @@ private:
     static constexpr u32 TileSpacing = 1;
     static constexpr u32 ImageWidth = PixelProcessingUnit::TileSize * PixelProcessingUnit::TileColumns + TileSpacing * (PixelProcessingUnit::TileColumns - 1);
     static constexpr u32 ImageHeight = PixelProcessingUnit::TileSize * PixelProcessingUnit::TileRows + TileSpacing * (PixelProcessingUnit::TileRows - 1);
-    static constexpr float PixelScale = 3.f;
+    static constexpr float PixelScale = 2.f;
 
     static constexpr u32 WindowWidth = static_cast<u32>(ImageWidth * PixelScale);
     static constexpr u32 WindowHeight = static_cast<u32>(ImageHeight * PixelScale);
