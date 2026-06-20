@@ -22,6 +22,7 @@ public:
     bool isPaused() const;
     void setPaused(bool value);
 
+    const Cartridge& getCartridge() const;
     const CentralProcessingUnit& getCPU() const;
     const PixelProcessingUnit& getPPU() const;
 

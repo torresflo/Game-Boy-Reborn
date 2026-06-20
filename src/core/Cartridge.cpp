@@ -147,7 +147,12 @@ bool Cartridge::loadROM(std::string path)
     return true;
 }
 
-std::string Cartridge::getRomTypeName(u8 type)
+const CartridgeHeader& Cartridge::getHeader() const
+{
+    return header;
+}
+
+std::string Cartridge::getRomTypeName(u8 type) const
 {
     if(type < RomTypes.size())
         return RomTypes[type];
@@ -155,7 +160,7 @@ std::string Cartridge::getRomTypeName(u8 type)
     return std::string("Unknown type: ") + std::to_string(type);
 }
 
-std::string Cartridge::getLicenceName(u8 code)
+std::string Cartridge::getLicenceName(u8 code) const
 {
     if(LicenceCodes.find(code) != LicenceCodes.end())
         return LicenceCodes.at(code);
@@ -163,7 +168,7 @@ std::string Cartridge::getLicenceName(u8 code)
     return std::string("Unknown licence: ") + std::to_string(code);
 }
 
-bool Cartridge::checkHeaderChecksum()
+bool Cartridge::checkHeaderChecksum() const
 {
     u16 checksum = 0;
     for(u16 i = 0x0134; i <= 0x014C; i++)

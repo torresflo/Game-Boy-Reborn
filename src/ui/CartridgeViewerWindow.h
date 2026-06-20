@@ -4,22 +4,22 @@
 
 #include <SFML/Graphics.hpp>
 
-class CentralProcessingUnit;
+class Cartridge;
 
-class RegisterViewerWindow
+class CartridgeViewerWindow
 {
 public:
     bool isOpen() const;
     void setOpen(bool open);
 
-    void update(const CentralProcessingUnit& cpu);
+    void update(const Cartridge& cartridge);
 
 private:
     void createWindow();
     void closeWindow();
 
-    static constexpr unsigned int WindowWidth = 280;
-    static constexpr unsigned int WindowHeight = 340;
+    static constexpr unsigned int WindowWidth = 320;
+    static constexpr unsigned int WindowHeight = 280;
 
     std::optional<sf::RenderWindow> window;
     sf::Clock deltaClock;

@@ -29,11 +29,12 @@ class Cartridge
 public:
     bool loadROM(std::string path);
 
-private:
-    std::string getRomTypeName(u8 type);
-    std::string getLicenceName(u8 code);
-    bool checkHeaderChecksum();
+    const CartridgeHeader& getHeader() const;
+    std::string getRomTypeName(u8 type) const;
+    std::string getLicenceName(u8 code) const;
+    bool checkHeaderChecksum() const;
 
+private:
     u8 read(u16 address) const;
     void write(u16 address, u8 value);
 

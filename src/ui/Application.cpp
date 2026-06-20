@@ -60,15 +60,12 @@ void Application::update()
         emulator.stepOneFrame();
 
     drawMenuBar();
-    romFileDialog.draw(emulator);
-    registerViewerWindow.draw(emulator.getCPU(), registerViewerOpen);
 
-    if(!emulator.isROMLoaded())
-    {
-        ImGui::Begin("Game-Boy-Reborn");
-        ImGui::Text("No ROM loaded.");
-        ImGui::End();
-    }
+    // These manage their own dedicated SFML window and ImGui context, and must
+    // run last so they don't leave a non-main context active for the code above.
+    romFileDialog.update(emulator);
+    registerViewerWindow.update(emulator.getCPU());
+    cartridgeViewerWindow.update(emulator.getCartridge());
 }
 
 void Application::drawMenuBar()
@@ -78,14 +75,32 @@ void Application::drawMenuBar()
         if(ImGui::BeginMenu("File"))
         {
             if(ImGui::MenuItem("Open ROM..."))
+            {
+                emulator.setPaused(true);
                 romFileDialog.openDialog();
+            }
+
+            ImGui::EndMenu();
+        }
+
+        if(ImGui::BeginMenu("Emulation"))
+        {
+            bool paused = emulator.isPaused();
+            if(ImGui::MenuItem("Pause", nullptr, &paused, emulator.isROMLoaded()))
+                emulator.setPaused(paused);
 
             ImGui::EndMenu();
         }
 
         if(ImGui::BeginMenu("Debug"))
         {
-            ImGui::MenuItem("CPU Registers", nullptr, &registerViewerOpen);
+            bool registerViewerOpen = registerViewerWindow.isOpen();
+            if(ImGui::MenuItem("CPU Registers", nullptr, &registerViewerOpen))
+                registerViewerWindow.setOpen(registerViewerOpen);
+
+            bool cartridgeViewerOpen = cartridgeViewerWindow.isOpen();
+            if(ImGui::MenuItem("Cartridge Info", nullptr, &cartridgeViewerOpen))
+                cartridgeViewerWindow.setOpen(cartridgeViewerOpen);
 
             ImGui::EndMenu();
         }

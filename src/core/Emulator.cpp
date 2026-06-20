@@ -45,6 +45,11 @@ void Emulator::setPaused(bool value)
     paused = value;
 }
 
+const Cartridge& Emulator::getCartridge() const
+{
+    return cartridge;
+}
+
 const CentralProcessingUnit& Emulator::getCPU() const
 {
     return CPU;

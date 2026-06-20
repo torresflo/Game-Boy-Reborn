@@ -4,6 +4,7 @@
 
 #include "Emulator.h"
 
+#include "CartridgeViewerWindow.h"
 #include "RegisterViewerWindow.h"
 #include "RomFileDialog.h"
 
@@ -29,7 +30,7 @@ private:
     
     RomFileDialog romFileDialog;
     RegisterViewerWindow registerViewerWindow;
-    bool registerViewerOpen = false;
+    CartridgeViewerWindow cartridgeViewerWindow;
 
     sf::Clock deltaClock;
 };
