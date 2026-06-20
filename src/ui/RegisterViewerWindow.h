@@ -1,27 +1,16 @@
 #pragma once
 
-#include <optional>
+#include "ToolWindow.h"
 
-#include <SFML/Graphics.hpp>
-
-class CentralProcessingUnit;
-
-class RegisterViewerWindow
+class RegisterViewerWindow : public ToolWindow
 {
 public:
-    bool isOpen() const;
-    void setOpen(bool open);
+    RegisterViewerWindow();
 
-    void update(const CentralProcessingUnit& cpu);
+protected:
+    void drawContent(Emulator& emulator) override;
 
 private:
-    void createWindow();
-    void closeWindow();
-
     static constexpr unsigned int WindowWidth = 280;
     static constexpr unsigned int WindowHeight = 340;
-
-    std::optional<sf::RenderWindow> window;
-    sf::Clock deltaClock;
-    bool open = false;
 };

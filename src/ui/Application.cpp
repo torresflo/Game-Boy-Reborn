@@ -61,11 +61,9 @@ void Application::update()
 
     drawMenuBar();
 
-    // These manage their own dedicated SFML window and ImGui context, and must
-    // run last so they don't leave a non-main context active for the code above.
     romFileDialog.update(emulator);
-    registerViewerWindow.update(emulator.getCPU());
-    cartridgeViewerWindow.update(emulator.getCartridge());
+    registerViewerWindow.update(emulator);
+    cartridgeViewerWindow.update(emulator);
 }
 
 void Application::drawMenuBar()
@@ -77,7 +75,7 @@ void Application::drawMenuBar()
             if(ImGui::MenuItem("Open ROM..."))
             {
                 emulator.setPaused(true);
-                romFileDialog.openDialog();
+                romFileDialog.setOpen(true);
             }
 
             ImGui::EndMenu();

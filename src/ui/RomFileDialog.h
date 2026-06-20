@@ -1,26 +1,19 @@
 #pragma once
 
-#include <optional>
+#include "ToolWindow.h"
 
-#include <SFML/Graphics.hpp>
-
-class Emulator;
-
-class RomFileDialog
+class RomFileDialog : public ToolWindow
 {
 public:
-    void openDialog();
-    void update(Emulator& emulator);
+    RomFileDialog();
+
+protected:
+    void onOpenRequested() override;
+    void onClosed() override;
+    void drawContent(Emulator& emulator) override;
 
 private:
-    void ensureWindowCreated();
-
     static constexpr const char* DialogKey = "RomFileDialogKey";
     static constexpr unsigned int WindowWidth = 600;
     static constexpr unsigned int WindowHeight = 400;
-
-    std::optional<sf::RenderWindow> window;
-    sf::Clock deltaClock;
-    bool pendingOpen = false;
-    bool open = false;
 };

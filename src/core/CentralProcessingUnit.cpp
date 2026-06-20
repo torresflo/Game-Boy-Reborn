@@ -20,6 +20,8 @@ void CentralProcessingUnit::initialize(MemoryBus* bus)
     registers.L = 0x4D;
     interruptMasterEnabled = false;
     enablingInterruptMaster = false;
+
+    cycles = 0;
 }
 
 void CentralProcessingUnit::step()

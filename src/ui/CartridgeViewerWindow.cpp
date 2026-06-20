@@ -3,68 +3,22 @@
 #include <format>
 
 #include <imgui.h>
-#include <imgui-SFML.h>
 
 #include "Cartridge.h"
-#include "Common.h"
+#include "Emulator.h"
 
-bool CartridgeViewerWindow::isOpen() const
+CartridgeViewerWindow::CartridgeViewerWindow()
+    : ToolWindow("Cartridge Info", WindowWidth, WindowHeight)
 {
-    return open;
 }
 
-void CartridgeViewerWindow::setOpen(bool isOpenRequested)
+void CartridgeViewerWindow::drawContent(Emulator& emulator)
 {
-    // Deferred: actually creating/destroying the window touches the global current ImGui context (see update()),
-    // which would corrupt the main window's ImGui state if done here, mid-menu, while it is being drawn.
-    open = isOpenRequested;
-}
-
-void CartridgeViewerWindow::createWindow()
-{
-    window.emplace(sf::VideoMode({WindowWidth, WindowHeight}), "Cartridge Info", sf::Style::Titlebar | sf::Style::Close);
-
-    if(!ImGui::SFML::Init(*window))
-        Log::print(LogLevel::Error, "Failed to initialize ImGui-SFML for the Cartridge Info window");
-}
-
-void CartridgeViewerWindow::closeWindow()
-{
-    if(!window)
-        return;
-
-    ImGui::SFML::Shutdown(*window);
-    window.reset();
-}
-
-void CartridgeViewerWindow::update(const Cartridge& cartridge)
-{
-    if(open && !window)
-        createWindow();
-    else if(!open && window)
-        closeWindow();
-
-    if(!window)
-        return;
-
-    while(const std::optional<sf::Event> event = window->pollEvent())
-    {
-        ImGui::SFML::ProcessEvent(*window, *event);
-
-        if(event->is<sf::Event::Closed>())
-        {
-            open = false;
-            closeWindow();
-            return;
-        }
-    }
-
-    ImGui::SFML::Update(*window, deltaClock.restart());
-
     ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight)));
     ImGui::Begin("Cartridge Info", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 
+    const Cartridge& cartridge = emulator.getCartridge();
     const auto& header = cartridge.getHeader();
 
     ImGui::Text("Title       : %s", header.title);
@@ -76,8 +30,4 @@ void CartridgeViewerWindow::update(const Cartridge& cartridge)
     ImGui::Text("Checksum    : %s (%s)", std::format("{:02X}", header.headerChecksum).c_str(), cartridge.checkHeaderChecksum() ? "PASSED" : "FAILED");
 
     ImGui::End();
-
-    window->clear();
-    ImGui::SFML::Render(*window);
-    window->display();
 }
