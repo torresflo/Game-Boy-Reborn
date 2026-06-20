@@ -10,6 +10,7 @@
 #include "RegisterViewerWindow.h"
 #include "RomFileDialog.h"
 #include "TileDataViewerWindow.h"
+#include "LogViewerWindow.h"
 
 class Application
 {
@@ -36,6 +37,7 @@ private:
     RegisterViewerWindow registerViewerWindow;
     CartridgeViewerWindow cartridgeViewerWindow;
     TileDataViewerWindow tileDataViewerWindow;
+    LogViewerWindow logViewerWindow;
 
     sf::Clock deltaClock;
 
