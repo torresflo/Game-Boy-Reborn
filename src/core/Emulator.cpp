@@ -59,3 +59,8 @@ const PixelProcessingUnit& Emulator::getPPU() const
 {
     return PPU;
 }
+
+const MemoryBus& Emulator::getMemoryBus() const
+{
+    return bus;
+}

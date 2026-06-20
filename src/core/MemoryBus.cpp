@@ -23,6 +23,12 @@ void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPt
     cartridge = cartridgePtr;
     timer.initialize(cpuPtr);
 
+    WRAM.fill(0);
+    HRAM.fill(0);
+    OAM.fill(ObjectAttributeMemoryEntry{});
+    VRAM.fill(0);
+    serialData.fill(0);
+
     interruptEnableRegister = 0;
     interruptFlags = 0;
 }

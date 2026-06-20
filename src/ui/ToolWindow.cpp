@@ -85,9 +85,9 @@ void ToolWindow::renderFrame(Emulator& emulator)
 
     ImGui::SFML::Update(*window, deltaClock.restart());
 
-    drawContent(emulator);
-
     window->clear();
+    drawContent(emulator);
     ImGui::SFML::Render(*window);
+
     window->display();
 }

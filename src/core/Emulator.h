@@ -25,6 +25,7 @@ public:
     const Cartridge& getCartridge() const;
     const CentralProcessingUnit& getCPU() const;
     const PixelProcessingUnit& getPPU() const;
+    const MemoryBus& getMemoryBus() const;
 
 private:
     Cartridge cartridge;
