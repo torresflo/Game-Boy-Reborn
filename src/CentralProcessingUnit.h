@@ -20,6 +20,7 @@ private:
     void executeNextInstruction();
     void fetchInstruction();
     void fetchData();
+    void printDebugMessages(u16 pc);
     void execute();
 
     const InstructionData& getInstructionFromOpCode(u8 opcode) const;
@@ -99,9 +100,10 @@ private:
     std::string getInstructionString() const;
     std::string getInstructionOperandsString() const;
     std::string getCBInstructionString() const;
-    void debugUpdateWithSerial();
-    void debugPrintFromSerial();
-    std::string debugMessage;
+    
+    void updateSerialMessage();
+    void printSerialMessage();
+    std::string serialMessage;
 
     Registers registers;
     u16 fetchedData;

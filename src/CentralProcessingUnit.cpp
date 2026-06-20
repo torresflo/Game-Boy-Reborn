@@ -48,16 +48,7 @@ void CentralProcessingUnit::executeNextInstruction()
         emulateCycles(1);
         fetchData();
 
-        if(Log::isEnabled(LogLevel::Debug))
-        {
-            Log::print(LogLevel::Debug, std::format("[{:08X}] {:04X} -> {:<20s} ({:02X} {:02X} {:02X}) {}",
-                cycles, pc, getInstructionString(), currentOPCode,
-                memoryBus->read(pc + 1), memoryBus->read(pc + 2),
-                getRegistersString()));
-
-            debugUpdateWithSerial();
-            debugPrintFromSerial();
-        }
+        printDebugMessages(pc);
 
         execute();
     }
@@ -75,6 +66,23 @@ void CentralProcessingUnit::fetchInstruction()
     currentOPCode = memoryBus->read(registers.PC);
     registers.PC++;
     currentInstruction = getInstructionFromOpCode(currentOPCode);
+}
+
+void CentralProcessingUnit::printDebugMessages(u16 pc)
+{
+    if(Log::isEnabled(LogLevel::Debug))
+    {
+        Log::print(LogLevel::Debug, std::format("[{:08X}] {:04X} -> {:<20s} ({:02X} {:02X} {:02X}) {}",
+            cycles, pc, getInstructionString(), currentOPCode,
+            memoryBus->read(pc + 1), memoryBus->read(pc + 2),
+            getRegistersString()));
+    }
+
+    if(Log::isEnabled(LogLevel::Info))
+    {
+        updateSerialMessage();
+        printSerialMessage();
+    }
 }
 
 void CentralProcessingUnit::execute()

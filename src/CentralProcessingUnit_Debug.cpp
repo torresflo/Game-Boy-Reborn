@@ -166,20 +166,20 @@ std::string CentralProcessingUnit::getCBInstructionString() const
     }
 }
 
-void CentralProcessingUnit::debugUpdateWithSerial()
+void CentralProcessingUnit::updateSerialMessage()
 {
     if(memoryBus->read(0xFF02) == 0x81)
     {
         char c = memoryBus->read(0xFF01);
-        debugMessage += c;
+        serialMessage += c;
         memoryBus->write(0xFF02, 0);
     }
 }
 
-void CentralProcessingUnit::debugPrintFromSerial()
+void CentralProcessingUnit::printSerialMessage()
 {
-    if(!debugMessage.empty())
+    if(!serialMessage.empty())
     {
-        Log::print(LogLevel::Debug, debugMessage);
+        Log::print(LogLevel::Info, serialMessage);
     }
 }
