@@ -45,8 +45,8 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(imgui)
 set(IMGUI_DIR ${imgui_SOURCE_DIR} CACHE PATH "" FORCE)
 
-# imgui-sfml: SFML 3 renderer/platform backend for Dear ImGui. Reuse the SFML
-# targets already fetched above instead of calling find_package(SFML).
+# imgui-sfml: SFML 3 renderer/platform backend for Dear ImGui.
+# Reuse the SFML targets already fetched above instead of calling find_package(SFML).
 set(IMGUI_SFML_FIND_SFML OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
     imgui-sfml
@@ -57,11 +57,9 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(imgui-sfml)
 if(MSVC)
     # imgui-sfml's touch handling still calls SFML's deprecated sf::Touch API;
-    # harmless, but this project's /WX turns the deprecation warning into an error.
     target_compile_options(ImGui-SFML PRIVATE /wd4996)
 endif()
 
-# ImGuiFileDialog: ROM file picker rendered as a Dear ImGui window.
 FetchContent_Declare(
     ImGuiFileDialog
     GIT_REPOSITORY https://github.com/aiekick/ImGuiFileDialog.git
@@ -75,8 +73,7 @@ if(MSVC)
     target_compile_options(ImGuiFileDialog PRIVATE /wd4244)
 endif()
 
-# UI layer: SFML window + Dear ImGui widgets. Kept separate from GameBoyCore
-# so emulation logic and the test executable stay free of windowing deps.
+# UI Sources
 file (GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS "src/ui/*.cpp")
 file (GLOB_RECURSE UI_HEADERS CONFIGURE_DEPENDS "src/ui/*.h")
 
