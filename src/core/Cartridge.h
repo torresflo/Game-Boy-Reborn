@@ -29,6 +29,7 @@ class Cartridge
 public:
     bool loadROM(std::string path);
 
+    const std::string& getRomPath() const;
     const CartridgeHeader& getHeader() const;
     std::string getRomTypeName(u8 type) const;
     std::string getLicenceName(u8 code) const;

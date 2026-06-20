@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include <SFML/Graphics.hpp>
 
 #include "Emulator.h"
@@ -7,6 +9,7 @@
 #include "CartridgeViewerWindow.h"
 #include "RegisterViewerWindow.h"
 #include "RomFileDialog.h"
+#include "TileDataViewerWindow.h"
 
 class Application
 {
@@ -21,6 +24,7 @@ private:
     void update();
     void render();
     void drawMenuBar();
+    void updateWindowTitle();
 
     sf::RenderWindow window;
     sf::Texture gameScreenTexture;
@@ -31,6 +35,9 @@ private:
     RomFileDialog romFileDialog;
     RegisterViewerWindow registerViewerWindow;
     CartridgeViewerWindow cartridgeViewerWindow;
+    TileDataViewerWindow tileDataViewerWindow;
 
     sf::Clock deltaClock;
+
+    std::string romPathInWindowTitle;
 };

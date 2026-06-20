@@ -42,8 +42,7 @@ const std::vector<std::string> Cartridge::RomTypes =
     "MBC7+SENSOR+RUMBLE+RAM+BATTERY"
 };
 
-// The 0xNN keys below are int literals narrowing to u8; harmless since they're
-// all <= 0xFF, but MSVC's C4244 flags it under /W4 /WX.
+// Avoid MSVC C4244 warning due to cast of keys
 #pragma warning(push)
 #pragma warning(disable : 4244)
 const std::map<u8, std::string> Cartridge::LicenceCodes =
@@ -145,6 +144,11 @@ bool Cartridge::loadROM(std::string path)
     Log::print(LogLevel::Info, "Header checksum is valid");
 
     return true;
+}
+
+const std::string& Cartridge::getRomPath() const
+{
+    return ROMPath;
 }
 
 const CartridgeHeader& Cartridge::getHeader() const

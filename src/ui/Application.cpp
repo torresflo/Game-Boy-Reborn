@@ -1,8 +1,12 @@
 #include "Application.h"
 
+#include <filesystem>
+#include <format>
+
 #include <imgui.h>
 #include <imgui-SFML.h>
 
+#include "Cartridge.h"
 #include "Common.h"
 #include "PixelProcessingUnit.h"
 
@@ -59,11 +63,14 @@ void Application::update()
     if(emulator.isROMLoaded() && !emulator.isPaused())
         emulator.stepOneFrame();
 
+    updateWindowTitle();
+
     drawMenuBar();
 
     romFileDialog.update(emulator);
     registerViewerWindow.update(emulator);
     cartridgeViewerWindow.update(emulator);
+    tileDataViewerWindow.update(emulator);
 }
 
 void Application::drawMenuBar()
@@ -100,10 +107,32 @@ void Application::drawMenuBar()
             if(ImGui::MenuItem("Cartridge Info", nullptr, &cartridgeViewerOpen))
                 cartridgeViewerWindow.setOpen(cartridgeViewerOpen);
 
+            bool tileDataViewerOpen = tileDataViewerWindow.isOpen();
+            if(ImGui::MenuItem("Tile Data", nullptr, &tileDataViewerOpen))
+                tileDataViewerWindow.setOpen(tileDataViewerOpen);
+
             ImGui::EndMenu();
         }
 
         ImGui::EndMainMenuBar();
+    }
+}
+
+void Application::updateWindowTitle()
+{
+    if(emulator.isROMLoaded())
+    {
+        const std::string& romPath = emulator.getCartridge().getRomPath();
+        if(romPath != romPathInWindowTitle)
+        {
+            window.setTitle(std::format("Game-Boy-Reborn - {}", std::filesystem::path(romPath).filename().string()));
+            romPathInWindowTitle = romPath;
+        }
+    }
+    else if(!romPathInWindowTitle.empty())
+    {
+        window.setTitle("Game-Boy-Reborn");
+        romPathInWindowTitle.clear();
     }
 }
 
