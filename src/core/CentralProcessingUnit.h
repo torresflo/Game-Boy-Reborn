@@ -7,11 +7,12 @@
 #include "InstructionDefinitions.h"
 
 class MemoryBus;
+class PixelProcessingUnit;
 
 class CentralProcessingUnit
 {
 public:
-    void initialize(MemoryBus* bus);
+    void initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr);
     void step();
 
     void requestInterrupt(InterruptType type);
@@ -127,6 +128,7 @@ private:
     u64 cycles = 0;
 
     MemoryBus* memoryBus;
+    PixelProcessingUnit* PPU;
 
     static const std::array<InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> InstructionFuncs;
 

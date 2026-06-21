@@ -3,14 +3,14 @@
 #include <imgui.h>
 
 #include "CentralProcessingUnit.h"
-#include "Emulator.h"
+#include "GameBoyEmulator.h"
 
 RegisterViewerWindow::RegisterViewerWindow()
     : ToolWindow("CPU Registers", WindowWidth, WindowHeight)
 {
 }
 
-void RegisterViewerWindow::drawContent(Emulator& emulator)
+void RegisterViewerWindow::drawContent(GameBoyEmulator& emulator)
 {
     ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight)));

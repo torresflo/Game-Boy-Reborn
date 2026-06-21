@@ -3,22 +3,31 @@
 #include <array>
 
 #include "Common.h"
+#include "CentralProcessingUnitTypes.h"
 #include "PixelProcessingUnitTypes.h"
 
 class MemoryBus;
+class CentralProcessingUnit;
 
 class PixelProcessingUnit
 {
 public:
-    static constexpr u32 ScreenWidth = 160;
-    static constexpr u32 ScreenHeight = 144;
+    static constexpr u32 LinesPerFrame = 154;
+    static constexpr u32 TicksPerLine = 456;
+    static constexpr u32 ScreenWidth = 160; // X
+    static constexpr u32 ScreenHeight = 144;// Y
     static constexpr u32 TileSize = 8;
     static constexpr u32 BytesPerTile = 16;
     static constexpr u32 TileColumns = 16;
-    static constexpr u32 TileRows = 24; // 16 x 24 = 384 tiles
+    static constexpr u32 TileRows = 24;     // 16 x 24 = 384 tiles
+    static constexpr u32 TargetFrameTime = 1000 / 60;
 
-    void initialize(MemoryBus* bus);
+    void initialize(MemoryBus* bus, CentralProcessingUnit* cpuPtr);
     void tick();
+
+    //Memory-mapped register access (0xFF40-0xFF4B, except 0xFF46/DMA which MemoryBus owns)
+    u8 readRegister(u16 address) const;
+    void writeRegister(u16 address, u8 value);
 
     //Control byte (LCDC - 0xFF40)
     bool getBackgroundEnabled() const;
@@ -32,28 +41,43 @@ public:
 
     //Status byte (STAT - 0xFF41)
     LCDMode getLCDMode() const;
-    void setLCDMode(LCDMode mode);
     bool getCoincidenceFlag() const;
-    void setCoincidenceFlag(bool flag);
     bool getHorizontalBlankInterruptEnabled() const;
-    void setHorizontalBlankInterruptEnabled(bool enabled);
     bool getVerticalBlankInterruptEnabled() const;
-    void setVerticalBlankInterruptEnabled(bool enabled);
     bool getObjectAccessMemoryInterruptEnabled() const;
-    void setObjectAccessMemoryInterruptEnabled(bool enabled);
     bool getLYCInterruptEnabled() const;
-    void setLYCInterruptEnabled(bool enabled);
 
     const std::array<u32, ScreenWidth * ScreenHeight>& getFrameBuffer() const;
 
-    using Tile = std::array<u8, TileSize * TileSize>; 
+    using Tile = std::array<u8, TileSize * TileSize>;
     Tile decodeTileAtAddress(u16 tileAddress) const;
     Tile decodeTileAIndex(u32 tileIndex) const;
 
 private:
-    static constexpr u16 LCDControlRegister = 0xFF40;
-    static constexpr u16 LCDStatusRegister = 0xFF41;
+    void updateHorizontalBlankMode();
+    void updateVerticalBlankMode();
+    void updateObjectAccessMemoryScanMode();
+    void updatePixelDrawingMode();
 
-    MemoryBus* memoryBus = nullptr;
+    void setLCDMode(LCDMode mode);
+    void setCoincidenceFlag(bool flag);
+    void setHorizontalBlankInterruptEnabled(bool enabled);
+    void setVerticalBlankInterruptEnabled(bool enabled);
+    void setObjectAccessMemoryInterruptEnabled(bool enabled);
+    void setLYCInterruptEnabled(bool enabled);
+
+    void incrementCoordinateY();
+    void resetCoordinateY();
+
+    u32 currentFrame;
+    u32 lineTicks;
     std::array<u32, ScreenWidth * ScreenHeight> frameBuffer{};
+
+    u64 previousFrameTime = 0;
+    u64 startTimer = 0;
+    u64 frameCount = 0;
+
+    LCDData LCD;
+    MemoryBus* memoryBus = nullptr;
+    CentralProcessingUnit* cpu = nullptr;
 };

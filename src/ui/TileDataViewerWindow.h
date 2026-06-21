@@ -15,7 +15,7 @@ public:
     TileDataViewerWindow();
 
 protected:
-    void drawContent(Emulator& emulator) override;
+    void drawContent(GameBoyEmulator& emulator) override;
 
 private:
     static constexpr u32 TileSpacing = 1;

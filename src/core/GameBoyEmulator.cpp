@@ -1,4 +1,4 @@
-#include "Emulator.h"
+#include "GameBoyEmulator.h"
 
 namespace
 {
@@ -6,16 +6,16 @@ namespace
     constexpr u32 CyclesPerFrame = 17556;
 }
 
-bool Emulator::loadROM(std::string path)
+bool GameBoyEmulator::loadROM(std::string path)
 {
     if(!cartridge.loadROM(path))
         return false;
 
     Log::print(LogLevel::Info, "ROM loaded successfully");
 
-    bus.initialize(&cartridge, &CPU);
-    CPU.initialize(&bus);
-    PPU.initialize(&bus);
+    bus.initialize(&cartridge, &CPU, &PPU);
+    CPU.initialize(&bus, &PPU);
+    PPU.initialize(&bus, &CPU);
 
     romLoaded = true;
     paused = false;
@@ -23,44 +23,44 @@ bool Emulator::loadROM(std::string path)
     return true;
 }
 
-void Emulator::stepOneFrame()
+void GameBoyEmulator::stepOneFrame()
 {
     u64 targetCycles = CPU.getCycleCount() + CyclesPerFrame;
     while(CPU.getCycleCount() < targetCycles)
         CPU.step();
 }
 
-bool Emulator::isROMLoaded() const
+bool GameBoyEmulator::isROMLoaded() const
 {
     return romLoaded;
 }
 
-bool Emulator::isPaused() const
+bool GameBoyEmulator::isPaused() const
 {
     return paused;
 }
 
-void Emulator::setPaused(bool value)
+void GameBoyEmulator::setPaused(bool value)
 {
     paused = value;
 }
 
-const Cartridge& Emulator::getCartridge() const
+const Cartridge& GameBoyEmulator::getCartridge() const
 {
     return cartridge;
 }
 
-const CentralProcessingUnit& Emulator::getCPU() const
+const CentralProcessingUnit& GameBoyEmulator::getCPU() const
 {
     return CPU;
 }
 
-const PixelProcessingUnit& Emulator::getPPU() const
+const PixelProcessingUnit& GameBoyEmulator::getPPU() const
 {
     return PPU;
 }
 
-const MemoryBus& Emulator::getMemoryBus() const
+const MemoryBus& GameBoyEmulator::getMemoryBus() const
 {
     return bus;
 }

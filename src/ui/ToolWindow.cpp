@@ -56,7 +56,7 @@ void ToolWindow::onClosed()
     destroyWindow();
 }
 
-void ToolWindow::update(Emulator& emulator)
+void ToolWindow::update(GameBoyEmulator& emulator)
 {
     if(openRequested && !open)
         onOpenRequested();
@@ -69,7 +69,7 @@ void ToolWindow::update(Emulator& emulator)
     renderFrame(emulator);
 }
 
-void ToolWindow::renderFrame(Emulator& emulator)
+void ToolWindow::renderFrame(GameBoyEmulator& emulator)
 {
     while(const std::optional<sf::Event> event = window->pollEvent())
     {

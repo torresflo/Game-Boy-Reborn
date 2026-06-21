@@ -2,7 +2,7 @@
 
 #include <algorithm>
 
-#include "Emulator.h"
+#include "GameBoyEmulator.h"
 
 namespace
 {
@@ -29,7 +29,7 @@ TileDataViewerWindow::TileDataViewerWindow()
     tileDataSprite.setScale({PixelScale, PixelScale});
 }
 
-void TileDataViewerWindow::drawContent(Emulator& emulator)
+void TileDataViewerWindow::drawContent(GameBoyEmulator& emulator)
 {
     if(!emulator.isROMLoaded())
         return;

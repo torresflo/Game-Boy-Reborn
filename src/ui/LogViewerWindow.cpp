@@ -30,7 +30,7 @@ LogViewerWindow::LogViewerWindow()
 {
 }
 
-void LogViewerWindow::drawContent(Emulator& emulator)
+void LogViewerWindow::drawContent(GameBoyEmulator& emulator)
 {
     UNUSED(emulator);
 

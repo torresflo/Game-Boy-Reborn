@@ -1,5 +1,8 @@
 #include "PixelProcessingUnit.h"
 
+#include <format>
+
+#include "CentralProcessingUnit.h"
 #include "MathUtils.h"
 #include "MemoryBus.h"
 
@@ -8,143 +11,219 @@ namespace
     constexpr u16 TileDataStartAddress = 0x8000;
 }
 
-void PixelProcessingUnit::initialize(MemoryBus* bus)
+void PixelProcessingUnit::initialize(MemoryBus* bus, CentralProcessingUnit* cpuPtr)
 {
     memoryBus = bus;
+    cpu = cpuPtr;
+
+    currentFrame = 0;
+    lineTicks = 0;
+    frameBuffer.fill(0);
+    LCD.initialize();
+    setLCDMode(LCDMode::ObjectAccessMemoryScan);
 }
 
 void PixelProcessingUnit::tick()
 {
+    lineTicks++;
+    LCDMode currentMode = getLCDMode();
+    switch(currentMode)
+    {
+        case LCDMode::HorizontalBlank:
+            updateHorizontalBlankMode();
+            break;
+        case LCDMode::VerticalBlank:
+            updateVerticalBlankMode();
+            break;
+        case LCDMode::ObjectAccessMemoryScan:
+            updateObjectAccessMemoryScanMode();
+            break;
+        case LCDMode::PixelDrawing:
+            updatePixelDrawingMode();
+            break;
+    }
+}
+
+u8 PixelProcessingUnit::readRegister(u16 address) const
+{
+    switch(address)
+    {
+        case 0xFF40:
+            return LCD.control;
+        case 0xFF41:
+            return LCD.status;
+        case 0xFF42:
+            return LCD.scrollY;
+        case 0xFF43:
+            return LCD.scrollX;
+        case 0xFF44:
+            return LCD.coordinateY;
+        case 0xFF45:
+            return LCD.compareY;
+        case 0xFF47:
+            return LCD.backgroundPalette;
+        case 0xFF48:
+            return LCD.objectPaletteData[0];
+        case 0xFF49:
+            return LCD.objectPaletteData[1];
+        case 0xFF4A:
+            return LCD.windowY;
+        case 0xFF4B:
+            return LCD.windowX;
+        default:
+            Log::print(LogLevel::Error, std::format("Unsupported PPU register reading (0x{:4X}).", address));
+            return 0xFF;
+    }
+}
+
+void PixelProcessingUnit::writeRegister(u16 address, u8 value)
+{
+    switch(address)
+    {
+        case 0xFF40:
+            LCD.control = value;
+            break;
+        case 0xFF41:
+            setHorizontalBlankInterruptEnabled(MathUtils<u8>::getBitValue(value, 3));
+            setVerticalBlankInterruptEnabled(MathUtils<u8>::getBitValue(value, 4));
+            setObjectAccessMemoryInterruptEnabled(MathUtils<u8>::getBitValue(value, 5));
+            setLYCInterruptEnabled(MathUtils<u8>::getBitValue(value, 6));
+            break;
+        case 0xFF42:
+            LCD.scrollY = value;
+            break;
+        case 0xFF43:
+            LCD.scrollX = value;
+            break;
+        case 0xFF44: //LY is read-only -> any write resets it
+            LCD.coordinateY = 0;
+            break;
+        case 0xFF45:
+            LCD.compareY = value;
+            break;
+        case 0xFF47:
+            LCD.updatePaletteData(value, 0);
+            break;
+        case 0xFF48:
+            LCD.updatePaletteData(value & 0b11111100, 1);
+            break;
+        case 0xFF49:
+            LCD.updatePaletteData(value & 0b11111100, 2);
+            break;
+        case 0xFF4A:
+            LCD.windowY = value;
+            break;
+        case 0xFF4B:
+            LCD.windowX = value;
+            break;
+        default:
+            Log::print(LogLevel::Error, std::format("Unsupported PPU register writing (0x{:4X}).", address));
+            break;
+    }
 }
 
 bool PixelProcessingUnit::getBackgroundEnabled() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 0);
+    return MathUtils<u8>::getBitValue(LCD.control, 0);
 }
 
 bool PixelProcessingUnit::getObjectEnabled() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 1);
+    return MathUtils<u8>::getBitValue(LCD.control, 1);
 }
 
 SpriteSize PixelProcessingUnit::getObjectSize() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 2) ? SpriteSize::EightBySixteen : SpriteSize::EightByEight;
+    return MathUtils<u8>::getBitValue(LCD.control, 2) ? SpriteSize::EightBySixteen : SpriteSize::EightByEight;
 }
 
 TileMapArea PixelProcessingUnit::getBackgroundTileMapArea() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 3) ? TileMapArea::High : TileMapArea::Low;
+    return MathUtils<u8>::getBitValue(LCD.control, 3) ? TileMapArea::High : TileMapArea::Low;
 }
 
 TileDataArea PixelProcessingUnit::getTileDataArea() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 4) ? TileDataArea::High : TileDataArea::Low;
+    return MathUtils<u8>::getBitValue(LCD.control, 4) ? TileDataArea::High : TileDataArea::Low;
 }
 
 bool PixelProcessingUnit::getWindowEnabled() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 5);
+    return MathUtils<u8>::getBitValue(LCD.control, 5);
 }
 
 TileMapArea PixelProcessingUnit::getWindowTileMapArea() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 6) ? TileMapArea::High : TileMapArea::Low;
+    return MathUtils<u8>::getBitValue(LCD.control, 6) ? TileMapArea::High : TileMapArea::Low;
 }
 
 bool PixelProcessingUnit::getLCDEnabled() const
 {
-    u8 controlByte = memoryBus->read(LCDControlRegister);
-    return MathUtils<u8>::getBitValue(controlByte, 7);
+    return MathUtils<u8>::getBitValue(LCD.control, 7);
 }
 
 LCDMode PixelProcessingUnit::getLCDMode() const
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    u8 modeValue = (MathUtils<u8>::getBitValue(statusByte, 1) ? 2 : 0)
-                        | (MathUtils<u8>::getBitValue(statusByte, 0) ? 1 : 0);
+    u8 modeValue = (MathUtils<u8>::getBitValue(LCD.status, 1) ? 2 : 0)
+                        | (MathUtils<u8>::getBitValue(LCD.status, 0) ? 1 : 0);
     return static_cast<LCDMode>(modeValue);
 }
 
 void PixelProcessingUnit::setLCDMode(LCDMode mode)
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
     u8 modeValue = static_cast<u8>(mode);
-    MathUtils<u8>::setBitValue(statusByte, 0, MathUtils<u8>::getBitValue(modeValue, 0));
-    MathUtils<u8>::setBitValue(statusByte, 1, MathUtils<u8>::getBitValue(modeValue, 1));
-    memoryBus->write(LCDStatusRegister, statusByte);
+    MathUtils<u8>::setBitValue(LCD.status, 0, MathUtils<u8>::getBitValue(modeValue, 0));
+    MathUtils<u8>::setBitValue(LCD.status, 1, MathUtils<u8>::getBitValue(modeValue, 1));
 }
 
 bool PixelProcessingUnit::getCoincidenceFlag() const
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    return MathUtils<u8>::getBitValue(statusByte, 2);
+    return MathUtils<u8>::getBitValue(LCD.status, 2);
 }
 
 void PixelProcessingUnit::setCoincidenceFlag(bool flag)
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    MathUtils<u8>::setBitValue(statusByte, 2, flag);
-    memoryBus->write(LCDStatusRegister, statusByte);
+    MathUtils<u8>::setBitValue(LCD.status, 2, flag);
 }
 
 bool PixelProcessingUnit::getHorizontalBlankInterruptEnabled() const
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    return MathUtils<u8>::getBitValue(statusByte, 3);
+    return MathUtils<u8>::getBitValue(LCD.status, 3);
 }
 
 void PixelProcessingUnit::setHorizontalBlankInterruptEnabled(bool enabled)
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    MathUtils<u8>::setBitValue(statusByte, 3, enabled);
-    memoryBus->write(LCDStatusRegister, statusByte);
+    MathUtils<u8>::setBitValue(LCD.status, 3, enabled);
 }
 
 bool PixelProcessingUnit::getVerticalBlankInterruptEnabled() const
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    return MathUtils<u8>::getBitValue(statusByte, 4);
+    return MathUtils<u8>::getBitValue(LCD.status, 4);
 }
 
 void PixelProcessingUnit::setVerticalBlankInterruptEnabled(bool enabled)
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    MathUtils<u8>::setBitValue(statusByte, 4, enabled);
-    memoryBus->write(LCDStatusRegister, statusByte);
+    MathUtils<u8>::setBitValue(LCD.status, 4, enabled);
 }
 
 bool PixelProcessingUnit::getObjectAccessMemoryInterruptEnabled() const
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    return MathUtils<u8>::getBitValue(statusByte, 5);
+    return MathUtils<u8>::getBitValue(LCD.status, 5);
 }
 
 void PixelProcessingUnit::setObjectAccessMemoryInterruptEnabled(bool enabled)
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    MathUtils<u8>::setBitValue(statusByte, 5, enabled);
-    memoryBus->write(LCDStatusRegister, statusByte);
+    MathUtils<u8>::setBitValue(LCD.status, 5, enabled);
 }
 
 bool PixelProcessingUnit::getLYCInterruptEnabled() const
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    return MathUtils<u8>::getBitValue(statusByte, 6);
+    return MathUtils<u8>::getBitValue(LCD.status, 6);
 }
 
 void PixelProcessingUnit::setLYCInterruptEnabled(bool enabled)
 {
-    u8 statusByte = memoryBus->read(LCDStatusRegister);
-    MathUtils<u8>::setBitValue(statusByte, 6, enabled);
-    memoryBus->write(LCDStatusRegister, statusByte);
+    MathUtils<u8>::setBitValue(LCD.status, 6, enabled);
 }
 
 const std::array<u32, PixelProcessingUnit::ScreenWidth * PixelProcessingUnit::ScreenHeight>& PixelProcessingUnit::getFrameBuffer() const
@@ -167,7 +246,6 @@ PixelProcessingUnit::Tile PixelProcessingUnit::decodeTileAtAddress(u16 tileAddre
                                                     | (MathUtils<u8>::getBitValue(lowByte, bit) ? 1 : 0);
         }
     }
-
     return tile;
 }
 
@@ -175,4 +253,72 @@ PixelProcessingUnit::Tile PixelProcessingUnit::decodeTileAIndex(u32 tileIndex) c
 {
     u16 tileAddress = TileDataStartAddress + static_cast<u16>(tileIndex * PixelProcessingUnit::BytesPerTile);
     return decodeTileAtAddress(tileAddress);
+}
+
+void PixelProcessingUnit::updateHorizontalBlankMode()
+{
+    if(lineTicks >= TicksPerLine)
+    {
+        incrementCoordinateY();
+        if(LCD.coordinateY >= ScreenHeight)
+        {
+            setLCDMode(LCDMode::VerticalBlank);
+            cpu->requestInterrupt(InterruptType::VBlank);
+
+            if(getVerticalBlankInterruptEnabled())
+                cpu->requestInterrupt(InterruptType::LCD);
+
+            currentFrame++;
+        }
+        else
+        {
+            setLCDMode(LCDMode::ObjectAccessMemoryScan);
+        }
+
+        lineTicks = 0;
+    }
+}
+
+void PixelProcessingUnit::updateVerticalBlankMode()
+{
+    if(lineTicks >= TicksPerLine)
+    {
+        incrementCoordinateY();
+        if(LCD.coordinateY >= LinesPerFrame)
+        {
+            setLCDMode(LCDMode::ObjectAccessMemoryScan);
+            resetCoordinateY();
+        }
+
+        lineTicks = 0;
+    }
+}
+
+void PixelProcessingUnit::incrementCoordinateY()
+{
+    LCD.coordinateY++;
+    bool matches = (LCD.coordinateY == LCD.compareY);
+    setCoincidenceFlag(matches);
+    if(matches)
+    {
+        if(getLYCInterruptEnabled())
+            cpu->requestInterrupt(InterruptType::LCD);
+    }
+}
+
+void PixelProcessingUnit::resetCoordinateY()
+{
+    LCD.coordinateY = 0;
+}
+
+void PixelProcessingUnit::updateObjectAccessMemoryScanMode()
+{
+    if(lineTicks >= 80)
+        setLCDMode(LCDMode::PixelDrawing);
+}
+
+void PixelProcessingUnit::updatePixelDrawingMode()
+{
+    if(lineTicks >= 80 + 172)
+        setLCDMode(LCDMode::HorizontalBlank);
 }

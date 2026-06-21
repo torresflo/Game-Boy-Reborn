@@ -3,7 +3,7 @@
 #include <imgui.h>
 #include <ImGuiFileDialog.h>
 
-#include "Emulator.h"
+#include "GameBoyEmulator.h"
 
 RomFileDialog::RomFileDialog()
     : ToolWindow("Open ROM", WindowWidth, WindowHeight)
@@ -32,7 +32,7 @@ void RomFileDialog::onClosed()
     open = false;
 }
 
-void RomFileDialog::drawContent(Emulator& emulator)
+void RomFileDialog::drawContent(GameBoyEmulator& emulator)
 {
     const ImVec2 windowSize(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight));
     ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));

@@ -4,6 +4,7 @@
 
 #include "CentralProcessingUnit.h"
 #include "FlatMemoryBus.h"
+#include "PixelProcessingUnit.h"
 
 // Test-only helper that wires up a CentralProcessingUnit against a
 // FlatMemoryBus (full 64KB address space) so randomized external JSON CPU
@@ -14,7 +15,8 @@ class CentralProcessingUnitJsonTestFixture
 public:
     CentralProcessingUnitJsonTestFixture()
     {
-        cpu.initialize(&memoryBus);
+        cpu.initialize(&memoryBus, &ppu);
+        ppu.initialize(&memoryBus, &cpu);
     }
 
     void setRegister(RegisterType type, u16 value)
@@ -82,5 +84,6 @@ public:
 
 private:
     FlatMemoryBus memoryBus;
+    PixelProcessingUnit ppu;
     CentralProcessingUnit cpu;
 };

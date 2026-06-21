@@ -7,6 +7,7 @@
 
 class Cartridge;
 class CentralProcessingUnit;
+class PixelProcessingUnit;
 
 struct DirectMemoryAccessContext
 {
@@ -21,7 +22,7 @@ class MemoryBus
 public:
     virtual ~MemoryBus() = default;
 
-    void initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr);
+    void initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr);
 
     virtual u8 read(u16 address) const;
     u16 read16(u16 address) const;
@@ -63,9 +64,6 @@ private:
     u8 readIO(u16 address) const;
     void writeIO(u16 address, u8 value);
 
-    u8 readLCD(u16 address) const;
-    void writeLCD(u16 address, u8 value);
-
     //RAM
     std::array<u8, 0x2000> WRAM;
     std::array<u8, 0x80> HRAM;
@@ -81,10 +79,11 @@ private:
     std::array<s8, 2> serialData;
     HardwareTimer timer;
     u8 interruptFlags = 0; //IF
-    LCDData LCD;
+    u8 dmaRegister = 0; //0xFF46
 
     //IE
     u8 interruptEnableRegister;
 
     Cartridge* cartridge = nullptr;
+    PixelProcessingUnit* ppu = nullptr;
 };

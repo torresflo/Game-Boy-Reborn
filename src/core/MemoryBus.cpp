@@ -3,6 +3,7 @@
 #include <format>
 
 #include "Cartridge.h"
+#include "PixelProcessingUnit.h"
 
 // 0x0000 - 0x3FFF : ROM Bank 0
 // 0x4000 - 0x7FFF : ROM Bank 1 - Switchable
@@ -18,9 +19,10 @@
 // 0xFF00 - 0xFF7F : I/O Registers
 // 0xFF80 - 0xFFFE : Zero Page / HRAM
 
-void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr)
+void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr)
 {
     cartridge = cartridgePtr;
+    ppu = ppuPtr;
     timer.initialize(cpuPtr);
 
     WRAM.fill(0);
@@ -29,7 +31,7 @@ void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPt
     VRAM.fill(0);
     serialData.fill(0);
 
-    LCD.initialize();
+    dmaRegister = 0;
 
     interruptEnableRegister = 0;
     interruptFlags = 0;
@@ -343,8 +345,17 @@ u8 MemoryBus::readIO(u16 address) const
     if(address == 0xFF0F)
         return readInterruptFlags();
 
+    if(address == 0xFF46)
+        return dmaRegister;
+
     if(address >= 0xFF40 && address <= 0xFF4B)
-        return readLCD(address);
+    {
+        if(ppu != nullptr)
+            return ppu->readRegister(address);
+
+        Log::print(LogLevel::Error, std::format("Reading LCD register (0x{:4X}) with no PPU attached.", address));
+        return 0xFF;
+    }
 
     Log::print(LogLevel::Error, std::format("Unsupported IO reading (0x{:4X}).", address));
     return 0;
@@ -360,36 +371,18 @@ void MemoryBus::writeIO(u16 address, u8 value)
         timer.writeTimer(address, value);
     else if(address == 0xFF0F)
         writeInterruptFlags(value);
+    else if(address == 0xFF46)
+    {
+        dmaRegister = value;
+        startDMA(value);
+    }
     else if(address >= 0xFF40 && address <= 0xFF4B)
-        writeLCD(address, value);
+    {
+        if(ppu != nullptr)
+            ppu->writeRegister(address, value);
+        else
+            Log::print(LogLevel::Error, std::format("Writing LCD register (0x{:4X}) with no PPU attached.", address));
+    }
     else
         Log::print(LogLevel::Error, std::format("Unsupported IO writing (0x{:4X}).", address));
-}
-
-u8 MemoryBus::readLCD(u16 address) const
-{
-    if(address == 0xFF44)
-        return const_cast<LCDData*>(&LCD)->coordinateY++; //TO REMOVE, TEMP FOR TESTS
-
-    u16 offset = address - 0xFF40;
-    const u8* byteArray = reinterpret_cast<const u8*>(&LCD);
-    return byteArray[offset];
-}
-
-void MemoryBus::writeLCD(u16 address, u8 value)
-{
-    u16 offset = address - 0xFF40;
-    u8* byteArray = reinterpret_cast<u8*>(&LCD);
-    byteArray[offset] = value;
-
-    if(address == 0xFF44) //LY is read-only -> any write resets it
-        LCD.coordinateY = 0;
-    else if(address == 0xFF46) //DMA
-        startDMA(value);
-    else if(address == 0xFF47)
-        LCD.updatePaletteData(value, 0);
-    else if(address == 0xFF48)
-        LCD.updatePaletteData(value & 0b11111100, 1);
-    else if(address == 0xFF49)
-        LCD.updatePaletteData(value & 0b11111100, 2);
 }

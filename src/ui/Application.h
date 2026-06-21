@@ -4,7 +4,7 @@
 
 #include <SFML/Graphics.hpp>
 
-#include "Emulator.h"
+#include "GameBoyEmulator.h"
 
 #include "CartridgeViewerWindow.h"
 #include "RegisterViewerWindow.h"
@@ -31,7 +31,7 @@ private:
     sf::Texture gameScreenTexture;
     sf::Sprite gameScreenSprite;
 
-    Emulator emulator;
+    GameBoyEmulator emulator;
     
     RomFileDialog romFileDialog;
     RegisterViewerWindow registerViewerWindow;

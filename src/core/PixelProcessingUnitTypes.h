@@ -28,7 +28,6 @@ struct LCDData
     u8 scrollX;                         // SCX - 0xFF43
     u8 coordinateY;                     // LY - 0xFF44
     u8 compareY;                        // LYC - 0xFF45
-    u8 dma;                             // 0xFF46
     u8 backgroundPalette;               // BGP - 0xFF47
     std::array<u8, 2> objectPaletteData;// OBP0 - 0xFF48 | OBP1 - 0xFF49
     u8 windowY;                         // WY - 0xFF4A

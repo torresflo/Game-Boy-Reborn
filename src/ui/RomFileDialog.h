@@ -10,7 +10,7 @@ public:
 protected:
     void onOpenRequested() override;
     void onClosed() override;
-    void drawContent(Emulator& emulator) override;
+    void drawContent(GameBoyEmulator& emulator) override;
 
 private:
     static constexpr const char* DialogKey = "RomFileDialogKey";

@@ -3,10 +3,12 @@
 #include <format>
 
 #include "MemoryBus.h"
+#include "PixelProcessingUnit.h"
 
-void CentralProcessingUnit::initialize(MemoryBus* bus)
+void CentralProcessingUnit::initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr)
 {
-    memoryBus = bus;
+    memoryBus = busPtr;
+    PPU = ppuPtr;
 
     registers.PC = 0x100;
     registers.SP = 0xFFFE;
@@ -232,6 +234,7 @@ void CentralProcessingUnit::emulateCycles(u8 cycleCount)
         {
             cycles++;
             memoryBus->tickTimer();
+            PPU->tick();
         }
 
         memoryBus->tickDMATransfer();

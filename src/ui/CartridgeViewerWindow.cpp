@@ -5,14 +5,14 @@
 #include <imgui.h>
 
 #include "Cartridge.h"
-#include "Emulator.h"
+#include "GameBoyEmulator.h"
 
 CartridgeViewerWindow::CartridgeViewerWindow()
     : ToolWindow("Cartridge Info", WindowWidth, WindowHeight)
 {
 }
 
-void CartridgeViewerWindow::drawContent(Emulator& emulator)
+void CartridgeViewerWindow::drawContent(GameBoyEmulator& emulator)
 {
     ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
     ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight)));

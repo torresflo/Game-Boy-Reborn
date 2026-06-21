@@ -8,7 +8,7 @@ public:
     LogViewerWindow();
 
 protected:
-    void drawContent(Emulator& emulator) override;
+    void drawContent(GameBoyEmulator& emulator) override;
 
 private:
     static constexpr unsigned int WindowWidth = 600;

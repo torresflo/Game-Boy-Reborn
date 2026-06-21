@@ -5,7 +5,7 @@
 
 #include <SFML/Graphics.hpp>
 
-class Emulator;
+class GameBoyEmulator;
 
 class ToolWindow
 {
@@ -16,7 +16,7 @@ public:
     bool isOpen() const;
     void setOpen(bool open);
 
-    void update(Emulator& emulator);
+    void update(GameBoyEmulator& emulator);
 
 protected:
     void createWindow(bool startVisible = true);
@@ -25,13 +25,13 @@ protected:
     virtual void onOpenRequested();
     virtual void onClosed();
 
-    virtual void drawContent(Emulator& emulator) = 0;
+    virtual void drawContent(GameBoyEmulator& emulator) = 0;
 
     std::optional<sf::RenderWindow> window;
     bool open = false;
 
 private:
-    void renderFrame(Emulator& emulator);
+    void renderFrame(GameBoyEmulator& emulator);
 
     std::string title;
     unsigned int width;

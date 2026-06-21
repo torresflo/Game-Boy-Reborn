@@ -8,11 +8,7 @@
 #include "PixelProcessingUnit.h"
 #include "Timer.h"
 
-/**
- * Emulator components : Cart, CPU, Address Bus, PPU (Pixel-Processing Unit), Timer
- */
-
-class Emulator
+class GameBoyEmulator
 {
 public:
     bool loadROM(std::string path);
