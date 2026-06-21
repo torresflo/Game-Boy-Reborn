@@ -22,6 +22,7 @@ public:
 
 private:
     void processEvents();
+    void updateEmulation(sf::Time deltaTime);
     void update();
     void render();
     void drawMenuBar();
@@ -40,6 +41,7 @@ private:
     LogViewerWindow logViewerWindow;
 
     sf::Clock deltaClock;
+    double frameTimeAccumulator = 0.0;
 
     std::string romPathInWindowTitle;
 };

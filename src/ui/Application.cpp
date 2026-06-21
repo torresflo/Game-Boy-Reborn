@@ -10,6 +10,13 @@
 #include "Common.h"
 #include "PixelProcessingUnit.h"
 
+namespace
+{
+    // How many frames worth of real time can accumulate before being discarded,
+    // so a long stall (eg. dragging the window) doesn't trigger a burst of catch-up frames.
+    constexpr double MaxAccumulatedFrames = 5.0;
+}
+
 Application::Application()
     : window(sf::VideoMode({640u, 576u}), "Game-Boy-Reborn"), gameScreenSprite(gameScreenTexture)
 {
@@ -35,8 +42,11 @@ void Application::run()
     while(window.isOpen())
     {
         processEvents();
-        ImGui::SFML::Update(window, deltaClock.restart());
 
+        sf::Time deltaTime = deltaClock.restart();
+        ImGui::SFML::Update(window, deltaTime);
+
+        updateEmulation(deltaTime);
         update();
 
         window.clear();
@@ -58,11 +68,29 @@ void Application::processEvents()
     }
 }
 
+void Application::updateEmulation(sf::Time deltaTime)
+{
+    if(!emulator.isROMLoaded() || emulator.isPaused())
+    {
+        frameTimeAccumulator = 0.0;
+        return;
+    }
+
+    frameTimeAccumulator += deltaTime.asSeconds();
+
+    double maxAccumulator = GameBoyEmulator::SecondsPerFrame * MaxAccumulatedFrames;
+    if(frameTimeAccumulator > maxAccumulator)
+        frameTimeAccumulator = maxAccumulator;
+
+    while(frameTimeAccumulator >= GameBoyEmulator::SecondsPerFrame)
+    {
+        emulator.stepOneFrame();
+        frameTimeAccumulator -= GameBoyEmulator::SecondsPerFrame;
+    }
+}
+
 void Application::update()
 {
-    if(emulator.isROMLoaded() && !emulator.isPaused())
-        emulator.stepOneFrame();
-
     updateWindowTitle();
 
     drawMenuBar();

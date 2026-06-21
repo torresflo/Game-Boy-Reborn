@@ -1,11 +1,5 @@
 #include "GameBoyEmulator.h"
 
-namespace
-{
-    // 4.194304 MHz / 59.7275 Hz, the DMG's refresh rate.
-    constexpr u32 CyclesPerFrame = 17556;
-}
-
 bool GameBoyEmulator::loadROM(std::string path)
 {
     if(!cartridge.loadROM(path))

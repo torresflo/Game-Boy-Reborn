@@ -20,7 +20,6 @@ public:
     static constexpr u32 BytesPerTile = 16;
     static constexpr u32 TileColumns = 16;
     static constexpr u32 TileRows = 24;     // 16 x 24 = 384 tiles
-    static constexpr u32 TargetFrameTime = 1000 / 60;
 
     void initialize(MemoryBus* bus, CentralProcessingUnit* cpuPtr);
     void tick();
