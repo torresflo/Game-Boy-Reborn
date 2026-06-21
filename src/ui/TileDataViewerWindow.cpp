@@ -15,8 +15,8 @@ namespace
         {0x00, 0x00, 0x00, 0xFF},
     }};
 
-    // Distinct from the grayscale shades above so the grid stays visible against any tile.
     constexpr std::array<u8, 4> GridLineColor = {0x00, 0x80, 0x80, 0xFF};
+    constexpr std::array<u8, 4> NoObjectColor = {0xFF, 0x87, 0xF6, 0xFF};
 }
 
 TileDataViewerWindow::TileDataViewerWindow()
@@ -61,7 +61,7 @@ void TileDataViewerWindow::updateTexture(const PixelProcessingUnit& PPU)
                 u32 pixelOffset = ((tileOriginY + row) * ImageWidth + (tileOriginX + column)) * 4;
                 u8 colorIndex = tile[row * PixelProcessingUnit::TileSize + column];
 
-                const std::array<u8, 4>& shade = tileDataUnset ? ShadeColors[3] : ShadeColors[colorIndex];
+                const std::array<u8, 4>& shade = tileDataUnset ? NoObjectColor : ShadeColors[colorIndex];
                 pixels[pixelOffset + 0] = shade[0];
                 pixels[pixelOffset + 1] = shade[1];
                 pixels[pixelOffset + 2] = shade[2];
