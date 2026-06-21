@@ -29,6 +29,8 @@ void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPt
     VRAM.fill(0);
     serialData.fill(0);
 
+    LCD.initialize();
+
     interruptEnableRegister = 0;
     interruptFlags = 0;
 }
@@ -162,11 +164,6 @@ void MemoryBus::write(u16 address, u8 value)
         //CPU Enable Register
         writeInterruptEnableRegister(value);
     }
-    else if(address == 0xFF46)
-    {
-        //Start DMA
-        startDMA(value);
-    }
     else
     {
         writeHRAM(address, value);
@@ -214,7 +211,7 @@ void MemoryBus::tickDMATransfer()
         return;
     }
 
-    writeOAM(DMAContext.index, read(DMAContext.value * 0x100) + DMAContext.index);
+    writeOAM(DMAContext.index, read(DMAContext.value * 0x100 + DMAContext.index));
 
     DMAContext.index++;
     DMAContext.isActive = DMAContext.index < 0xA0;
@@ -346,6 +343,9 @@ u8 MemoryBus::readIO(u16 address) const
     if(address == 0xFF0F)
         return readInterruptFlags();
 
+    if(address >= 0xFF40 && address <= 0xFF4B)
+        return readLCD(address);
+
     Log::print(LogLevel::Error, std::format("Unsupported IO reading (0x{:4X}).", address));
     return 0;
 }
@@ -353,23 +353,43 @@ u8 MemoryBus::readIO(u16 address) const
 void MemoryBus::writeIO(u16 address, u8 value)
 {
     if(address == 0xFF01)
-    {
         serialData[0] = value;
-    }
     else if(address == 0xFF02)
-    {
         serialData[1] = value;
-    }
     else if(address >= 0xFF04 && address <= 0xFF07)
-    {
         timer.writeTimer(address, value);
-    }
     else if(address == 0xFF0F)
-    {
         writeInterruptFlags(value);
-    }
+    else if(address >= 0xFF40 && address <= 0xFF4B)
+        writeLCD(address, value);
     else
-    {
         Log::print(LogLevel::Error, std::format("Unsupported IO writing (0x{:4X}).", address));
-    }
+}
+
+u8 MemoryBus::readLCD(u16 address) const
+{
+    if(address == 0xFF44)
+        return const_cast<LCDData*>(&LCD)->coordinateY++; //TO REMOVE, TEMP FOR TESTS
+
+    u16 offset = address - 0xFF40;
+    const u8* byteArray = reinterpret_cast<const u8*>(&LCD);
+    return byteArray[offset];
+}
+
+void MemoryBus::writeLCD(u16 address, u8 value)
+{
+    u16 offset = address - 0xFF40;
+    u8* byteArray = reinterpret_cast<u8*>(&LCD);
+    byteArray[offset] = value;
+
+    if(address == 0xFF44) //LY is read-only -> any write resets it
+        LCD.coordinateY = 0;
+    else if(address == 0xFF46) //DMA
+        startDMA(value);
+    else if(address == 0xFF47)
+        LCD.updatePaletteData(value, 0);
+    else if(address == 0xFF48)
+        LCD.updatePaletteData(value & 0b11111100, 1);
+    else if(address == 0xFF49)
+        LCD.updatePaletteData(value & 0b11111100, 2);
 }
