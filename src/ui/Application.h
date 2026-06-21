@@ -27,6 +27,7 @@ private:
     void render();
     void drawMenuBar();
     void updateWindowTitle();
+    void updateGameScreenTransform(sf::Vector2u windowSize);
 
     sf::RenderWindow window;
     sf::Texture gameScreenTexture;

@@ -1,5 +1,6 @@
 #include "Application.h"
 
+#include <algorithm>
 #include <filesystem>
 #include <format>
 
@@ -27,7 +28,7 @@ Application::Application()
         Log::print(LogLevel::Error, "Failed to create the game screen texture");
 
     gameScreenSprite.setTexture(gameScreenTexture, true);
-    gameScreenSprite.setScale({4.f, 4.f});
+    updateGameScreenTransform(window.getSize());
 
     window.setFramerateLimit(60);
 }
@@ -65,6 +66,12 @@ void Application::processEvents()
 
         if(event->is<sf::Event::Closed>())
             window.close();
+
+        if(const sf::Event::Resized* resizedEvent = event->getIf<sf::Event::Resized>())
+        {
+            window.setView(sf::View(sf::FloatRect({0.f, 0.f}, static_cast<sf::Vector2f>(resizedEvent->size))));
+            updateGameScreenTransform(resizedEvent->size);
+        }
     }
 }
 
@@ -174,4 +181,17 @@ void Application::render()
     const auto& frameBuffer = emulator.getPPU().getFrameBuffer();
     gameScreenTexture.update(reinterpret_cast<const std::uint8_t*>(frameBuffer.data()));
     window.draw(gameScreenSprite);
+}
+
+void Application::updateGameScreenTransform(sf::Vector2u windowSize)
+{
+    float scaleX = static_cast<float>(windowSize.x) / static_cast<float>(PixelProcessingUnit::ScreenWidth);
+    float scaleY = static_cast<float>(windowSize.y) / static_cast<float>(PixelProcessingUnit::ScreenHeight);
+    float scale = std::min(scaleX, scaleY);
+
+    gameScreenSprite.setScale({scale, scale});
+
+    sf::Vector2f scaledScreenSize{PixelProcessingUnit::ScreenWidth * scale, PixelProcessingUnit::ScreenHeight * scale};
+    gameScreenSprite.setPosition({(static_cast<float>(windowSize.x) - scaledScreenSize.x) / 2.f,
+                                   (static_cast<float>(windowSize.y) - scaledScreenSize.y) / 2.f});
 }
