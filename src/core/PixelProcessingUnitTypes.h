@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <queue>
 
 #include "Common.h"
 
@@ -58,12 +59,38 @@ enum class TileMapArea : u16
 
 enum class TileDataArea : u16
 {
-    Low = 0x8800,
-    High = 0x8000
+    Signed = 0x8800,  //Tile index is signed (-128 to 127), tile 0 at 0x9000
+    Unsigned = 0x8000 //Tile index is unsigned (0 to 255), tile 0 at 0x8000
 };
 
 enum class SpriteSize : u32
 {
     EightByEight = 8,
     EightBySixteen = 16
+};
+
+enum class PixelFIFOState
+{
+    GetTile,
+    GetTileDataLow, //backgroundFetchData[1]
+    GetTileDataHigh,//backgroundFetchData[2]
+    Sleep,
+    Push
+};
+
+struct PixelFIFOContext
+{
+    PixelFIFOState state;
+    std::queue<u32> queue; //u32 = color
+    u8 lineX;
+    u8 pushedX;
+    u8 fetchX;
+    std::array<u8, 3> backgroundFetchData;
+    std::array<u8, 6> fetchEntryData; //Reserved for future sprite/OAM fetching
+    u8 mapY;
+    u8 mapX;
+    u8 tileY;
+    u8 fifoX;
+
+    void initialize();
 };

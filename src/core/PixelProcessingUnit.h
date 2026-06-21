@@ -68,13 +68,17 @@ private:
     void incrementCoordinateY();
     void resetCoordinateY();
 
+    void processPixelFIFO();
+    void updateFetchPixel();
+    void pushPixelInBuffer();
+    bool addFetchedDataInPixelFIFO();
+    void resetPixelFIFO();
+
     u32 currentFrame;
     u32 lineTicks;
     std::array<u32, ScreenWidth * ScreenHeight> frameBuffer{};
 
-    u64 previousFrameTime = 0;
-    u64 startTimer = 0;
-    u64 frameCount = 0;
+    PixelFIFOContext pixelFIFOContext;
 
     LCDData LCD;
     MemoryBus* memoryBus = nullptr;

@@ -20,6 +20,8 @@ void PixelProcessingUnit::initialize(MemoryBus* bus, CentralProcessingUnit* cpuP
     lineTicks = 0;
     frameBuffer.fill(0);
     LCD.initialize();
+    pixelFIFOContext.initialize();
+
     setLCDMode(LCDMode::ObjectAccessMemoryScan);
 }
 
@@ -144,7 +146,7 @@ TileMapArea PixelProcessingUnit::getBackgroundTileMapArea() const
 
 TileDataArea PixelProcessingUnit::getTileDataArea() const
 {
-    return MathUtils<u8>::getBitValue(LCD.control, 4) ? TileDataArea::High : TileDataArea::Low;
+    return MathUtils<u8>::getBitValue(LCD.control, 4) ? TileDataArea::Unsigned : TileDataArea::Signed;
 }
 
 bool PixelProcessingUnit::getWindowEnabled() const
@@ -311,14 +313,144 @@ void PixelProcessingUnit::resetCoordinateY()
     LCD.coordinateY = 0;
 }
 
+void PixelProcessingUnit::processPixelFIFO()
+{
+    pixelFIFOContext.mapY = LCD.coordinateY + LCD.scrollY;
+    pixelFIFOContext.mapX = pixelFIFOContext.fetchX + LCD.scrollX;
+    pixelFIFOContext.tileY = ((LCD.coordinateY + LCD.scrollY) % TileSize) * 2;
+
+    if(!MathUtils<u32>::getBitValue(lineTicks, 0)) //Fetcher advances every other tick
+        updateFetchPixel();
+
+    pushPixelInBuffer();    
+}
+
+void PixelProcessingUnit::updateFetchPixel()
+{
+    switch(pixelFIFOContext.state)
+    {
+        case PixelFIFOState::GetTile:
+        {
+            if(getBackgroundEnabled())
+            {
+                TileMapArea mapArea = getBackgroundTileMapArea();
+                u16 address = static_cast<u16>(mapArea) + (pixelFIFOContext.mapX / TileSize) + ((pixelFIFOContext.mapY / TileSize) * 32);
+                pixelFIFOContext.backgroundFetchData[0] = memoryBus->read(address);
+
+                TileDataArea dataArea = getTileDataArea();
+                if(dataArea == TileDataArea::Signed)
+                    pixelFIFOContext.backgroundFetchData[0] += 128;
+            }
+
+            pixelFIFOContext.state = PixelFIFOState::GetTileDataLow;
+            pixelFIFOContext.fetchX += 8;
+            break;
+        }
+        case PixelFIFOState::GetTileDataLow:
+        {
+            TileDataArea dataArea = getTileDataArea();
+            u16 address = static_cast<u16>(dataArea) + (pixelFIFOContext.backgroundFetchData[0] * BytesPerTile) + pixelFIFOContext.tileY;
+            pixelFIFOContext.backgroundFetchData[1] = memoryBus->read(address);
+
+            pixelFIFOContext.state = PixelFIFOState::GetTileDataHigh;
+            break;
+        }
+        case PixelFIFOState::GetTileDataHigh:
+        {
+            TileDataArea dataArea = getTileDataArea();
+            u16 address = static_cast<u16>(dataArea) + (pixelFIFOContext.backgroundFetchData[0] * BytesPerTile) + pixelFIFOContext.tileY + 1;
+            pixelFIFOContext.backgroundFetchData[2] = memoryBus->read(address);
+            
+            pixelFIFOContext.state = PixelFIFOState::Sleep;
+            break;
+        }
+        case PixelFIFOState::Sleep:
+        {
+            pixelFIFOContext.state = PixelFIFOState::Push;
+            break;
+        }
+        case PixelFIFOState::Push:
+        {
+            if(addFetchedDataInPixelFIFO())
+                pixelFIFOContext.state = PixelFIFOState::GetTile;
+            break;
+        }
+    }
+}
+
+void PixelProcessingUnit::pushPixelInBuffer()
+{
+    if(pixelFIFOContext.queue.size() > 8)
+    {
+        u32 pixelData = pixelFIFOContext.queue.front();
+        pixelFIFOContext.queue.pop();
+
+        if(pixelFIFOContext.lineX >= LCD.scrollX % 8)
+        {
+            u32 position = pixelFIFOContext.pushedX + (LCD.coordinateY * ScreenWidth);
+            frameBuffer[position] = pixelData;
+            pixelFIFOContext.pushedX++;
+        }
+
+        pixelFIFOContext.lineX++;
+    }
+}
+
+bool PixelProcessingUnit::addFetchedDataInPixelFIFO()
+{
+    if(pixelFIFOContext.queue.size() > 8)
+    {
+        //Queue is full
+        return false;
+    }
+
+    s32 x = pixelFIFOContext.fetchX - (8 - (LCD.scrollX % 8));
+
+    for(u8 i = 0; i < 8; ++i)
+    {
+        u8 bitPosition = 7 - i;
+        u8 low = MathUtils<u8>::getBitValue(pixelFIFOContext.backgroundFetchData[1], bitPosition);
+        u8 high = MathUtils<u8>::getBitValue(pixelFIFOContext.backgroundFetchData[2], bitPosition);
+        u32 color = LCD.backgroundColors[low | (high << 1)];
+
+        if(x >= 0)
+        {
+            pixelFIFOContext.queue.push(color);
+            pixelFIFOContext.fifoX++;
+        }
+    }
+
+    return true;
+}
+
+void PixelProcessingUnit::resetPixelFIFO()
+{
+    pixelFIFOContext.queue = std::queue<u32>();
+}
+
 void PixelProcessingUnit::updateObjectAccessMemoryScanMode()
 {
     if(lineTicks >= 80)
+    {
         setLCDMode(LCDMode::PixelDrawing);
+        pixelFIFOContext.state = PixelFIFOState::GetTile;
+        pixelFIFOContext.lineX = 0;
+        pixelFIFOContext.fetchX = 0;
+        pixelFIFOContext.pushedX = 0;
+        pixelFIFOContext.fifoX = 0;
+    }
 }
 
 void PixelProcessingUnit::updatePixelDrawingMode()
 {
-    if(lineTicks >= 80 + 172)
+    processPixelFIFO();
+
+    if(pixelFIFOContext.pushedX >= ScreenWidth)
+    {
+        resetPixelFIFO();
         setLCDMode(LCDMode::HorizontalBlank);
+
+        if(getHorizontalBlankInterruptEnabled())
+            cpu->requestInterrupt(InterruptType::LCD);
+    }
 }

@@ -40,3 +40,18 @@ void LCDData::updatePaletteData(u8 paletteData, u8 palette)
             break;
     }
 }
+
+void PixelFIFOContext::initialize()
+{
+    queue = std::queue<u32>();
+    lineX = 0;
+    pushedX = 0;
+    fetchX = 0;
+    backgroundFetchData.fill(0);
+    fetchEntryData.fill(0);
+    mapY = 0;
+    mapX = 0;
+    tileY = 0;
+    fifoX = 0;
+    state = PixelFIFOState::GetTile;
+}
