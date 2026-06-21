@@ -226,12 +226,15 @@ u16 CentralProcessingUnit::reverse(u16 value) const
 
 void CentralProcessingUnit::emulateCycles(u8 cycleCount)
 {
-    u32 nbOfTicks = cycleCount * 4;
-
-    cycles += nbOfTicks;
-    for(u32 i = 0; i < nbOfTicks; ++i)
+    for(u32 i = 0; i < cycleCount; ++i)
     {
-        memoryBus->tickTimer();
+        for(int n = 0; n < 4; ++n)
+        {
+            cycles++;
+            memoryBus->tickTimer();
+        }
+
+        memoryBus->tickDMATransfer();
     }
 }
 

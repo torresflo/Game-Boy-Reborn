@@ -71,6 +71,9 @@ u8 MemoryBus::read(u16 address) const
     else if(address < 0xFEA0)
     {
         //OAM
+        if(DMAContext.isActive)
+            return 0xFF;
+
         return readOAM(address);
     }
     else if(address < 0xFF00)
@@ -139,6 +142,9 @@ void MemoryBus::write(u16 address, u8 value)
     else if(address < 0xFEA0)
     {
         //OAM
+        if(DMAContext.isActive)
+            return;
+
         writeOAM(address, value);
     }
     else if(address < 0xFF00)
@@ -155,6 +161,11 @@ void MemoryBus::write(u16 address, u8 value)
     {
         //CPU Enable Register
         writeInterruptEnableRegister(value);
+    }
+    else if(address == 0xFF46)
+    {
+        //Start DMA
+        startDMA(value);
     }
     else
     {
@@ -182,6 +193,41 @@ void MemoryBus::writeObject(u16 address, ObjectAttributeMemoryEntry object)
         address -= 0xFE00;
     
     OAM[address] = object;
+}
+
+void MemoryBus::startDMA(u8 startValue)
+{
+    DMAContext.isActive = true;
+    DMAContext.index = 0;
+    DMAContext.startDelay = 2;
+    DMAContext.value = startValue;
+}
+
+void MemoryBus::tickDMATransfer()
+{
+    if(!isDMATransferInProgress())
+        return;
+
+    if(DMAContext.startDelay > 0)
+    {
+        DMAContext.startDelay--;
+        return;
+    }
+
+    writeOAM(DMAContext.index, read(DMAContext.value * 0x100) + DMAContext.index);
+
+    DMAContext.index++;
+    DMAContext.isActive = DMAContext.index < 0xA0;
+}
+
+bool MemoryBus::isDMATransferInProgress() const
+{
+    return DMAContext.isActive;
+}
+
+void MemoryBus::tickTimer()
+{
+    timer.tick();
 }
 
 u8 MemoryBus::readWRAM(u16 address) const
@@ -284,11 +330,6 @@ u8 MemoryBus::readInterruptFlags() const
 void MemoryBus::writeInterruptFlags(u8 value)
 {
     interruptFlags = value;
-}
-
-void MemoryBus::tickTimer()
-{
-    timer.tick();
 }
 
 u8 MemoryBus::readIO(u16 address) const
