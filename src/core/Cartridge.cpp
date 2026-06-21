@@ -133,15 +133,14 @@ bool Cartridge::loadROM(std::string path)
     header = *reinterpret_cast<CartridgeHeader*>(ROMData.data() + 0x100);
     header.title[15] = '\0';
 
-    Log::print(LogLevel::Info, "Title       : ", header.title);
-    Log::print(LogLevel::Info, "Type        : ", std::format("{:02X}", header.cartridgeType), " (", getRomTypeName(header.cartridgeType), ")");
-    Log::print(LogLevel::Info, "ROM Size    : ", 32 << header.romSize, " KB");
-    Log::print(LogLevel::Info, "RAM SIZE    : ", std::format("{:02X}", header.ramSize));
-    Log::print(LogLevel::Info, "Licence     : ", std::format("0x{:02X}", header.oldLicenceCode), " (", getLicenceName(header.oldLicenceCode), ")");
-    Log::print(LogLevel::Info, "ROM Version : ", std::format("{:02X}", header.maskRomVersion));
+    Log::print(LogLevel::Debug, "Title       : ", header.title);
+    Log::print(LogLevel::Debug, "Type        : ", std::format("{:02X}", header.cartridgeType), " (", getRomTypeName(header.cartridgeType), ")");
+    Log::print(LogLevel::Debug, "ROM Size    : ", 32 << header.romSize, " KB");
+    Log::print(LogLevel::Debug, "RAM SIZE    : ", std::format("{:02X}", header.ramSize));
+    Log::print(LogLevel::Debug, "Licence     : ", std::format("0x{:02X}", header.oldLicenceCode), " (", getLicenceName(header.oldLicenceCode), ")");
+    Log::print(LogLevel::Debug, "ROM Version : ", std::format("{:02X}", header.maskRomVersion));
+    
     Log::print(LogLevel::Info, "Checksum    : ", std::format("{:02X}", header.headerChecksum), " (", checkHeaderChecksum() ? "PASSED" : "FAILED", ")");
-
-    Log::print(LogLevel::Info, "Header checksum is valid");
 
     return true;
 }
