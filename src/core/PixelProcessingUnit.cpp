@@ -10,6 +10,10 @@
 namespace
 {
     constexpr u16 TileDataStartAddress = 0x8000;
+
+    //The fetcher runs ahead of the pixel pusher (FIFO look-ahead), so window tiles must
+    //keep being fetched a bit past the last visible column to cover the final pushed pixels
+    constexpr u32 WindowFetcherLookaheadPixels = 14;
 }
 
 void PixelProcessingUnit::initialize(MemoryBus* bus, CentralProcessingUnit* cpuPtr)
@@ -28,6 +32,8 @@ void PixelProcessingUnit::initialize(MemoryBus* bus, CentralProcessingUnit* cpuP
 
     lineObjects.reserve(MaxObjects);
     fetchedObjects.reserve(MaxObjectsPerFetch);
+
+    windowLine = 0;
 }
 
 void PixelProcessingUnit::tick()
@@ -228,6 +234,18 @@ bool PixelProcessingUnit::getLYCInterruptEnabled() const
     return MathUtils<u8>::getBitValue(LCD.status, 6);
 }
 
+bool PixelProcessingUnit::isWindowVisible() const
+{
+    return getWindowEnabled()
+        && LCD.windowX <= ScreenWidth + 6 //166
+        && LCD.windowY < ScreenHeight;
+}
+
+bool PixelProcessingUnit::isWindowActiveOnLine() const
+{
+    return isWindowVisible() && LCD.coordinateY >= LCD.windowY;
+}
+
 void PixelProcessingUnit::setLYCInterruptEnabled(bool enabled)
 {
     MathUtils<u8>::setBitValue(LCD.status, 6, enabled);
@@ -334,6 +352,9 @@ void PixelProcessingUnit::updatePixelDrawingMode()
 
 void PixelProcessingUnit::incrementCoordinateY()
 {
+    if(isWindowActiveOnLine())
+        windowLine++;
+
     LCD.coordinateY++;
     bool matches = (LCD.coordinateY == LCD.compareY);
     setCoincidenceFlag(matches);
@@ -347,6 +368,7 @@ void PixelProcessingUnit::incrementCoordinateY()
 void PixelProcessingUnit::resetCoordinateY()
 {
     LCD.coordinateY = 0;
+    windowLine = 0;
 }
 
 void PixelProcessingUnit::processPixelFIFO()
@@ -378,6 +400,8 @@ void PixelProcessingUnit::updateFetchPixel()
                 TileDataArea dataArea = getTileDataArea();
                 if(dataArea == TileDataArea::Signed)
                     pixelFIFOContext.backgroundFetchData[0] += 128;
+
+                loadWindowTile();
             }
 
             if(getObjectEnabled() && !lineObjects.empty())
@@ -576,4 +600,25 @@ u32 PixelProcessingUnit::fetchObjectPixel(u32 currentColor, u8 backgroundColorIn
         break;
     }
     return currentColor;
+}
+
+void PixelProcessingUnit::loadWindowTile()
+{
+    if(!isWindowActiveOnLine())
+        return;
+
+    bool fetcherReachedWindowColumn = pixelFIFOContext.fetchX + 7u >= LCD.windowX
+        && pixelFIFOContext.fetchX + 7u < LCD.windowX + ScreenWidth + WindowFetcherLookaheadPixels;
+    if(!fetcherReachedWindowColumn)
+        return;
+
+    u8 tileRow = windowLine / TileSize;
+
+    TileMapArea tileMapArea = getWindowTileMapArea();
+    u16 address = static_cast<u16>(tileMapArea) + ((pixelFIFOContext.fetchX + 7u - LCD.windowX) / TileSize) + (tileRow * 32);
+    pixelFIFOContext.backgroundFetchData[0] = memoryBus->read(address);
+
+    TileDataArea dataArea = getTileDataArea();
+    if(dataArea == TileDataArea::Signed)
+        pixelFIFOContext.backgroundFetchData[0] += 128;
 }

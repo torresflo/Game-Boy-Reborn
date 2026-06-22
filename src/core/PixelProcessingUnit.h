@@ -50,6 +50,8 @@ public:
     bool getObjectAccessMemoryInterruptEnabled() const;
     bool getLYCInterruptEnabled() const;
 
+    bool isWindowVisible() const;
+
     const std::array<u32, ScreenWidth * ScreenHeight>& getFrameBuffer() const;
 
     using Tile = std::array<u8, TileSize * TileSize>;
@@ -84,6 +86,9 @@ private:
     void loadLineObjects();
     u32 fetchObjectPixel(u32 currentColor, u8 backgroundColorIndex);
 
+    bool isWindowActiveOnLine() const;
+    void loadWindowTile();
+
     u32 currentFrame = 0;
     u32 lineTicks = 0;
     std::array<u32, ScreenWidth * ScreenHeight> frameBuffer{};
@@ -92,6 +97,8 @@ private:
 
     std::vector<ObjectAttributeMemoryEntry> lineObjects;
     std::vector<ObjectAttributeMemoryEntry> fetchedObjects;
+
+    u8 windowLine = 0;
 
     LCDData LCD;
     MemoryBus* memoryBus = nullptr;
