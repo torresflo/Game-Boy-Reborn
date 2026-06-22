@@ -1,6 +1,7 @@
 #pragma once
 
 #include <array>
+#include <vector>
 
 #include "Common.h"
 #include "CentralProcessingUnitTypes.h"
@@ -20,6 +21,9 @@ public:
     static constexpr u32 BytesPerTile = 16;
     static constexpr u32 TileColumns = 16;
     static constexpr u32 TileRows = 24;     // 16 x 24 = 384 tiles
+    static constexpr u32 MaxObjects = 10;        // Max objects selected per scanline
+    static constexpr u32 MaxObjectsPerFetch = 3; // Bounds fetchEntryData's size; hardware has no such cap, but >3 objects overlapping one fetch window is rare
+    static constexpr u8 ObjectScreenYOffset = 16;
 
     void initialize(MemoryBus* bus, CentralProcessingUnit* cpuPtr);
     void tick();
@@ -74,11 +78,20 @@ private:
     bool addFetchedDataInPixelFIFO();
     void resetPixelFIFO();
 
-    u32 currentFrame;
-    u32 lineTicks;
+    s32 getObjectFIFOX(const ObjectAttributeMemoryEntry& object) const;
+    void selectFetchedObjects();
+    void loadObjectData(u8 offset);
+    void loadLineObjects();
+    u32 fetchObjectPixel(u32 currentColor, u8 backgroundColorIndex);
+
+    u32 currentFrame = 0;
+    u32 lineTicks = 0;
     std::array<u32, ScreenWidth * ScreenHeight> frameBuffer{};
 
     PixelFIFOContext pixelFIFOContext;
+
+    std::vector<ObjectAttributeMemoryEntry> lineObjects;
+    std::vector<ObjectAttributeMemoryEntry> fetchedObjects;
 
     LCDData LCD;
     MemoryBus* memoryBus = nullptr;

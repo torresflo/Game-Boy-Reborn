@@ -1,6 +1,7 @@
 #include "PixelProcessingUnit.h"
 
 #include <format>
+#include <algorithm>
 
 #include "CentralProcessingUnit.h"
 #include "MathUtils.h"
@@ -19,10 +20,14 @@ void PixelProcessingUnit::initialize(MemoryBus* bus, CentralProcessingUnit* cpuP
     currentFrame = 0;
     lineTicks = 0;
     frameBuffer.fill(0);
+
     LCD.initialize();
+    setLCDMode(LCDMode::ObjectAccessMemoryScan);
+
     pixelFIFOContext.initialize();
 
-    setLCDMode(LCDMode::ObjectAccessMemoryScan);
+    lineObjects.reserve(MaxObjects);
+    fetchedObjects.reserve(MaxObjectsPerFetch);
 }
 
 void PixelProcessingUnit::tick()
@@ -296,6 +301,37 @@ void PixelProcessingUnit::updateVerticalBlankMode()
     }
 }
 
+void PixelProcessingUnit::updateObjectAccessMemoryScanMode()
+{
+    if(lineTicks >= 80)
+    {
+        setLCDMode(LCDMode::PixelDrawing);
+        pixelFIFOContext.state = PixelFIFOState::GetTile;
+        pixelFIFOContext.lineX = 0;
+        pixelFIFOContext.fetchX = 0;
+        pixelFIFOContext.pushedX = 0;
+        pixelFIFOContext.fifoX = 0;
+    }
+
+    //Real hardware scans OAM progressively across all 80 ticks (2 entries/tick); we load every entry up front for simplicity
+    if(lineTicks == 1)
+        loadLineObjects();
+}
+
+void PixelProcessingUnit::updatePixelDrawingMode()
+{
+    processPixelFIFO();
+
+    if(pixelFIFOContext.pushedX >= ScreenWidth)
+    {
+        resetPixelFIFO();
+        setLCDMode(LCDMode::HorizontalBlank);
+
+        if(getHorizontalBlankInterruptEnabled())
+            cpu->requestInterrupt(InterruptType::LCD);
+    }
+}
+
 void PixelProcessingUnit::incrementCoordinateY()
 {
     LCD.coordinateY++;
@@ -331,6 +367,8 @@ void PixelProcessingUnit::updateFetchPixel()
     {
         case PixelFIFOState::GetTile:
         {
+            fetchedObjects.clear();
+
             if(getBackgroundEnabled())
             {
                 TileMapArea mapArea = getBackgroundTileMapArea();
@@ -342,6 +380,9 @@ void PixelProcessingUnit::updateFetchPixel()
                     pixelFIFOContext.backgroundFetchData[0] += 128;
             }
 
+            if(getObjectEnabled() && !lineObjects.empty())
+                selectFetchedObjects();
+
             pixelFIFOContext.state = PixelFIFOState::GetTileDataLow;
             pixelFIFOContext.fetchX += 8;
             break;
@@ -352,6 +393,8 @@ void PixelProcessingUnit::updateFetchPixel()
             u16 address = static_cast<u16>(dataArea) + (pixelFIFOContext.backgroundFetchData[0] * BytesPerTile) + pixelFIFOContext.tileY;
             pixelFIFOContext.backgroundFetchData[1] = memoryBus->read(address);
 
+            loadObjectData(0);
+
             pixelFIFOContext.state = PixelFIFOState::GetTileDataHigh;
             break;
         }
@@ -361,6 +404,8 @@ void PixelProcessingUnit::updateFetchPixel()
             u16 address = static_cast<u16>(dataArea) + (pixelFIFOContext.backgroundFetchData[0] * BytesPerTile) + pixelFIFOContext.tileY + 1;
             pixelFIFOContext.backgroundFetchData[2] = memoryBus->read(address);
             
+            loadObjectData(1);
+
             pixelFIFOContext.state = PixelFIFOState::Sleep;
             break;
         }
@@ -411,7 +456,11 @@ bool PixelProcessingUnit::addFetchedDataInPixelFIFO()
         u8 bitPosition = 7 - i;
         u8 low = MathUtils<u8>::getBitValue(pixelFIFOContext.backgroundFetchData[1], bitPosition);
         u8 high = MathUtils<u8>::getBitValue(pixelFIFOContext.backgroundFetchData[2], bitPosition);
-        u32 color = LCD.backgroundColors[low | (high << 1)];
+        u8 backgroundColorIndex = getBackgroundEnabled() ? (low | (high << 1)) : 0;
+        u32 color = LCD.backgroundColors[backgroundColorIndex];
+
+        if(getObjectEnabled())
+            color = fetchObjectPixel(color, backgroundColorIndex);
 
         if(x >= 0)
         {
@@ -428,29 +477,103 @@ void PixelProcessingUnit::resetPixelFIFO()
     pixelFIFOContext.queue = std::queue<u32>();
 }
 
-void PixelProcessingUnit::updateObjectAccessMemoryScanMode()
+s32 PixelProcessingUnit::getObjectFIFOX(const ObjectAttributeMemoryEntry& object) const
 {
-    if(lineTicks >= 80)
+    return (object.x - 8) + (LCD.scrollX % 8);
+}
+
+void PixelProcessingUnit::selectFetchedObjects()
+{
+    for(const ObjectAttributeMemoryEntry& object : lineObjects)
     {
-        setLCDMode(LCDMode::PixelDrawing);
-        pixelFIFOContext.state = PixelFIFOState::GetTile;
-        pixelFIFOContext.lineX = 0;
-        pixelFIFOContext.fetchX = 0;
-        pixelFIFOContext.pushedX = 0;
-        pixelFIFOContext.fifoX = 0;
+        s32 objectX = getObjectFIFOX(object);
+        bool isInFetchWindow = objectX >= pixelFIFOContext.fetchX - 8 && objectX < pixelFIFOContext.fetchX + 8;
+
+        if(isInFetchWindow)
+            fetchedObjects.push_back(object);
+
+        if(fetchedObjects.size() >= MaxObjectsPerFetch)
+            break;
     }
 }
 
-void PixelProcessingUnit::updatePixelDrawingMode()
+void PixelProcessingUnit::loadObjectData(u8 offset)
 {
-    processPixelFIFO();
+    u8 currentY = LCD.coordinateY;
+    u8 objectHeight = static_cast<u8>(getObjectSize());
 
-    if(pixelFIFOContext.pushedX >= ScreenWidth)
+    for(u32 i = 0; i < fetchedObjects.size(); ++i)
     {
-        resetPixelFIFO();
-        setLCDMode(LCDMode::HorizontalBlank);
+        const ObjectAttributeMemoryEntry& object = fetchedObjects[i];
+        u8 tileY = ((currentY + ObjectScreenYOffset) - object.y) * 2;
+        if(object.yFlip) //flipped upside down
+            tileY = ((objectHeight * 2) - 2) - tileY;
 
-        if(getHorizontalBlankInterruptEnabled())
-            cpu->requestInterrupt(InterruptType::LCD);
+        u8 tileIndex = object.tileIndex;
+        if(objectHeight == static_cast<u8>(SpriteSize::EightBySixteen))
+            MathUtils<u8>::setBitValue(tileIndex, 0, false); //Lower bit of tile index is ignored for 8x16 objects
+
+        u16 address = TileDataStartAddress + (tileIndex * BytesPerTile) + tileY + offset;
+        pixelFIFOContext.fetchEntryData[(i * 2) + offset] = memoryBus->read(address);
     }
+}
+
+void PixelProcessingUnit::loadLineObjects()
+{
+    u8 currentY = LCD.coordinateY;
+    u8 objectHeight = static_cast<u8>(getObjectSize());
+    lineObjects.clear();
+
+    u32 matchedObjectCount = 0;
+    for(u8 i = 0; i < MemoryBus::OAMEntries && matchedObjectCount < MaxObjects; ++i)
+    {
+        ObjectAttributeMemoryEntry entry = memoryBus->readObject(i); //Direct access by index
+
+        bool isOnCurrentLine = entry.y <= currentY + ObjectScreenYOffset && entry.y + objectHeight > currentY + ObjectScreenYOffset;
+        if(!isOnCurrentLine)
+            continue;
+
+        matchedObjectCount++; //Counts towards the per-line cap even if not visible (x == 0)
+
+        if(entry.x != 0) //x == 0 is fully off-screen, nothing to render
+            lineObjects.push_back(entry);
+    }
+
+    //Smaller X is drawn on top; ties keep OAM order (stable_sort preserves it)
+    std::stable_sort(lineObjects.begin(), lineObjects.end(), [](const ObjectAttributeMemoryEntry& a, const ObjectAttributeMemoryEntry& b)
+    {
+        return a.x < b.x;
+    });
+}
+
+u32 PixelProcessingUnit::fetchObjectPixel(u32 currentColor, u8 backgroundColorIndex)
+{
+    for(u8 i = 0; i < fetchedObjects.size(); ++i)
+    {
+        const ObjectAttributeMemoryEntry& object = fetchedObjects[i];
+        s32 objectX = getObjectFIFOX(object);
+
+        s32 offset = pixelFIFOContext.fifoX - objectX;
+        if(offset < 0 || offset > 7) //Out of bounds
+            continue;
+
+        u8 bitPosition = static_cast<u8>(7 - offset);
+        if(object.xFlip)
+            bitPosition = static_cast<u8>(offset);
+
+        u8 low = MathUtils<u8>::getBitValue(pixelFIFOContext.fetchEntryData[i * 2], bitPosition);
+        u8 high = MathUtils<u8>::getBitValue(pixelFIFOContext.fetchEntryData[(i * 2) + 1], bitPosition);
+        u8 paletteIndex = low | (high << 1);
+
+        if(paletteIndex == 0) //Transparent, let a lower-priority object show through
+            continue;
+
+        //Highest-priority opaque object at this pixel: it alone decides object-vs-background, win or lose
+        bool backgroundWins = object.backgroundPriority && backgroundColorIndex != 0;
+        if(!backgroundWins)
+            currentColor = object.paletteNumber ? LCD.object2Colors[paletteIndex] : LCD.object1Colors[paletteIndex];
+
+        break;
+    }
+    return currentColor;
 }

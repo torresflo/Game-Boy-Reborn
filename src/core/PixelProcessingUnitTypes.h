@@ -7,8 +7,8 @@
 
 struct ObjectAttributeMemoryEntry
 {
-    u8 x = 0;
     u8 y = 0;
+    u8 x = 0;
     u8 tileIndex = 0;
 
     //Flags
@@ -17,7 +17,7 @@ struct ObjectAttributeMemoryEntry
     u8 paletteNumber : 1 = 0; //Non Game boy Color only
     u8 xFlip : 1 = 0;
     u8 yFlip : 1 = 0;
-    u8 backroundPriority : 1 = 0;
+    u8 backgroundPriority : 1 = 0;
 };
 
 struct LCDData
@@ -80,17 +80,17 @@ enum class PixelFIFOState
 
 struct PixelFIFOContext
 {
-    PixelFIFOState state;
+    PixelFIFOState state = PixelFIFOState::GetTile;
     std::queue<u32> queue; //u32 = color
-    u8 lineX;
-    u8 pushedX;
-    u8 fetchX;
+    u8 lineX = 0;
+    u8 pushedX = 0;
+    u8 fetchX = 0;
     std::array<u8, 3> backgroundFetchData;
-    std::array<u8, 6> fetchEntryData; //Reserved for future sprite/OAM fetching
-    u8 mapY;
-    u8 mapX;
-    u8 tileY;
-    u8 fifoX;
+    std::array<u8, 6> fetchEntryData; //Low/high tile bitplane bytes for up to 3 fetched objects
+    u8 mapY = 0;
+    u8 mapX = 0;
+    u8 tileY = 0;
+    u8 fifoX = 0;
 
     void initialize();
 };

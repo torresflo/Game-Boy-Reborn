@@ -20,6 +20,8 @@ struct DirectMemoryAccessContext
 class MemoryBus
 {
 public:
+    static constexpr u8 OAMEntries = 40;
+
     virtual ~MemoryBus() = default;
 
     void initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr);
@@ -69,7 +71,7 @@ private:
     std::array<u8, 0x80> HRAM;
 
     //OAM and VRAM
-    std::array<ObjectAttributeMemoryEntry, 40> OAM;
+    std::array<ObjectAttributeMemoryEntry, OAMEntries> OAM;
     std::array<u8, 0x2000> VRAM;
 
     //OAM DMA Transfer
