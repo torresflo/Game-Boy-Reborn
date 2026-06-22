@@ -4,6 +4,7 @@
 
 #include "Cartridge.h"
 #include "PixelProcessingUnit.h"
+#include "Gamepad.h"
 
 // 0x0000 - 0x3FFF : ROM Bank 0
 // 0x4000 - 0x7FFF : ROM Bank 1 - Switchable
@@ -19,11 +20,12 @@
 // 0xFF00 - 0xFF7F : I/O Registers
 // 0xFF80 - 0xFFFE : Zero Page / HRAM
 
-void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr)
+void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr, Gamepad* gamepadPtr)
 {
     cartridge = cartridgePtr;
     ppu = ppuPtr;
     timer.initialize(cpuPtr);
+    gamepad = gamepadPtr;
 
     WRAM.fill(0);
     HRAM.fill(0);
@@ -333,6 +335,9 @@ void MemoryBus::writeInterruptFlags(u8 value)
 
 u8 MemoryBus::readIO(u16 address) const
 {
+    if(address == 0xFF00)
+        return gamepad->getAsMemoryValue();
+
     if(address == 0xFF01)
         return serialData[0];
 
@@ -363,7 +368,9 @@ u8 MemoryBus::readIO(u16 address) const
 
 void MemoryBus::writeIO(u16 address, u8 value)
 {
-    if(address == 0xFF01)
+    if(address == 0xFF00)
+        gamepad->setFromMemory(value);
+    else if(address == 0xFF01)
         serialData[0] = value;
     else if(address == 0xFF02)
         serialData[1] = value;

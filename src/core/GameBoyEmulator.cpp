@@ -7,9 +7,10 @@ bool GameBoyEmulator::loadROM(std::string path)
 
     Log::print(LogLevel::Info, "ROM loaded successfully");
 
-    bus.initialize(&cartridge, &CPU, &PPU);
+    bus.initialize(&cartridge, &CPU, &PPU, &gamepad);
     CPU.initialize(&bus, &PPU);
     PPU.initialize(&bus, &CPU);
+    gamepad.initialize();
 
     romLoaded = true;
     paused = false;
@@ -57,4 +58,9 @@ const PixelProcessingUnit& GameBoyEmulator::getPPU() const
 const MemoryBus& GameBoyEmulator::getMemoryBus() const
 {
     return bus;
+}
+
+Gamepad& GameBoyEmulator::getGamepad()
+{
+    return gamepad;
 }

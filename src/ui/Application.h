@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <optional>
 
 #include <SFML/Graphics.hpp>
 
@@ -22,12 +23,16 @@ public:
 
 private:
     void processEvents();
+    void processKeyPressedEvent(const sf::Event::KeyPressed& key);
+    void processKeyReleasedEvent(const sf::Event::KeyReleased& key);
     void updateEmulation(sf::Time deltaTime);
     void update();
     void render();
     void drawMenuBar();
     void updateWindowTitle();
     void updateGameScreenTransform(sf::Vector2u windowSize);
+
+    std::optional<Gamepad::Button> convertSFMLKey(const sf::Keyboard::Key& key) const;
 
     sf::RenderWindow window;
     sf::Texture gameScreenTexture;

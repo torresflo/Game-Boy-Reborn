@@ -66,16 +66,39 @@ void Application::processEvents()
 
         if(event->is<sf::Event::Closed>())
             window.close();
-
-        if(const sf::Event::Resized* resizedEvent = event->getIf<sf::Event::Resized>())
+        else if(const sf::Event::Resized* resizedEvent = event->getIf<sf::Event::Resized>())
             window.setView(sf::View(sf::FloatRect({0.f, 0.f}, static_cast<sf::Vector2f>(resizedEvent->size))));
+        else if(const sf::Event::KeyPressed* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
+            processKeyPressedEvent(*keyPressedEvent);
+        else if(const sf::Event::KeyReleased* keyReleasedEvent = event->getIf<sf::Event::KeyReleased>())
+            processKeyReleasedEvent(*keyReleasedEvent);
+    }
+}
 
-        if(const sf::Event::KeyPressed* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
+void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
+{   
+    switch(key.code)
+    {
+        case sf::Keyboard::Key::F1:
         {
-            if(keyPressedEvent->code == sf::Keyboard::Key::F1)
-                menuBarVisible = !menuBarVisible;
+            menuBarVisible = !menuBarVisible;
+            break;
+        }
+        default:
+        {
+            std::optional<Gamepad::Button> button = convertSFMLKey(key.code);
+            if(button.has_value())
+                emulator.getGamepad().setButtonState(button.value(), true);
+                break;
         }
     }
+}
+
+void Application::processKeyReleasedEvent(const sf::Event::KeyReleased &key)
+{
+    std::optional<Gamepad::Button> button = convertSFMLKey(key.code);
+    if(button.has_value())
+        emulator.getGamepad().setButtonState(button.value(), false);
 }
 
 void Application::updateEmulation(sf::Time deltaTime)
@@ -207,4 +230,29 @@ void Application::updateGameScreenTransform(sf::Vector2u windowSize)
     sf::Vector2f scaledScreenSize{PixelProcessingUnit::ScreenWidth * scale, PixelProcessingUnit::ScreenHeight * scale};
     gameScreenSprite.setPosition({(static_cast<float>(windowSize.x) - scaledScreenSize.x) / 2.f,
                                    menuBarHeight + (availableHeight - scaledScreenSize.y) / 2.f});
+}
+
+std::optional<Gamepad::Button> Application::convertSFMLKey(const sf::Keyboard::Key& key) const
+{
+    switch(key)
+    {
+        case sf::Keyboard::Key::Up:
+            return Gamepad::Button::Up;
+        case sf::Keyboard::Key::Down:
+            return Gamepad::Button::Down;
+        case sf::Keyboard::Key::Left:
+            return Gamepad::Button::Left;
+        case sf::Keyboard::Key::Right:
+            return Gamepad::Button::Right;
+        case sf::Keyboard::Key::Enter:
+            return Gamepad::Button::A;
+        case sf::Keyboard::Key::Delete:
+            return Gamepad::Button::B;
+        case sf::Keyboard::Key::Escape:
+            return Gamepad::Button::Start;
+        case sf::Keyboard::Key::Tab:
+            return Gamepad::Button::Select;
+        default:
+            return std::optional<Gamepad::Button>();
+    }
 }

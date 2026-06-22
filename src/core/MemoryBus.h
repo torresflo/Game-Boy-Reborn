@@ -8,6 +8,7 @@
 class Cartridge;
 class CentralProcessingUnit;
 class PixelProcessingUnit;
+class Gamepad;
 
 struct DirectMemoryAccessContext
 {
@@ -24,7 +25,7 @@ public:
 
     virtual ~MemoryBus() = default;
 
-    void initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr);
+    void initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr, Gamepad* gamepadPtr);
 
     virtual u8 read(u16 address) const;
     u16 read16(u16 address) const;
@@ -88,4 +89,5 @@ private:
 
     Cartridge* cartridge = nullptr;
     PixelProcessingUnit* ppu = nullptr;
+    Gamepad* gamepad = nullptr;
 };

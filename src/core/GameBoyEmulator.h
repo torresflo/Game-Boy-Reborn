@@ -6,7 +6,7 @@
 #include "CentralProcessingUnit.h"
 #include "MemoryBus.h"
 #include "PixelProcessingUnit.h"
-#include "Timer.h"
+#include "Gamepad.h"
 
 class GameBoyEmulator
 {
@@ -26,12 +26,14 @@ public:
     const CentralProcessingUnit& getCPU() const;
     const PixelProcessingUnit& getPPU() const;
     const MemoryBus& getMemoryBus() const;
+    Gamepad& getGamepad();
 
 private:
     Cartridge cartridge;
     CentralProcessingUnit CPU;
     MemoryBus bus;
     PixelProcessingUnit PPU;
+    Gamepad gamepad;
 
     bool romLoaded = false;
     bool paused = false;
