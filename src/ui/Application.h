@@ -45,4 +45,7 @@ private:
     double frameTimeAccumulator = 0.0;
 
     std::string romPathInWindowTitle;
+
+    bool menuBarVisible = true;
+    float menuBarHeight = 0.f;
 };

@@ -68,9 +68,12 @@ void Application::processEvents()
             window.close();
 
         if(const sf::Event::Resized* resizedEvent = event->getIf<sf::Event::Resized>())
-        {
             window.setView(sf::View(sf::FloatRect({0.f, 0.f}, static_cast<sf::Vector2f>(resizedEvent->size))));
-            updateGameScreenTransform(resizedEvent->size);
+
+        if(const sf::Event::KeyPressed* keyPressedEvent = event->getIf<sf::Event::KeyPressed>())
+        {
+            if(keyPressedEvent->code == sf::Keyboard::Key::F1)
+                menuBarVisible = !menuBarVisible;
         }
     }
 }
@@ -101,6 +104,7 @@ void Application::update()
     updateWindowTitle();
 
     drawMenuBar();
+    updateGameScreenTransform(window.getSize());
 
     romFileDialog.update(emulator);
     registerViewerWindow.update(emulator);
@@ -111,8 +115,15 @@ void Application::update()
 
 void Application::drawMenuBar()
 {
+    menuBarHeight = 0.f;
+
+    if(!menuBarVisible)
+        return;
+
     if(ImGui::BeginMainMenuBar())
     {
+        menuBarHeight = ImGui::GetWindowSize().y;
+
         if(ImGui::BeginMenu("File"))
         {
             if(ImGui::MenuItem("Open ROM..."))
@@ -185,13 +196,15 @@ void Application::render()
 
 void Application::updateGameScreenTransform(sf::Vector2u windowSize)
 {
+    float availableHeight = std::max(static_cast<float>(windowSize.y) - menuBarHeight, 0.f);
+
     float scaleX = static_cast<float>(windowSize.x) / static_cast<float>(PixelProcessingUnit::ScreenWidth);
-    float scaleY = static_cast<float>(windowSize.y) / static_cast<float>(PixelProcessingUnit::ScreenHeight);
+    float scaleY = availableHeight / static_cast<float>(PixelProcessingUnit::ScreenHeight);
     float scale = std::min(scaleX, scaleY);
 
     gameScreenSprite.setScale({scale, scale});
 
     sf::Vector2f scaledScreenSize{PixelProcessingUnit::ScreenWidth * scale, PixelProcessingUnit::ScreenHeight * scale};
     gameScreenSprite.setPosition({(static_cast<float>(windowSize.x) - scaledScreenSize.x) / 2.f,
-                                   (static_cast<float>(windowSize.y) - scaledScreenSize.y) / 2.f});
+                                   menuBarHeight + (availableHeight - scaledScreenSize.y) / 2.f});
 }
