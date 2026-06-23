@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <optional>
 
@@ -26,6 +27,8 @@ private:
     void processEvents();
     void processKeyPressedEvent(const sf::Event::KeyPressed& key);
     void processKeyReleasedEvent(const sf::Event::KeyReleased& key);
+    void updateGamepadInput();
+    void applyJoystickAxisDirection(float axisPosition, Gamepad::Button negativeButton, Gamepad::Button positiveButton);
     void updateEmulation(sf::Time deltaTime);
     void update();
     void render();
@@ -34,6 +37,7 @@ private:
     void updateGameScreenTransform(sf::Vector2u windowSize);
 
     std::optional<Gamepad::Button> convertSFMLKeyboardKey(const sf::Keyboard::Key& key) const;
+    std::optional<Gamepad::Button> convertSFMLJoystickButton(unsigned int button) const;
 
     sf::RenderWindow window;
     sf::Texture gameScreenTexture;
@@ -46,6 +50,9 @@ private:
     CartridgeViewerWindow cartridgeViewerWindow;
     TileDataViewerWindow tileDataViewerWindow;
     LogViewerWindow logViewerWindow;
+
+    std::array<bool, Gamepad::ButtonCount> keyboardButtonStates{};
+    std::array<bool, Gamepad::ButtonCount> joystickButtonStates{};
 
     sf::Clock deltaClock;
     double frameTimeAccumulator = 0.0;

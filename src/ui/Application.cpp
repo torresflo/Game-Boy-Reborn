@@ -16,6 +16,8 @@ namespace
     // How many frames worth of real time can accumulate before being discarded,
     // so a long stall (eg. dragging the window) doesn't trigger a burst of catch-up frames.
     constexpr double MaxAccumulatedFrames = 5.0;
+
+    constexpr float JoystickAxisThreshold = 50.f;
 }
 
 Application::Application()
@@ -43,6 +45,7 @@ void Application::run()
     while(window.isOpen())
     {
         processEvents();
+        updateGamepadInput();
 
         sf::Time deltaTime = deltaClock.restart();
         ImGui::SFML::Update(window, deltaTime);
@@ -63,6 +66,7 @@ void Application::createWindow()
     window.close();
     window.create(sf::VideoMode({windowWidth, windowHeight}), "Game-Boy-Reborn", windowState);
     window.setFramerateLimit(60);
+    updateWindowTitle();
 }
 
 void Application::processEvents()
@@ -97,12 +101,17 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
             createWindow();
             break;
         }
+        case sf::Keyboard::Key::Pause:
+        {
+            emulator.setPaused(!emulator.isPaused());
+            break;
+        }
         default:
         {
             std::optional<Gamepad::Button> button = convertSFMLKeyboardKey(key.code);
             if(button.has_value())
-                emulator.getGamepad().setButtonState(button.value(), true);
-                break;
+                keyboardButtonStates[static_cast<u32>(button.value())] = true;
+            break;
         }
     }
 }
@@ -111,7 +120,46 @@ void Application::processKeyReleasedEvent(const sf::Event::KeyReleased &key)
 {
     std::optional<Gamepad::Button> button = convertSFMLKeyboardKey(key.code);
     if(button.has_value())
-        emulator.getGamepad().setButtonState(button.value(), false);
+        keyboardButtonStates[static_cast<u32>(button.value())] = false;
+}
+
+void Application::updateGamepadInput()
+{
+    joystickButtonStates.fill(false);
+
+    for(unsigned int joystickId = 0u; joystickId < sf::Joystick::Count; ++joystickId)
+    {
+        if(!sf::Joystick::isConnected(joystickId))
+            continue;
+
+        for(unsigned int buttonIndex = 0u; buttonIndex < sf::Joystick::getButtonCount(joystickId); ++buttonIndex)
+        {
+            std::optional<Gamepad::Button> button = convertSFMLJoystickButton(buttonIndex);
+            if(button.has_value() && sf::Joystick::isButtonPressed(joystickId, buttonIndex))
+                joystickButtonStates[static_cast<u32>(button.value())] = true;
+        }
+
+        // The D-pad (PovX/PovY) and the left stick (X/Y) report up as opposite signs on Windows, so they
+        // can't share the same argument order: PovY is positive going up, while the stick Y axis is negative going up.
+        applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::X), Gamepad::Button::Left, Gamepad::Button::Right);
+        applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::Y), Gamepad::Button::Up, Gamepad::Button::Down);
+        applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::PovX), Gamepad::Button::Left, Gamepad::Button::Right);
+        applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::PovY), Gamepad::Button::Down, Gamepad::Button::Up);
+    }
+
+    for(u32 buttonIndex = 0u; buttonIndex < Gamepad::ButtonCount; ++buttonIndex)
+    {
+        auto button = static_cast<Gamepad::Button>(buttonIndex);
+        emulator.getGamepad().setButtonState(button, keyboardButtonStates[buttonIndex] || joystickButtonStates[buttonIndex]);
+    }
+}
+
+void Application::applyJoystickAxisDirection(float axisPosition, Gamepad::Button negativeButton, Gamepad::Button positiveButton)
+{
+    if(axisPosition < -JoystickAxisThreshold)
+        joystickButtonStates[static_cast<u32>(negativeButton)] = true;
+    else if(axisPosition > JoystickAxisThreshold)
+        joystickButtonStates[static_cast<u32>(positiveButton)] = true;
 }
 
 void Application::updateEmulation(sf::Time deltaTime)
@@ -265,6 +313,24 @@ std::optional<Gamepad::Button> Application::convertSFMLKeyboardKey(const sf::Key
             return Gamepad::Button::Start;
         case sf::Keyboard::Key::Tab:
             return Gamepad::Button::Select;
+        default:
+            return std::optional<Gamepad::Button>();
+    }
+}
+
+std::optional<Gamepad::Button> Application::convertSFMLJoystickButton(unsigned int button) const
+{
+    //Xbox-style button layout
+    switch(button)
+    {
+        case 0u:
+            return Gamepad::Button::A;
+        case 1u:
+            return Gamepad::Button::B;
+        case 6u:
+            return Gamepad::Button::Select;
+        case 7u:
+            return Gamepad::Button::Start;
         default:
             return std::optional<Gamepad::Button>();
     }
