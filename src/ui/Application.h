@@ -22,6 +22,7 @@ public:
     void run();
 
 private:
+    void createWindow();
     void processEvents();
     void processKeyPressedEvent(const sf::Event::KeyPressed& key);
     void processKeyReleasedEvent(const sf::Event::KeyReleased& key);
@@ -32,7 +33,7 @@ private:
     void updateWindowTitle();
     void updateGameScreenTransform(sf::Vector2u windowSize);
 
-    std::optional<Gamepad::Button> convertSFMLKey(const sf::Keyboard::Key& key) const;
+    std::optional<Gamepad::Button> convertSFMLKeyboardKey(const sf::Keyboard::Key& key) const;
 
     sf::RenderWindow window;
     sf::Texture gameScreenTexture;
@@ -49,6 +50,9 @@ private:
     sf::Clock deltaClock;
     double frameTimeAccumulator = 0.0;
 
+    u32 windowWidth = 640u;
+    u32 windowHeight = 576u;
+    sf::State windowState = sf::State::Windowed;
     std::string romPathInWindowTitle;
 
     bool menuBarVisible = true;

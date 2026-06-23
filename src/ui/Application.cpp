@@ -19,8 +19,10 @@ namespace
 }
 
 Application::Application()
-    : window(sf::VideoMode({640u, 576u}), "Game-Boy-Reborn"), gameScreenSprite(gameScreenTexture)
+    : gameScreenSprite(gameScreenTexture)
 {
+    createWindow();
+
     if(!ImGui::SFML::Init(window))
         Log::print(LogLevel::Error, "Failed to initialize ImGui-SFML");
 
@@ -29,8 +31,6 @@ Application::Application()
 
     gameScreenSprite.setTexture(gameScreenTexture, true);
     updateGameScreenTransform(window.getSize());
-
-    window.setFramerateLimit(60);
 }
 
 Application::~Application()
@@ -58,6 +58,13 @@ void Application::run()
     }
 }
 
+void Application::createWindow()
+{
+    window.close();
+    window.create(sf::VideoMode({windowWidth, windowHeight}), "Game-Boy-Reborn", windowState);
+    window.setFramerateLimit(60);
+}
+
 void Application::processEvents()
 {
     while(const std::optional<sf::Event> event = window.pollEvent())
@@ -76,7 +83,7 @@ void Application::processEvents()
 }
 
 void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
-{   
+{
     switch(key.code)
     {
         case sf::Keyboard::Key::F1:
@@ -84,9 +91,15 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
             menuBarVisible = !menuBarVisible;
             break;
         }
+        case sf::Keyboard::Key::F11:
+        {
+            windowState = (windowState == sf::State::Windowed ? sf::State::Fullscreen : sf::State::Windowed);
+            createWindow();
+            break;
+        }
         default:
         {
-            std::optional<Gamepad::Button> button = convertSFMLKey(key.code);
+            std::optional<Gamepad::Button> button = convertSFMLKeyboardKey(key.code);
             if(button.has_value())
                 emulator.getGamepad().setButtonState(button.value(), true);
                 break;
@@ -96,7 +109,7 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
 
 void Application::processKeyReleasedEvent(const sf::Event::KeyReleased &key)
 {
-    std::optional<Gamepad::Button> button = convertSFMLKey(key.code);
+    std::optional<Gamepad::Button> button = convertSFMLKeyboardKey(key.code);
     if(button.has_value())
         emulator.getGamepad().setButtonState(button.value(), false);
 }
@@ -232,7 +245,7 @@ void Application::updateGameScreenTransform(sf::Vector2u windowSize)
                                    menuBarHeight + (availableHeight - scaledScreenSize.y) / 2.f});
 }
 
-std::optional<Gamepad::Button> Application::convertSFMLKey(const sf::Keyboard::Key& key) const
+std::optional<Gamepad::Button> Application::convertSFMLKeyboardKey(const sf::Keyboard::Key& key) const
 {
     switch(key)
     {
