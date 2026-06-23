@@ -64,7 +64,8 @@ void Application::run()
 void Application::createWindow()
 {
     window.close();
-    window.create(sf::VideoMode({windowWidth, windowHeight}), "Game-Boy-Reborn", windowState);
+    sf::VideoMode videoMode = (windowState == sf::State::Fullscreen ? sf::VideoMode({1920, 1080}) : sf::VideoMode({windowWidth, windowHeight}));
+    window.create(videoMode, "Game-Boy-Reborn", windowState);
     window.setFramerateLimit(60);
     romPathInWindowTitle.clear(); //Clear so it is updated next frame
 }
