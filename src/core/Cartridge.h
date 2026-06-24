@@ -2,9 +2,13 @@
 
 #include <string>
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "Common.h"
+#include "mbc/MemoryBankController.h"
+
+class MemoryBankControllerFactory;
 
 struct CartridgeHeader
 {
@@ -42,10 +46,14 @@ private:
     std::string ROMPath;
     u32 ROMSize;
     std::vector<u8> ROMData;
+    std::vector<u8> RAMData;
+    std::unique_ptr<MemoryBankController> mbc;
     CartridgeHeader header;
 
     static const std::vector<std::string> RomTypes;
     static const std::map<u8, std::string> LicenceCodes;
 
     friend class MemoryBus;
+    friend class MemoryBankController;
+    friend class MemoryBankControllerFactory;
 };

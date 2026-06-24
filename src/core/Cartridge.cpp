@@ -3,6 +3,9 @@
 #include <fstream>
 #include <format>
 
+#include "mbc/MemoryBankController.h"
+#include "mbc/MemoryBankControllerFactory.h"
+
 const std::vector<std::string> Cartridge::RomTypes =
 {
     "ROM ONLY",
@@ -133,6 +136,13 @@ bool Cartridge::loadROM(std::string path)
     header = *reinterpret_cast<CartridgeHeader*>(ROMData.data() + 0x100);
     header.title[15] = '\0';
 
+    mbc = MemoryBankControllerFactory::create(*this);
+    if(mbc == nullptr)
+    {
+        Log::print(LogLevel::Error, "Cartridge type ", getRomTypeName(header.cartridgeType), " is not supported - ROM not loaded.");
+        return false;
+    }
+
     Log::print(LogLevel::Debug, "Title       : ", header.title);
     Log::print(LogLevel::Debug, "Type        : ", std::format("{:02X}", header.cartridgeType), " (", getRomTypeName(header.cartridgeType), ")");
     Log::print(LogLevel::Debug, "ROM Size    : ", 32 << header.romSize, " KB");
@@ -184,12 +194,10 @@ bool Cartridge::checkHeaderChecksum() const
 
 u8 Cartridge::read(u16 address) const
 {
-    //For now, just ROM ONLY type supported
-    return ROMData[address];
+    return mbc->read(address);
 }
 
 void Cartridge::write(u16 address, u8 value)
 {
-    UNUSED(address);
-    UNUSED(value);
+    mbc->write(address, value);
 }

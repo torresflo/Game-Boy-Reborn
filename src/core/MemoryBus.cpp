@@ -115,7 +115,7 @@ u16 MemoryBus::read16(u16 address) const
 
 void MemoryBus::write(u16 address, u8 value)
 {
-    if(address <= 0x8000)
+    if(address < 0x8000)
     {
         if(cartridge != nullptr)
             cartridge->write(address, value);
