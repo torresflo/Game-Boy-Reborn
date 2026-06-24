@@ -201,3 +201,8 @@ void Cartridge::write(u16 address, u8 value)
 {
     mbc->write(address, value);
 }
+
+void Cartridge::tick()
+{
+    mbc->tick();
+}

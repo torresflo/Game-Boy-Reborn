@@ -18,6 +18,10 @@ public:
     virtual u8 read(u16 address) const = 0;
     virtual void write(u16 address, u8 value) = 0;
 
+    // Called once per T-cycle. Only chips with extra timing-sensitive
+    // hardware (eg. MBC3's RTC) need to override this.
+    virtual void tick();
+
     bool hasBattery() const;
 
 protected:

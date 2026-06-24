@@ -8,6 +8,10 @@ MemoryBankController::MemoryBankController(Cartridge* cartridgePtr, bool hasBatt
 {
 }
 
+void MemoryBankController::tick()
+{
+}
+
 bool MemoryBankController::hasBattery() const
 {
     return batteryPresent;

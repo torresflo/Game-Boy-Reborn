@@ -42,6 +42,7 @@ public:
 private:
     u8 read(u16 address) const;
     void write(u16 address, u8 value);
+    void tick();
 
     std::string ROMPath;
     u32 ROMSize;
@@ -56,4 +57,5 @@ private:
     friend class MemoryBus;
     friend class MemoryBankController;
     friend class MemoryBankControllerFactory;
+    friend class CartridgeTestFixture;
 };

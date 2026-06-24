@@ -45,6 +45,9 @@ public:
     //Timer
     void tickTimer();
 
+    //Cartridge (RTC etc.)
+    void tickCartridge();
+
     // Used by the CPU's interrupt dispatch logic
     virtual u8 readInterruptEnableRegister() const;
     virtual void writeInterruptEnableRegister(u8 value);

@@ -231,6 +231,12 @@ void MemoryBus::tickTimer()
     timer.tick();
 }
 
+void MemoryBus::tickCartridge()
+{
+    if(cartridge != nullptr)
+        cartridge->tick();
+}
+
 u8 MemoryBus::readWRAM(u16 address) const
 {
     u16 offset = address - 0xC000;

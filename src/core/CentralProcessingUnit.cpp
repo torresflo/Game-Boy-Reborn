@@ -234,6 +234,7 @@ void CentralProcessingUnit::emulateCycles(u8 cycleCount)
         {
             cycles++;
             memoryBus->tickTimer();
+            memoryBus->tickCartridge();
             PPU->tick();
         }
 
