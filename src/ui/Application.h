@@ -9,6 +9,7 @@
 #include "GameBoyEmulator.h"
 
 #include "CartridgeViewerWindow.h"
+#include "ObjectViewerWindow.h"
 #include "RegisterViewerWindow.h"
 #include "RomFileDialog.h"
 #include "TileDataViewerWindow.h"
@@ -49,6 +50,7 @@ private:
     RegisterViewerWindow registerViewerWindow;
     CartridgeViewerWindow cartridgeViewerWindow;
     TileDataViewerWindow tileDataViewerWindow;
+    ObjectViewerWindow objectViewerWindow;
     LogViewerWindow logViewerWindow;
 
     std::array<bool, Gamepad::ButtonCount> keyboardButtonStates{};

@@ -53,6 +53,7 @@ public:
     bool isWindowVisible() const;
 
     const std::array<u32, ScreenWidth * ScreenHeight>& getFrameBuffer() const;
+    const std::array<u32, 4>& getObjectColors(u8 paletteNumber) const;
 
     using Tile = std::array<u8, TileSize * TileSize>;
     Tile decodeTileAtAddress(u16 tileAddress) const;

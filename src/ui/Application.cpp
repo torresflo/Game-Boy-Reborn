@@ -195,6 +195,7 @@ void Application::update()
     registerViewerWindow.update(emulator);
     cartridgeViewerWindow.update(emulator);
     tileDataViewerWindow.update(emulator);
+    objectViewerWindow.update(emulator);
     logViewerWindow.update(emulator);
 }
 
@@ -242,6 +243,10 @@ void Application::drawMenuBar()
             bool tileDataViewerOpen = tileDataViewerWindow.isOpen();
             if(ImGui::MenuItem("Tile Data", nullptr, &tileDataViewerOpen))
                 tileDataViewerWindow.setOpen(tileDataViewerOpen);
+
+            bool objectViewerOpen = objectViewerWindow.isOpen();
+            if(ImGui::MenuItem("Objects", nullptr, &objectViewerOpen))
+                objectViewerWindow.setOpen(objectViewerOpen);
 
             bool logViewerOpen = logViewerWindow.isOpen();
             if(ImGui::MenuItem("Log", nullptr, &logViewerOpen))

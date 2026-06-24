@@ -256,6 +256,11 @@ const std::array<u32, PixelProcessingUnit::ScreenWidth * PixelProcessingUnit::Sc
     return frameBuffer;
 }
 
+const std::array<u32, 4>& PixelProcessingUnit::getObjectColors(u8 paletteNumber) const
+{
+    return static_cast<bool>(paletteNumber) ? LCD.object2Colors : LCD.object1Colors;
+}
+
 PixelProcessingUnit::Tile PixelProcessingUnit::decodeTileAtAddress(u16 tileAddress) const
 {
     Tile tile{};
