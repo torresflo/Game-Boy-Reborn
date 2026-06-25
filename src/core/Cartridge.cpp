@@ -1,5 +1,6 @@
 #include "Cartridge.h"
 
+#include <filesystem>
 #include <fstream>
 #include <format>
 
@@ -114,6 +115,11 @@ const std::map<u8, std::string> Cartridge::LicenceCodes =
 };
 #pragma warning(pop)
 
+Cartridge::~Cartridge()
+{
+    saveRAM();
+}
+
 bool Cartridge::loadROM(std::string path)
 {
     std::ifstream file(path, std::ios::binary);
@@ -122,6 +128,9 @@ bool Cartridge::loadROM(std::string path)
         Log::print(LogLevel::Error, "Cannot open file with path: ", path);
         return false;
     }
+
+    saveRAM();
+
     Log::print(LogLevel::Info, "Loading ROM from path: ", path);
     ROMPath = path;
 
@@ -149,8 +158,10 @@ bool Cartridge::loadROM(std::string path)
     Log::print(LogLevel::Debug, "RAM SIZE    : ", std::format("{:02X}", header.ramSize));
     Log::print(LogLevel::Debug, "Licence     : ", std::format("0x{:02X}", header.oldLicenceCode), " (", getLicenceName(header.oldLicenceCode), ")");
     Log::print(LogLevel::Debug, "ROM Version : ", std::format("{:02X}", header.maskRomVersion));
-    
+
     Log::print(LogLevel::Info, "Checksum    : ", std::format("{:02X}", header.headerChecksum), " (", checkHeaderChecksum() ? "PASSED" : "FAILED", ")");
+
+    loadRAMFromDisk();
 
     return true;
 }
@@ -190,6 +201,54 @@ bool Cartridge::checkHeaderChecksum() const
     }
 
     return checksum & 0xFF;
+}
+
+bool Cartridge::saveRAM() const
+{
+    if(mbc == nullptr || !mbc->hasBattery() || RAMData.empty())
+        return false;
+
+    std::string savePath = getSaveFilePath();
+    std::ofstream file(savePath, std::ios::binary);
+    if(!file.is_open())
+    {
+        Log::print(LogLevel::Error, "Cannot open save file for writing: ", savePath);
+        return false;
+    }
+
+    file.write(reinterpret_cast<const char*>(RAMData.data()), RAMData.size());
+    Log::print(LogLevel::Info, "Saved battery-backed RAM to: ", savePath);
+    return true;
+}
+
+std::string Cartridge::getSaveFilePath() const
+{
+    return std::filesystem::path(ROMPath).replace_extension(".sav").string();
+}
+
+void Cartridge::loadRAMFromDisk()
+{
+    if(!mbc->hasBattery() || RAMData.empty())
+        return;
+
+    std::string savePath = getSaveFilePath();
+    std::ifstream file(savePath, std::ios::binary);
+    if(!file.is_open())
+        return;
+
+    file.seekg(0, std::ios::end);
+    std::streampos fileSize = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    if(static_cast<size_t>(fileSize) != RAMData.size())
+    {
+        Log::print(LogLevel::Warning, "Save file size mismatch (expected ", RAMData.size(), " bytes, got ",
+            static_cast<u32>(fileSize), ") - ignoring: ", savePath);
+        return;
+    }
+
+    file.read(reinterpret_cast<char*>(RAMData.data()), fileSize);
+    Log::print(LogLevel::Info, "Loaded battery-backed RAM from: ", savePath);
 }
 
 u8 Cartridge::read(u16 address) const

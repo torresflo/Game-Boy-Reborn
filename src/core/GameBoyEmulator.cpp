@@ -26,6 +26,11 @@ void GameBoyEmulator::stepOneFrame()
         CPU.step();
 }
 
+bool GameBoyEmulator::saveRAM() const
+{
+    return cartridge.saveRAM();
+}
+
 bool GameBoyEmulator::isROMLoaded() const
 {
     return romLoaded;

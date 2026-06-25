@@ -31,6 +31,8 @@ struct CartridgeHeader
 class Cartridge
 {
 public:
+    ~Cartridge();
+
     bool loadROM(std::string path);
 
     const std::string& getRomPath() const;
@@ -39,10 +41,15 @@ public:
     std::string getLicenceName(u8 code) const;
     bool checkHeaderChecksum() const;
 
+    bool saveRAM() const;
+
 private:
     u8 read(u16 address) const;
     void write(u16 address, u8 value);
     void tick();
+
+    std::string getSaveFilePath() const;
+    void loadRAMFromDisk();
 
     std::string ROMPath;
     u32 ROMSize;

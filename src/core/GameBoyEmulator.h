@@ -20,6 +20,7 @@ public:
 
     bool loadROM(std::string path);
     void stepOneFrame();
+    bool saveRAM() const;
 
     bool isROMLoaded() const;
     bool isPaused() const;

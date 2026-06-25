@@ -20,6 +20,16 @@ public:
         cartridge.ROMData[offset] = value;
     }
 
+    void setRAMByte(u32 offset, u8 value)
+    {
+        cartridge.RAMData[offset] = value;
+    }
+
+    u8 getRAMByte(u32 offset) const
+    {
+        return cartridge.RAMData[offset];
+    }
+
     void setHeader(u8 cartridgeType, u8 romSizeCode, u8 ramSizeCode)
     {
         cartridge.header.cartridgeType = cartridgeType;
