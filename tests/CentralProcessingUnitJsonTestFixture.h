@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "AudioProcessingUnit.h"
 #include "CentralProcessingUnit.h"
 #include "FlatMemoryBus.h"
 #include "PixelProcessingUnit.h"
@@ -15,8 +16,9 @@ class CentralProcessingUnitJsonTestFixture
 public:
     CentralProcessingUnitJsonTestFixture()
     {
-        cpu.initialize(&memoryBus, &ppu);
+        cpu.initialize(&memoryBus, &ppu, &apu);
         ppu.initialize(&memoryBus, &cpu);
+        apu.initialize();
     }
 
     void setRegister(RegisterType type, u16 value)
@@ -85,5 +87,6 @@ public:
 private:
     FlatMemoryBus memoryBus;
     PixelProcessingUnit ppu;
+    AudioProcessingUnit apu;
     CentralProcessingUnit cpu;
 };

@@ -2,6 +2,7 @@
 
 #include <format>
 
+#include "AudioProcessingUnit.h"
 #include "Cartridge.h"
 #include "PixelProcessingUnit.h"
 #include "Gamepad.h"
@@ -20,10 +21,11 @@
 // 0xFF00 - 0xFF7F : I/O Registers
 // 0xFF80 - 0xFFFE : Zero Page / HRAM
 
-void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr, Gamepad* gamepadPtr)
+void MemoryBus::initialize(Cartridge* cartridgePtr, CentralProcessingUnit* cpuPtr, PixelProcessingUnit* ppuPtr, AudioProcessingUnit* apuPtr, Gamepad* gamepadPtr)
 {
     cartridge = cartridgePtr;
     ppu = ppuPtr;
+    apu = apuPtr;
     timer.initialize(cpuPtr);
     gamepad = gamepadPtr;
 
@@ -359,6 +361,24 @@ u8 MemoryBus::readIO(u16 address) const
     if(address == 0xFF46)
         return dmaRegister;
 
+    if(address >= 0xFF10 && address <= 0xFF26)
+    {
+        if(apu != nullptr)
+            return apu->readRegister(address);
+
+        Log::print(LogLevel::Error, std::format("Reading sound register (0x{:4X}) with no APU attached.", address));
+        return 0xFF;
+    }
+
+    if(address >= 0xFF30 && address <= 0xFF3F)
+    {
+        if(apu != nullptr)
+            return apu->readWaveRAM(address);
+
+        Log::print(LogLevel::Error, std::format("Reading wave RAM (0x{:4X}) with no APU attached.", address));
+        return 0xFF;
+    }
+
     if(address >= 0xFF40 && address <= 0xFF4B)
     {
         if(ppu != nullptr)
@@ -388,6 +408,20 @@ void MemoryBus::writeIO(u16 address, u8 value)
     {
         dmaRegister = value;
         startDMA(value);
+    }
+    else if(address >= 0xFF10 && address <= 0xFF26)
+    {
+        if(apu != nullptr)
+            apu->writeRegister(address, value);
+        else
+            Log::print(LogLevel::Error, std::format("Writing sound register (0x{:4X}) with no APU attached.", address));
+    }
+    else if(address >= 0xFF30 && address <= 0xFF3F)
+    {
+        if(apu != nullptr)
+            apu->writeWaveRAM(address, value);
+        else
+            Log::print(LogLevel::Error, std::format("Writing wave RAM (0x{:4X}) with no APU attached.", address));
     }
     else if(address >= 0xFF40 && address <= 0xFF4B)
     {

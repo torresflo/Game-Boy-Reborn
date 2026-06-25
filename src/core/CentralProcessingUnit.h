@@ -8,11 +8,12 @@
 
 class MemoryBus;
 class PixelProcessingUnit;
+class AudioProcessingUnit;
 
 class CentralProcessingUnit
 {
 public:
-    void initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr);
+    void initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr, AudioProcessingUnit* apuPtr);
     void step();
 
     void requestInterrupt(InterruptType type);
@@ -129,6 +130,7 @@ private:
 
     MemoryBus* memoryBus;
     PixelProcessingUnit* PPU;
+    AudioProcessingUnit* APU;
 
     static const std::array<InstructionFunc, static_cast<size_t>(InstructionType::COUNT)> InstructionFuncs;
 

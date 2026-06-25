@@ -2,13 +2,15 @@
 
 #include <format>
 
+#include "AudioProcessingUnit.h"
 #include "MemoryBus.h"
 #include "PixelProcessingUnit.h"
 
-void CentralProcessingUnit::initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr)
+void CentralProcessingUnit::initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr, AudioProcessingUnit* apuPtr)
 {
     memoryBus = busPtr;
     PPU = ppuPtr;
+    APU = apuPtr;
 
     registers.PC = 0x100;
     registers.SP = 0xFFFE;
@@ -236,6 +238,7 @@ void CentralProcessingUnit::emulateCycles(u8 cycleCount)
             memoryBus->tickTimer();
             memoryBus->tickCartridge();
             PPU->tick();
+            APU->tick();
         }
 
         memoryBus->tickDMATransfer();

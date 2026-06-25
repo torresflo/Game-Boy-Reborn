@@ -8,6 +8,9 @@
 
 #include "GameBoyEmulator.h"
 
+#include "AudioRingBuffer.h"
+#include "GameBoyAudioStream.h"
+
 #include "CartridgeViewerWindow.h"
 #include "ObjectViewerWindow.h"
 #include "RegisterViewerWindow.h"
@@ -45,7 +48,10 @@ private:
     sf::Sprite gameScreenSprite;
 
     GameBoyEmulator emulator;
-    
+
+    AudioRingBuffer audioRingBuffer;
+    GameBoyAudioStream audioStream{audioRingBuffer};
+
     RomFileDialog romFileDialog;
     RegisterViewerWindow registerViewerWindow;
     CartridgeViewerWindow cartridgeViewerWindow;

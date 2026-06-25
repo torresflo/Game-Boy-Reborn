@@ -1,7 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "Common.h"
 
+#include "AudioProcessingUnit.h"
 #include "Cartridge.h"
 #include "CentralProcessingUnit.h"
 #include "MemoryBus.h"
@@ -25,14 +28,18 @@ public:
     const Cartridge& getCartridge() const;
     const CentralProcessingUnit& getCPU() const;
     const PixelProcessingUnit& getPPU() const;
+    const AudioProcessingUnit& getAPU() const;
     const MemoryBus& getMemoryBus() const;
     Gamepad& getGamepad();
+
+    std::vector<s16> drainAudioSamples();
 
 private:
     Cartridge cartridge;
     CentralProcessingUnit CPU;
     MemoryBus bus;
     PixelProcessingUnit PPU;
+    AudioProcessingUnit APU;
     Gamepad gamepad;
 
     bool romLoaded = false;

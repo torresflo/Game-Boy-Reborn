@@ -3,7 +3,7 @@
 
 int main()
 {
-    Log::setLevel(LogLevel::Error);
+    Log::setLevel(LogLevel::None);
 
     Application application;
     application.run();

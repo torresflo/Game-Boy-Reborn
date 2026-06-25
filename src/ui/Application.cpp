@@ -33,6 +33,9 @@ Application::Application()
 
     gameScreenSprite.setTexture(gameScreenTexture, true);
     updateGameScreenTransform(window.getSize());
+
+    audioStream.initializeStream();
+    audioStream.play();
 }
 
 Application::~Application()
@@ -180,6 +183,7 @@ void Application::updateEmulation(sf::Time deltaTime)
     while(frameTimeAccumulator >= GameBoyEmulator::SecondsPerFrame)
     {
         emulator.stepOneFrame();
+        audioRingBuffer.push(emulator.drainAudioSamples());
         frameTimeAccumulator -= GameBoyEmulator::SecondsPerFrame;
     }
 }
