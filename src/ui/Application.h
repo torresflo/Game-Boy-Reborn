@@ -27,12 +27,18 @@ public:
     void run();
 
 private:
+    static constexpr double MaxAccumulatedFrames = 5.0;
+    static constexpr float JoystickAxisThreshold = 50.f;
+    static constexpr std::array<float, 7> SpeedPresets = {0.25f, 0.5f, 1.f, 1.5f, 2.f, 4.f, 8.f};
+
     void createWindow();
     void processEvents();
     void processKeyPressedEvent(const sf::Event::KeyPressed& key);
     void processKeyReleasedEvent(const sf::Event::KeyReleased& key);
     void updateGamepadInput();
     void applyJoystickAxisDirection(float axisPosition, Gamepad::Button negativeButton, Gamepad::Button positiveButton);
+    void setSpeedMultiplier(float multiplier);
+    void cycleSpeedPreset(int direction);
     void updateEmulation(sf::Time deltaTime);
     void update();
     void render();
@@ -64,6 +70,7 @@ private:
 
     sf::Clock deltaClock;
     double frameTimeAccumulator = 0.0;
+    float speedMultiplier = 1.0f;
 
     u32 windowWidth = 640u;
     u32 windowHeight = 576u;

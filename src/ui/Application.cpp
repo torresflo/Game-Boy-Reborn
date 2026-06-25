@@ -11,15 +11,6 @@
 #include "Common.h"
 #include "PixelProcessingUnit.h"
 
-namespace
-{
-    // How many frames worth of real time can accumulate before being discarded,
-    // so a long stall (eg. dragging the window) doesn't trigger a burst of catch-up frames.
-    constexpr double MaxAccumulatedFrames = 5.0;
-
-    constexpr float JoystickAxisThreshold = 50.f;
-}
-
 Application::Application()
     : gameScreenSprite(gameScreenTexture)
 {
@@ -110,6 +101,21 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
             emulator.setPaused(!emulator.isPaused());
             break;
         }
+        case sf::Keyboard::Key::Subtract:
+        {
+            cycleSpeedPreset(-1);
+            break;
+        }
+        case sf::Keyboard::Key::Add:
+        {
+            cycleSpeedPreset(1);
+            break;
+        }
+        case sf::Keyboard::Key::Equal:
+        {
+            setSpeedMultiplier(1.0f);
+            break;
+        }
         default:
         {
             std::optional<Gamepad::Button> button = convertSFMLKeyboardKey(key.code);
@@ -166,6 +172,21 @@ void Application::applyJoystickAxisDirection(float axisPosition, Gamepad::Button
         joystickButtonStates[static_cast<u32>(positiveButton)] = true;
 }
 
+void Application::setSpeedMultiplier(float multiplier)
+{
+    speedMultiplier = multiplier;
+    audioStream.setPitch(multiplier);
+}
+
+void Application::cycleSpeedPreset(int direction)
+{
+    auto current = std::find(SpeedPresets.begin(), SpeedPresets.end(), speedMultiplier);
+    auto currentIndex = (current != SpeedPresets.end()) ? std::distance(SpeedPresets.begin(), current) : SpeedPresets.size() / 2;
+
+    auto newIndex = std::clamp<std::ptrdiff_t>(currentIndex + direction, 0, static_cast<std::ptrdiff_t>(SpeedPresets.size()) - 1);
+    setSpeedMultiplier(SpeedPresets[static_cast<std::size_t>(newIndex)]);
+}
+
 void Application::updateEmulation(sf::Time deltaTime)
 {
     if(!emulator.isROMLoaded() || emulator.isPaused())
@@ -174,11 +195,10 @@ void Application::updateEmulation(sf::Time deltaTime)
         return;
     }
 
-    frameTimeAccumulator += deltaTime.asSeconds();
+    double maxRealDeltaSeconds = GameBoyEmulator::SecondsPerFrame * MaxAccumulatedFrames;
+    double realDeltaSeconds = std::min(static_cast<double>(deltaTime.asSeconds()), maxRealDeltaSeconds);
 
-    double maxAccumulator = GameBoyEmulator::SecondsPerFrame * MaxAccumulatedFrames;
-    if(frameTimeAccumulator > maxAccumulator)
-        frameTimeAccumulator = maxAccumulator;
+    frameTimeAccumulator += realDeltaSeconds * speedMultiplier;
 
     while(frameTimeAccumulator >= GameBoyEmulator::SecondsPerFrame)
     {
@@ -230,6 +250,18 @@ void Application::drawMenuBar()
             bool paused = emulator.isPaused();
             if(ImGui::MenuItem("Pause", nullptr, &paused, emulator.isROMLoaded()))
                 emulator.setPaused(paused);
+
+            if(ImGui::BeginMenu("Speed"))
+            {
+                for(float preset : SpeedPresets)
+                {
+                    bool selected = (speedMultiplier == preset);
+                    if(ImGui::MenuItem(std::format("{:g}x", preset).c_str(), nullptr, selected))
+                        setSpeedMultiplier(preset);
+                }
+
+                ImGui::EndMenu();
+            }
 
             ImGui::EndMenu();
         }
