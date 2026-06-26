@@ -188,8 +188,8 @@ void Application::updateGamepadInput()
                 joystickButtonStates[static_cast<u32>(button.value())] = true;
         }
 
-        // The D-pad (PovX/PovY) and the left stick (X/Y) report up as opposite signs on Windows, so they
-        // can't share the same argument order: PovY is positive going up, while the stick Y axis is negative going up.
+        // The D-pad (PovX/PovY) and the left stick (X/Y) report up as opposite signs on Windows
+        // PovY is positive going up, while the stick Y axis is negative going up.
         applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::X), Gamepad::Button::Left, Gamepad::Button::Right);
         applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::Y), Gamepad::Button::Up, Gamepad::Button::Down);
         applyJoystickAxisDirection(sf::Joystick::getAxisPosition(joystickId, sf::Joystick::Axis::PovX), Gamepad::Button::Left, Gamepad::Button::Right);
@@ -407,7 +407,7 @@ std::optional<Gamepad::Button> Application::convertSFMLKeyboardKey(const sf::Key
             return Gamepad::Button::Right;
         case sf::Keyboard::Key::Enter:
             return Gamepad::Button::A;
-        case sf::Keyboard::Key::Delete:
+        case sf::Keyboard::Key::Backspace:
             return Gamepad::Button::B;
         case sf::Keyboard::Key::Escape:
             return Gamepad::Button::Start;
