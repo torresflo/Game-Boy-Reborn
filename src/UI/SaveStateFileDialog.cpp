@@ -1,7 +1,10 @@
 #include "SaveStateFileDialog.h"
 
+#include <filesystem>
+
 #include <ImGuiFileDialog.h>
 
+#include "Application.h"
 #include "GameBoyEmulator.h"
 
 namespace
@@ -24,6 +27,14 @@ SaveStateFileDialog::SaveStateFileDialog()
 
 void SaveStateFileDialog::onFileChosen(GameBoyEmulator& emulator, const std::string& filePath)
 {
-    emulator.saveState(filePath);
+    bool success = emulator.saveState(filePath);
     emulator.setPaused(false);
+
+    std::string fileName = std::filesystem::path(filePath).filename().string();
+
+    NotificationManager& notifications = Application::instance().getNotificationManager();
+    if(success)
+        notifications.push(NotificationLevel::Info, "State saved: " + fileName);
+    else
+        notifications.push(NotificationLevel::Error, "Failed to save state: " + fileName);
 }

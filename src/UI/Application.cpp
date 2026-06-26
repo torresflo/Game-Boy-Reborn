@@ -11,9 +11,13 @@
 #include "Common.h"
 #include "PixelProcessingUnit.h"
 
+Application* Application::instancePointer = nullptr;
+
 Application::Application()
     : gameScreenSprite(gameScreenTexture)
 {
+    instancePointer = this;
+
     createWindow();
 
     if(!ImGui::SFML::Init(window))
@@ -32,6 +36,17 @@ Application::Application()
 Application::~Application()
 {
     ImGui::SFML::Shutdown();
+    instancePointer = nullptr;
+}
+
+Application& Application::instance()
+{
+    return *instancePointer;
+}
+
+NotificationManager& Application::getNotificationManager()
+{
+    return notificationManager;
 }
 
 void Application::run()
@@ -45,7 +60,7 @@ void Application::run()
         ImGui::SFML::Update(window, deltaTime);
 
         updateEmulation(deltaTime);
-        update();
+        update(deltaTime);
 
         window.clear();
         render();
@@ -119,13 +134,25 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
         case sf::Keyboard::Key::F5:
         {
             if(emulator.isROMLoaded())
-                emulator.quickSaveState();
+            {
+                std::string fileName = std::filesystem::path(emulator.getQuickSaveStatePath()).filename().string();
+                if(emulator.quickSaveState())
+                    notificationManager.push(NotificationLevel::Info, "State saved: " + fileName);
+                else
+                    notificationManager.push(NotificationLevel::Error, "Failed to save state: " + fileName);
+            }
             break;
         }
         case sf::Keyboard::Key::F9:
         {
             if(emulator.isROMLoaded())
-                emulator.quickLoadState();
+            {
+                std::string fileName = std::filesystem::path(emulator.getQuickSaveStatePath()).filename().string();
+                if(emulator.quickLoadState())
+                    notificationManager.push(NotificationLevel::Info, "State loaded: " + fileName);
+                else
+                    notificationManager.push(NotificationLevel::Error, "Failed to load state: " + fileName);
+            }
             break;
         }
         default:
@@ -220,7 +247,7 @@ void Application::updateEmulation(sf::Time deltaTime)
     }
 }
 
-void Application::update()
+void Application::update(sf::Time deltaTime)
 {
     updateWindowTitle();
 
@@ -235,6 +262,9 @@ void Application::update()
     tileDataViewerWindow.update(emulator);
     objectViewerWindow.update(emulator);
     logViewerWindow.update(emulator);
+
+    notificationManager.update(deltaTime);
+    notificationManager.draw(window, menuBarHeight);
 }
 
 void Application::drawMenuBar()

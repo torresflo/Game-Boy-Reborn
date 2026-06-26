@@ -19,6 +19,7 @@
 #include "RegisterViewerWindow.h"
 #include "TileDataViewerWindow.h"
 #include "LogViewerWindow.h"
+#include "NotificationManager.h"
 
 class Application
 {
@@ -26,7 +27,11 @@ public:
     Application();
     ~Application();
 
+    static Application& instance();
+
     void run();
+
+    NotificationManager& getNotificationManager();
 
 private:
     static constexpr double MaxAccumulatedFrames = 5.0;
@@ -42,7 +47,7 @@ private:
     void setSpeedMultiplier(float multiplier);
     void cycleSpeedPreset(int direction);
     void updateEmulation(sf::Time deltaTime);
-    void update();
+    void update(sf::Time deltaTime);
     void render();
     void drawMenuBar();
     void updateWindowTitle();
@@ -68,6 +73,9 @@ private:
     TileDataViewerWindow tileDataViewerWindow;
     ObjectViewerWindow objectViewerWindow;
     LogViewerWindow logViewerWindow;
+    NotificationManager notificationManager;
+
+    static Application* instancePointer;
 
     std::array<bool, Gamepad::ButtonCount> keyboardButtonStates{};
     std::array<bool, Gamepad::ButtonCount> joystickButtonStates{};
