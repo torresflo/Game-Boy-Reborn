@@ -1,7 +1,7 @@
 #include <doctest/doctest.h>
 
 #include "CartridgeTestFixture.h"
-#include "mbc/MBC2.h"
+#include "MBC/MBC2.h"
 
 namespace
 {

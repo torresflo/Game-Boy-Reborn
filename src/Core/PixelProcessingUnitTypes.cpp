@@ -1,7 +1,7 @@
 #include "PixelProcessingUnitTypes.h"
 
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 static std::array<u32, 4> defaultColors = {0xFFFFFFFF, 0xFFAAAAAA, 0xFF555555, 0xFF000000};
 

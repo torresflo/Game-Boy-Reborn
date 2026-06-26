@@ -1,7 +1,7 @@
 #include <doctest/doctest.h>
 
 #include "CartridgeTestFixture.h"
-#include "mbc/NoMemoryBankController.h"
+#include "MBC/NoMemoryBankController.h"
 
 TEST_CASE("NoMemoryBankController with no RAM always reads 0xFF and ignores writes")
 {

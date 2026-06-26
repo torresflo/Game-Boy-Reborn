@@ -5,8 +5,8 @@
 #include "AudioProcessingUnit.h"
 #include "MemoryBus.h"
 #include "PixelProcessingUnit.h"
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 void CentralProcessingUnit::initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr, AudioProcessingUnit* apuPtr)
 {

@@ -1,7 +1,7 @@
 #include "MBC2.h"
 
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 MBC2::MBC2(Cartridge* cartridgePtr, u32 romBankCount, bool hasBattery)
     : MemoryBankController(cartridgePtr, hasBattery)

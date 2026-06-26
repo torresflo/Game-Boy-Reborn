@@ -1,7 +1,7 @@
 #include "MBC1.h"
 
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 MBC1::MBC1(Cartridge* cartridgePtr, u32 romBankCount, u32 ramBankCount, bool hasBattery)
     : MemoryBankController(cartridgePtr, hasBattery)

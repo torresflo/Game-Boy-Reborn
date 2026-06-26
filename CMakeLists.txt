@@ -11,12 +11,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Select build system and set compile options
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/BuildSetting.cmake)
 
-file (GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS "src/core/*.cpp")
-file (GLOB_RECURSE CORE_HEADERS CONFIGURE_DEPENDS "src/core/*.h")
+file (GLOB_RECURSE CORE_SOURCES CONFIGURE_DEPENDS "src/Core/*.cpp")
+file (GLOB_RECURSE CORE_HEADERS CONFIGURE_DEPENDS "src/Core/*.h")
 
 # Core emulator code, shared by the executable and the test suite
 add_library(GameBoyCore STATIC ${CORE_SOURCES})
-target_include_directories(GameBoyCore PUBLIC "src/core")
+target_include_directories(GameBoyCore PUBLIC "src/Core")
 target_compile_features(GameBoyCore PUBLIC cxx_std_20)
 
 include(FetchContent)
@@ -74,11 +74,11 @@ if(MSVC)
 endif()
 
 # UI Sources
-file (GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS "src/ui/*.cpp")
-file (GLOB_RECURSE UI_HEADERS CONFIGURE_DEPENDS "src/ui/*.h")
+file (GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS "src/UI/*.cpp")
+file (GLOB_RECURSE UI_HEADERS CONFIGURE_DEPENDS "src/UI/*.h")
 
 add_library(GameBoyUI STATIC ${UI_SOURCES})
-target_include_directories(GameBoyUI PUBLIC "src/ui")
+target_include_directories(GameBoyUI PUBLIC "src/UI")
 target_link_libraries(GameBoyUI PUBLIC GameBoyCore ImGui-SFML ImGuiFileDialog SFML::Audio)
 target_compile_features(GameBoyUI PUBLIC cxx_std_20)
 

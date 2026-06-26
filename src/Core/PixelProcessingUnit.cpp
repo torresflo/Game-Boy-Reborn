@@ -6,8 +6,8 @@
 #include "CentralProcessingUnit.h"
 #include "MathUtils.h"
 #include "MemoryBus.h"
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 namespace
 {

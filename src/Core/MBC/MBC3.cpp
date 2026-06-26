@@ -1,8 +1,8 @@
 #include "MBC3.h"
 
 #include "MathUtils.h"
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 MBC3::MBC3(Cartridge* cartridgePtr, u32 romBankCount, u32 ramBankCount, bool hasBattery, bool hasTimer)
     : MemoryBankController(cartridgePtr, hasBattery)

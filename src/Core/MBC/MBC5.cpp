@@ -1,7 +1,7 @@
 #include "MBC5.h"
 
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 MBC5::MBC5(Cartridge* cartridgePtr, u32 romBankCount, u32 ramBankCount, bool hasBattery, bool hasRumble)
     : MemoryBankController(cartridgePtr, hasBattery)

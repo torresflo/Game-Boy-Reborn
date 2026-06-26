@@ -4,7 +4,7 @@
 #include "Common.h"
 #include "Timer.h"
 #include "PixelProcessingUnitTypes.h"
-#include "save/ISaveStateSerializable.h"
+#include "Save/ISaveStateSerializable.h"
 
 class Cartridge;
 class CentralProcessingUnit;

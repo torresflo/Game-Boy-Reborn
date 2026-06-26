@@ -1,12 +1,12 @@
 #include <doctest/doctest.h>
 
 #include "CartridgeTestFixture.h"
-#include "mbc/MemoryBankControllerFactory.h"
-#include "mbc/NoMemoryBankController.h"
-#include "mbc/MBC1.h"
-#include "mbc/MBC2.h"
-#include "mbc/MBC3.h"
-#include "mbc/MBC5.h"
+#include "MBC/MemoryBankControllerFactory.h"
+#include "MBC/NoMemoryBankController.h"
+#include "MBC/MBC1.h"
+#include "MBC/MBC2.h"
+#include "MBC/MBC3.h"
+#include "MBC/MBC5.h"
 
 namespace
 {

@@ -6,8 +6,8 @@
 #include "Cartridge.h"
 #include "PixelProcessingUnit.h"
 #include "Gamepad.h"
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
 
 // 0x0000 - 0x3FFF : ROM Bank 0
 // 0x4000 - 0x7FFF : ROM Bank 1 - Switchable

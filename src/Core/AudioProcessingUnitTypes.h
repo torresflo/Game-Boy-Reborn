@@ -3,7 +3,7 @@
 #include <array>
 
 #include "Common.h"
-#include "save/ISaveStateSerializable.h"
+#include "Save/ISaveStateSerializable.h"
 
 // Channel 1: Pulse wave with frequency sweep (NR10-NR14, 0xFF10-0xFF14)
 struct PulseSweepChannel : public ISaveStateSerializable

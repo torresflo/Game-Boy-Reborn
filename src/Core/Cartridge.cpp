@@ -4,10 +4,10 @@
 #include <fstream>
 #include <format>
 
-#include "save/SaveStateReader.h"
-#include "save/SaveStateWriter.h"
-#include "mbc/MemoryBankController.h"
-#include "mbc/MemoryBankControllerFactory.h"
+#include "Save/SaveStateReader.h"
+#include "Save/SaveStateWriter.h"
+#include "MBC/MemoryBankController.h"
+#include "MBC/MemoryBankControllerFactory.h"
 
 const std::vector<std::string> Cartridge::RomTypes =
 {

@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "Common.h"
-#include "save/ISaveStateSerializable.h"
-#include "mbc/MemoryBankController.h"
+#include "Save/ISaveStateSerializable.h"
+#include "MBC/MemoryBankController.h"
 
 class MemoryBankControllerFactory;
 
