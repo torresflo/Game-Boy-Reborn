@@ -5,6 +5,8 @@
 #include <utility>
 
 #include "MathUtils.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 void AudioProcessingUnit::initialize()
 {
@@ -665,4 +667,30 @@ void AudioProcessingUnit::writeNR52(u8 value)
         control.masterEnabled = true;
         powerOn();
     }
+}
+
+void AudioProcessingUnit::serialize(SaveStateWriter& writer) const
+{
+    channel1.serialize(writer);
+    channel2.serialize(writer);
+    channel3.serialize(writer);
+    channel4.serialize(writer);
+    control.serialize(writer);
+
+    writer.write(frameSequencerTickCounter);
+    writer.write(frameSequencerStep);
+    writer.write(sampleGenerationAccumulator);
+}
+
+void AudioProcessingUnit::deserialize(SaveStateReader& reader)
+{
+    channel1.deserialize(reader);
+    channel2.deserialize(reader);
+    channel3.deserialize(reader);
+    channel4.deserialize(reader);
+    control.deserialize(reader);
+
+    reader.read(frameSequencerTickCounter);
+    reader.read(frameSequencerStep);
+    reader.read(sampleGenerationAccumulator);
 }

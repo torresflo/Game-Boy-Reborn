@@ -1,6 +1,8 @@
 #include "Gamepad.h"
 
 #include "MathUtils.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 void Gamepad::initialize()
 {
@@ -54,4 +56,16 @@ void Gamepad::setButtonState(Gamepad::Button button, bool isDown)
 bool Gamepad::isButtonDownForMemory(Gamepad::Button button) const
 {
     return !isButtonDown(button); //In memory, if bit is 0, then button is down
+}
+
+void Gamepad::serialize(SaveStateWriter& writer) const
+{
+    writer.write(isSelectingButtons);
+    writer.write(isSelectingDirections);
+}
+
+void Gamepad::deserialize(SaveStateReader& reader)
+{
+    reader.read(isSelectingButtons);
+    reader.read(isSelectingDirections);
 }

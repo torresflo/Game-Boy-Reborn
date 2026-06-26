@@ -15,6 +15,9 @@ public:
     void write(u16 address, u8 value) override;
     void tick() override;
 
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
+
 private:
     static constexpr u32 ROMBankSizeBytes = 0x4000;
     static constexpr u32 RAMBankSizeBytes = 0x2000;

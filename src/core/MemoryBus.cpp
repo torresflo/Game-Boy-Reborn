@@ -6,6 +6,8 @@
 #include "Cartridge.h"
 #include "PixelProcessingUnit.h"
 #include "Gamepad.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 // 0x0000 - 0x3FFF : ROM Bank 0
 // 0x4000 - 0x7FFF : ROM Bank 1 - Switchable
@@ -432,4 +434,52 @@ void MemoryBus::writeIO(u16 address, u8 value)
     }
     else
         Log::print(LogLevel::Error, std::format("Unsupported IO writing (0x{:4X}).", address));
+}
+
+void DirectMemoryAccessContext::serialize(SaveStateWriter& writer) const
+{
+    writer.write(isActive);
+    writer.write(index);
+    writer.write(value);
+    writer.write(startDelay);
+}
+
+void DirectMemoryAccessContext::deserialize(SaveStateReader& reader)
+{
+    reader.read(isActive);
+    reader.read(index);
+    reader.read(value);
+    reader.read(startDelay);
+}
+
+void MemoryBus::serialize(SaveStateWriter& writer) const
+{
+    writer.writeArray(WRAM);
+    writer.writeArray(HRAM);
+    writer.writeArray(OAM);
+    writer.writeArray(VRAM);
+
+    DMAContext.serialize(writer);
+
+    writer.writeArray(serialData);
+    timer.serialize(writer);
+    writer.write(interruptFlags);
+    writer.write(dmaRegister);
+    writer.write(interruptEnableRegister);
+}
+
+void MemoryBus::deserialize(SaveStateReader& reader)
+{
+    reader.readArray(WRAM);
+    reader.readArray(HRAM);
+    reader.readArray(OAM);
+    reader.readArray(VRAM);
+
+    DMAContext.deserialize(reader);
+
+    reader.readArray(serialData);
+    timer.deserialize(reader);
+    reader.read(interruptFlags);
+    reader.read(dmaRegister);
+    reader.read(interruptEnableRegister);
 }

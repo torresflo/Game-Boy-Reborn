@@ -1,5 +1,8 @@
 #include "MBC5.h"
 
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
+
 MBC5::MBC5(Cartridge* cartridgePtr, u32 romBankCount, u32 ramBankCount, bool hasBattery, bool hasRumble)
     : MemoryBankController(cartridgePtr, hasBattery)
     , ROMBankCount(romBankCount)
@@ -57,4 +60,20 @@ u32 MBC5::getCurrentRAMBankIndex() const
 {
     u8 bankBits = rumblePresent ? static_cast<u8>(ramBankNumber & 0x07) : ramBankNumber;
     return bankBits & (RAMBankCount - 1);
+}
+
+void MBC5::serialize(SaveStateWriter& writer) const
+{
+    writer.write(romBankNumberLow);
+    writer.write(romBankNumberHighBit);
+    writer.write(ramBankNumber);
+    writer.write(ramEnabled);
+}
+
+void MBC5::deserialize(SaveStateReader& reader)
+{
+    reader.read(romBankNumberLow);
+    reader.read(romBankNumberHighBit);
+    reader.read(ramBankNumber);
+    reader.read(ramEnabled);
 }

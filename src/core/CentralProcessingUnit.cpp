@@ -5,6 +5,8 @@
 #include "AudioProcessingUnit.h"
 #include "MemoryBus.h"
 #include "PixelProcessingUnit.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 void CentralProcessingUnit::initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr, AudioProcessingUnit* apuPtr)
 {
@@ -56,6 +58,24 @@ bool CentralProcessingUnit::isHalted() const
 u64 CentralProcessingUnit::getCycleCount() const
 {
     return cycles;
+}
+
+void CentralProcessingUnit::serialize(SaveStateWriter& writer) const
+{
+    writer.write(registers);
+    writer.write(interruptMasterEnabled);
+    writer.write(enablingInterruptMaster);
+    writer.write(halted);
+    writer.write(cycles);
+}
+
+void CentralProcessingUnit::deserialize(SaveStateReader& reader)
+{
+    reader.read(registers);
+    reader.read(interruptMasterEnabled);
+    reader.read(enablingInterruptMaster);
+    reader.read(halted);
+    reader.read(cycles);
 }
 
 void CentralProcessingUnit::executeNextInstruction()

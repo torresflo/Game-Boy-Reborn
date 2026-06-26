@@ -22,6 +22,13 @@ public:
     void stepOneFrame();
     bool saveRAM() const;
 
+    bool saveState(const std::string& path) const;
+    bool loadState(const std::string& path);
+
+    std::string getQuickSaveStatePath() const;
+    bool quickSaveState() const;
+    bool quickLoadState();
+
     bool isROMLoaded() const;
     bool isPaused() const;
     void setPaused(bool value);

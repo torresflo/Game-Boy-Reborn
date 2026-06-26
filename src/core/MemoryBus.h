@@ -4,6 +4,7 @@
 #include "Common.h"
 #include "Timer.h"
 #include "PixelProcessingUnitTypes.h"
+#include "save/ISaveStateSerializable.h"
 
 class Cartridge;
 class CentralProcessingUnit;
@@ -11,15 +12,18 @@ class PixelProcessingUnit;
 class AudioProcessingUnit;
 class Gamepad;
 
-struct DirectMemoryAccessContext
+struct DirectMemoryAccessContext : public ISaveStateSerializable
 {
     bool isActive = false;
     u8 index;
     u8 value;
     u8 startDelay;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };
 
-class MemoryBus
+class MemoryBus : public ISaveStateSerializable
 {
 public:
     static constexpr u8 OAMEntries = 40;
@@ -54,6 +58,9 @@ public:
     virtual void writeInterruptEnableRegister(u8 value);
     virtual u8 readInterruptFlags() const;
     virtual void writeInterruptFlags(u8 value);
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
 private:
     u8 readWRAM(u16 address) const;

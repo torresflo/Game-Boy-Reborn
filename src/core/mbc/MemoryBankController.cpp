@@ -12,6 +12,14 @@ void MemoryBankController::tick()
 {
 }
 
+void MemoryBankController::serialize(SaveStateWriter&) const
+{
+}
+
+void MemoryBankController::deserialize(SaveStateReader&)
+{
+}
+
 bool MemoryBankController::hasBattery() const
 {
     return batteryPresent;

@@ -1,6 +1,8 @@
 #include "AudioProcessingUnitTypes.h"
 
 #include "MathUtils.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 namespace
 {
@@ -62,6 +64,56 @@ u8 PulseSweepChannel::getCurrentSample() const
     return DutyWaveforms[waveDuty][dutyPosition] ? currentVolume : 0;
 }
 
+void PulseSweepChannel::serialize(SaveStateWriter& writer) const
+{
+    writer.write(sweepPace);
+    writer.write(sweepDirectionDecrease);
+    writer.write(sweepSlope);
+    writer.write(waveDuty);
+    writer.write(initialLengthTimer);
+    writer.write(initialVolume);
+    writer.write(envelopeDirectionIncrease);
+    writer.write(envelopeSweepPace);
+    writer.write(periodValue);
+    writer.write(lengthEnabled);
+
+    writer.write(channelEnabled);
+    writer.write(dacEnabled);
+    writer.write(periodTimer);
+    writer.write(dutyPosition);
+    writer.write(lengthTimer);
+    writer.write(currentVolume);
+    writer.write(envelopeTimer);
+    writer.write(shadowFrequency);
+    writer.write(sweepTimer);
+    writer.write(sweepEnabled);
+}
+
+void PulseSweepChannel::deserialize(SaveStateReader& reader)
+{
+    reader.read(sweepPace);
+    reader.read(sweepDirectionDecrease);
+    reader.read(sweepSlope);
+    reader.read(waveDuty);
+    reader.read(initialLengthTimer);
+    reader.read(initialVolume);
+    reader.read(envelopeDirectionIncrease);
+    reader.read(envelopeSweepPace);
+    reader.read(periodValue);
+    reader.read(lengthEnabled);
+
+    reader.read(channelEnabled);
+    reader.read(dacEnabled);
+    reader.read(periodTimer);
+    reader.read(dutyPosition);
+    reader.read(lengthTimer);
+    reader.read(currentVolume);
+    reader.read(envelopeTimer);
+    reader.read(shadowFrequency);
+    reader.read(sweepTimer);
+    reader.read(sweepEnabled);
+}
+
 void PulseChannel::initialize()
 {
     waveDuty = 0;
@@ -96,6 +148,44 @@ u8 PulseChannel::getCurrentSample() const
         return 0;
 
     return DutyWaveforms[waveDuty][dutyPosition] ? currentVolume : 0;
+}
+
+void PulseChannel::serialize(SaveStateWriter& writer) const
+{
+    writer.write(waveDuty);
+    writer.write(initialLengthTimer);
+    writer.write(initialVolume);
+    writer.write(envelopeDirectionIncrease);
+    writer.write(envelopeSweepPace);
+    writer.write(periodValue);
+    writer.write(lengthEnabled);
+
+    writer.write(channelEnabled);
+    writer.write(dacEnabled);
+    writer.write(periodTimer);
+    writer.write(dutyPosition);
+    writer.write(lengthTimer);
+    writer.write(currentVolume);
+    writer.write(envelopeTimer);
+}
+
+void PulseChannel::deserialize(SaveStateReader& reader)
+{
+    reader.read(waveDuty);
+    reader.read(initialLengthTimer);
+    reader.read(initialVolume);
+    reader.read(envelopeDirectionIncrease);
+    reader.read(envelopeSweepPace);
+    reader.read(periodValue);
+    reader.read(lengthEnabled);
+
+    reader.read(channelEnabled);
+    reader.read(dacEnabled);
+    reader.read(periodTimer);
+    reader.read(dutyPosition);
+    reader.read(lengthTimer);
+    reader.read(currentVolume);
+    reader.read(envelopeTimer);
 }
 
 void WaveChannel::initialize()
@@ -136,6 +226,36 @@ u8 WaveChannel::getCurrentSample() const
         case 3: return nibble >> 2;        //25%
         default: return 0;                 //0: mute
     }
+}
+
+void WaveChannel::serialize(SaveStateWriter& writer) const
+{
+    writer.write(dacEnabled);
+    writer.write(initialLengthTimer);
+    writer.write(outputLevel);
+    writer.write(periodValue);
+    writer.write(lengthEnabled);
+    writer.writeArray(waveRAM);
+
+    writer.write(channelEnabled);
+    writer.write(periodTimer);
+    writer.write(sampleIndex);
+    writer.write(lengthTimer);
+}
+
+void WaveChannel::deserialize(SaveStateReader& reader)
+{
+    reader.read(dacEnabled);
+    reader.read(initialLengthTimer);
+    reader.read(outputLevel);
+    reader.read(periodValue);
+    reader.read(lengthEnabled);
+    reader.readArray(waveRAM);
+
+    reader.read(channelEnabled);
+    reader.read(periodTimer);
+    reader.read(sampleIndex);
+    reader.read(lengthTimer);
 }
 
 void NoiseChannel::initialize()
@@ -181,6 +301,46 @@ u16 NoiseChannel::getPeriodTimerReloadValue() const
     return static_cast<u16>(NoiseDivisors[clockDivider] << clockShift);
 }
 
+void NoiseChannel::serialize(SaveStateWriter& writer) const
+{
+    writer.write(initialLengthTimer);
+    writer.write(initialVolume);
+    writer.write(envelopeDirectionIncrease);
+    writer.write(envelopeSweepPace);
+    writer.write(clockShift);
+    writer.write(shortModeEnabled);
+    writer.write(clockDivider);
+    writer.write(lengthEnabled);
+
+    writer.write(channelEnabled);
+    writer.write(dacEnabled);
+    writer.write(noiseShiftRegister);
+    writer.write(periodTimer);
+    writer.write(lengthTimer);
+    writer.write(currentVolume);
+    writer.write(envelopeTimer);
+}
+
+void NoiseChannel::deserialize(SaveStateReader& reader)
+{
+    reader.read(initialLengthTimer);
+    reader.read(initialVolume);
+    reader.read(envelopeDirectionIncrease);
+    reader.read(envelopeSweepPace);
+    reader.read(clockShift);
+    reader.read(shortModeEnabled);
+    reader.read(clockDivider);
+    reader.read(lengthEnabled);
+
+    reader.read(channelEnabled);
+    reader.read(dacEnabled);
+    reader.read(noiseShiftRegister);
+    reader.read(periodTimer);
+    reader.read(lengthTimer);
+    reader.read(currentVolume);
+    reader.read(envelopeTimer);
+}
+
 void AudioControl::initialize()
 {
     masterEnabled = true; //Real hardware powers the APU on by default at boot
@@ -194,4 +354,42 @@ void AudioControl::initialize()
     channel2Left = false; channel2Right = false;
     channel3Left = false; channel3Right = false;
     channel4Left = false; channel4Right = false;
+}
+
+void AudioControl::serialize(SaveStateWriter& writer) const
+{
+    writer.write(masterEnabled);
+
+    writer.write(vinLeftEnabled);
+    writer.write(leftVolume);
+    writer.write(vinRightEnabled);
+    writer.write(rightVolume);
+
+    writer.write(channel1Left);
+    writer.write(channel1Right);
+    writer.write(channel2Left);
+    writer.write(channel2Right);
+    writer.write(channel3Left);
+    writer.write(channel3Right);
+    writer.write(channel4Left);
+    writer.write(channel4Right);
+}
+
+void AudioControl::deserialize(SaveStateReader& reader)
+{
+    reader.read(masterEnabled);
+
+    reader.read(vinLeftEnabled);
+    reader.read(leftVolume);
+    reader.read(vinRightEnabled);
+    reader.read(rightVolume);
+
+    reader.read(channel1Left);
+    reader.read(channel1Right);
+    reader.read(channel2Left);
+    reader.read(channel2Right);
+    reader.read(channel3Left);
+    reader.read(channel3Right);
+    reader.read(channel4Left);
+    reader.read(channel4Right);
 }

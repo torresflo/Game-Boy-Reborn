@@ -1,6 +1,8 @@
 #include "MBC3.h"
 
 #include "MathUtils.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 MBC3::MBC3(Cartridge* cartridgePtr, u32 romBankCount, u32 ramBankCount, bool hasBattery, bool hasTimer)
     : MemoryBankController(cartridgePtr, hasBattery)
@@ -169,4 +171,52 @@ void MBC3::latchRTC()
     latchedDayCounter = liveDayCounter;
     latchedHalt = liveHalt;
     latchedDayCarry = liveDayCarry;
+}
+
+void MBC3::serialize(SaveStateWriter& writer) const
+{
+    writer.write(romBankNumber);
+    writer.write(ramOrRTCSelect);
+    writer.write(ramAndTimerEnabled);
+    writer.write(latchTriggerLastWrite);
+
+    writer.write(liveSeconds);
+    writer.write(liveMinutes);
+    writer.write(liveHours);
+    writer.write(liveDayCounter);
+    writer.write(liveHalt);
+    writer.write(liveDayCarry);
+
+    writer.write(latchedSeconds);
+    writer.write(latchedMinutes);
+    writer.write(latchedHours);
+    writer.write(latchedDayCounter);
+    writer.write(latchedHalt);
+    writer.write(latchedDayCarry);
+
+    writer.write(cycleAccumulator);
+}
+
+void MBC3::deserialize(SaveStateReader& reader)
+{
+    reader.read(romBankNumber);
+    reader.read(ramOrRTCSelect);
+    reader.read(ramAndTimerEnabled);
+    reader.read(latchTriggerLastWrite);
+
+    reader.read(liveSeconds);
+    reader.read(liveMinutes);
+    reader.read(liveHours);
+    reader.read(liveDayCounter);
+    reader.read(liveHalt);
+    reader.read(liveDayCarry);
+
+    reader.read(latchedSeconds);
+    reader.read(latchedMinutes);
+    reader.read(latchedHours);
+    reader.read(latchedDayCounter);
+    reader.read(latchedHalt);
+    reader.read(latchedDayCarry);
+
+    reader.read(cycleAccumulator);
 }

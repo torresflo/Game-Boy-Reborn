@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Common.h"
+#include "save/ISaveStateSerializable.h"
 
 class CentralProcessingUnit;
 
-class HardwareTimer
+class HardwareTimer : public ISaveStateSerializable
 {
 public:
     void initialize();
@@ -14,6 +15,9 @@ public:
     u8 readTimer(u16 address) const;
 
     void initialize(CentralProcessingUnit* cpuPtr);
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
 private:
     u16 dividerRegister = 0; //DIV

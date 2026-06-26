@@ -4,6 +4,7 @@
 #include <queue>
 
 #include "Common.h"
+#include "save/ISaveStateSerializable.h"
 
 struct ObjectAttributeMemoryEntry
 {
@@ -20,7 +21,7 @@ struct ObjectAttributeMemoryEntry
     u8 backgroundPriority : 1 = 0;
 };
 
-struct LCDData
+struct LCDData : public ISaveStateSerializable
 {
     //Registers
     u8 control;                         // LCDC - 0xFF40
@@ -41,6 +42,9 @@ struct LCDData
 
     void initialize();
     void updatePaletteData(u8 paletteData, u8 palette);
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };
 
 enum class LCDMode : u8
@@ -78,7 +82,7 @@ enum class PixelFIFOState
     Push
 };
 
-struct PixelFIFOContext
+struct PixelFIFOContext : public ISaveStateSerializable
 {
     PixelFIFOState state = PixelFIFOState::GetTile;
     std::queue<u32> queue; //u32 = color
@@ -93,4 +97,7 @@ struct PixelFIFOContext
     u8 fifoX = 0;
 
     void initialize();
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };

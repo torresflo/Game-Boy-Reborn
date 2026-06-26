@@ -1,5 +1,8 @@
 #include "MBC2.h"
 
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
+
 MBC2::MBC2(Cartridge* cartridgePtr, u32 romBankCount, bool hasBattery)
     : MemoryBankController(cartridgePtr, hasBattery)
     , ROMBankCount(romBankCount)
@@ -50,4 +53,16 @@ void MBC2::write(u16 address, u8 value)
         return;
 
     getRAMData()[(address - 0xA000) & (BuiltInRAMSizeBytes - 1)] = value & 0x0F;
+}
+
+void MBC2::serialize(SaveStateWriter& writer) const
+{
+    writer.write(romBankNumber);
+    writer.write(ramEnabled);
+}
+
+void MBC2::deserialize(SaveStateReader& reader)
+{
+    reader.read(romBankNumber);
+    reader.read(ramEnabled);
 }

@@ -6,6 +6,8 @@
 #include "CentralProcessingUnit.h"
 #include "MathUtils.h"
 #include "MemoryBus.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 namespace
 {
@@ -283,6 +285,38 @@ PixelProcessingUnit::Tile PixelProcessingUnit::decodeTileAIndex(u32 tileIndex) c
 {
     u16 tileAddress = TileDataStartAddress + static_cast<u16>(tileIndex * PixelProcessingUnit::BytesPerTile);
     return decodeTileAtAddress(tileAddress);
+}
+
+void PixelProcessingUnit::serialize(SaveStateWriter& writer) const
+{
+    writer.write(currentFrame);
+    writer.write(lineTicks);
+    writer.writeArray(frameBuffer);
+
+    pixelFIFOContext.serialize(writer);
+
+    writer.writeVector(lineObjects);
+    writer.writeVector(fetchedObjects);
+
+    writer.write(windowLine);
+
+    LCD.serialize(writer);
+}
+
+void PixelProcessingUnit::deserialize(SaveStateReader& reader)
+{
+    reader.read(currentFrame);
+    reader.read(lineTicks);
+    reader.readArray(frameBuffer);
+
+    pixelFIFOContext.deserialize(reader);
+
+    reader.readVector(lineObjects);
+    reader.readVector(fetchedObjects);
+
+    reader.read(windowLine);
+
+    LCD.deserialize(reader);
 }
 
 void PixelProcessingUnit::updateHorizontalBlankMode()

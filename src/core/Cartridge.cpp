@@ -4,6 +4,8 @@
 #include <fstream>
 #include <format>
 
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 #include "mbc/MemoryBankController.h"
 #include "mbc/MemoryBankControllerFactory.h"
 
@@ -264,4 +266,25 @@ void Cartridge::write(u16 address, u8 value)
 void Cartridge::tick()
 {
     mbc->tick();
+}
+
+void Cartridge::serialize(SaveStateWriter& writer) const
+{
+    writer.writeVector(RAMData);
+    mbc->serialize(writer);
+}
+
+void Cartridge::deserialize(SaveStateReader& reader)
+{
+    std::vector<u8> loadedRAM;
+    if(reader.readVector(loadedRAM))
+    {
+        if(loadedRAM.size() == RAMData.size())
+            RAMData = std::move(loadedRAM);
+        else
+            Log::print(LogLevel::Warning, "Save state RAM size mismatch (expected ", RAMData.size(),
+                " bytes, got ", loadedRAM.size(), ") - ignoring RAM contents from save state");
+    }
+
+    mbc->deserialize(reader);
 }

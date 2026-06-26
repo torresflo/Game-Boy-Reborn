@@ -4,8 +4,9 @@
 
 #include "Common.h"
 #include "AudioProcessingUnitTypes.h"
+#include "save/ISaveStateSerializable.h"
 
-class AudioProcessingUnit
+class AudioProcessingUnit : public ISaveStateSerializable
 {
 public:
     static constexpr u32 ClockFrequencyHz = 4194304;
@@ -28,6 +29,9 @@ public:
     std::vector<s16> drainSampleBuffer();
 
     u8 getChannelEnabledMask() const; //NR52 bits 3-0
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
 private:
     static constexpr s32 TargetPeakAmplitude = 7000;

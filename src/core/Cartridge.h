@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "Common.h"
+#include "save/ISaveStateSerializable.h"
 #include "mbc/MemoryBankController.h"
 
 class MemoryBankControllerFactory;
@@ -28,7 +29,7 @@ struct CartridgeHeader
     u16 globalChecksum;
 };
 
-class Cartridge
+class Cartridge : public ISaveStateSerializable
 {
 public:
     ~Cartridge();
@@ -42,6 +43,9 @@ public:
     bool checkHeaderChecksum() const;
 
     bool saveRAM() const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
 private:
     u8 read(u16 address) const;

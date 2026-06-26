@@ -3,10 +3,11 @@
 #include <array>
 
 #include "Common.h"
+#include "save/ISaveStateSerializable.h"
 
 class MemoryBus;
 
-class Gamepad
+class Gamepad : public ISaveStateSerializable
 {
 public:
     static constexpr u8 ButtonCount = 8;
@@ -29,6 +30,9 @@ public:
 
     bool isButtonDown(Gamepad::Button button) const;
     void setButtonState(Gamepad::Button button, bool isDown);
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
 private:
     bool isButtonDownForMemory(Gamepad::Button button) const;

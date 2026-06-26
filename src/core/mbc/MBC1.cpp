@@ -1,5 +1,8 @@
 #include "MBC1.h"
 
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
+
 MBC1::MBC1(Cartridge* cartridgePtr, u32 romBankCount, u32 ramBankCount, bool hasBattery)
     : MemoryBankController(cartridgePtr, hasBattery)
     , ROMBankCount(romBankCount)
@@ -59,4 +62,20 @@ void MBC1::write(u16 address, u8 value)
 u32 MBC1::getCurrentRAMBankIndex() const
 {
     return advancedBankingMode ? (secondaryBankRegister & (RAMBankCount - 1)) : 0;
+}
+
+void MBC1::serialize(SaveStateWriter& writer) const
+{
+    writer.write(romBankNumber);
+    writer.write(secondaryBankRegister);
+    writer.write(ramEnabled);
+    writer.write(advancedBankingMode);
+}
+
+void MBC1::deserialize(SaveStateReader& reader)
+{
+    reader.read(romBankNumber);
+    reader.read(secondaryBankRegister);
+    reader.read(ramEnabled);
+    reader.read(advancedBankingMode);
 }

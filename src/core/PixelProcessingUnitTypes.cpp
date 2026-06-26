@@ -1,5 +1,8 @@
 #include "PixelProcessingUnitTypes.h"
 
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
+
 static std::array<u32, 4> defaultColors = {0xFFFFFFFF, 0xFFAAAAAA, 0xFF555555, 0xFF000000};
 
 void LCDData::initialize()
@@ -41,6 +44,42 @@ void LCDData::updatePaletteData(u8 paletteData, u8 palette)
     }
 }
 
+void LCDData::serialize(SaveStateWriter& writer) const
+{
+    writer.write(control);
+    writer.write(status);
+    writer.write(scrollY);
+    writer.write(scrollX);
+    writer.write(coordinateY);
+    writer.write(compareY);
+    writer.write(backgroundPalette);
+    writer.writeArray(objectPaletteData);
+    writer.write(windowY);
+    writer.write(windowX);
+
+    writer.writeArray(backgroundColors);
+    writer.writeArray(object1Colors);
+    writer.writeArray(object2Colors);
+}
+
+void LCDData::deserialize(SaveStateReader& reader)
+{
+    reader.read(control);
+    reader.read(status);
+    reader.read(scrollY);
+    reader.read(scrollX);
+    reader.read(coordinateY);
+    reader.read(compareY);
+    reader.read(backgroundPalette);
+    reader.readArray(objectPaletteData);
+    reader.read(windowY);
+    reader.read(windowX);
+
+    reader.readArray(backgroundColors);
+    reader.readArray(object1Colors);
+    reader.readArray(object2Colors);
+}
+
 void PixelFIFOContext::initialize()
 {
     queue = std::queue<u32>();
@@ -54,4 +93,34 @@ void PixelFIFOContext::initialize()
     tileY = 0;
     fifoX = 0;
     state = PixelFIFOState::GetTile;
+}
+
+void PixelFIFOContext::serialize(SaveStateWriter& writer) const
+{
+    writer.write(state);
+    writer.writeQueue(queue);
+    writer.write(lineX);
+    writer.write(pushedX);
+    writer.write(fetchX);
+    writer.writeArray(backgroundFetchData);
+    writer.writeArray(fetchEntryData);
+    writer.write(mapY);
+    writer.write(mapX);
+    writer.write(tileY);
+    writer.write(fifoX);
+}
+
+void PixelFIFOContext::deserialize(SaveStateReader& reader)
+{
+    reader.read(state);
+    reader.readQueue(queue);
+    reader.read(lineX);
+    reader.read(pushedX);
+    reader.read(fetchX);
+    reader.readArray(backgroundFetchData);
+    reader.readArray(fetchEntryData);
+    reader.read(mapY);
+    reader.read(mapX);
+    reader.read(tileY);
+    reader.read(fifoX);
 }

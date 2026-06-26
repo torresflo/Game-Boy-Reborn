@@ -5,12 +5,13 @@
 #include "Common.h"
 #include "CentralProcessingUnitTypes.h"
 #include "InstructionDefinitions.h"
+#include "save/ISaveStateSerializable.h"
 
 class MemoryBus;
 class PixelProcessingUnit;
 class AudioProcessingUnit;
 
-class CentralProcessingUnit
+class CentralProcessingUnit : public ISaveStateSerializable
 {
 public:
     void initialize(MemoryBus* busPtr, PixelProcessingUnit* ppuPtr, AudioProcessingUnit* apuPtr);
@@ -22,6 +23,9 @@ public:
     bool isInterruptMasterEnabled() const;
     bool isHalted() const;
     u64 getCycleCount() const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
     bool flagZ() const;
     bool flagN() const;

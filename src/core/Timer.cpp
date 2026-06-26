@@ -4,6 +4,8 @@
 
 #include "CentralProcessingUnit.h"
 #include "MathUtils.h"
+#include "save/SaveStateReader.h"
+#include "save/SaveStateWriter.h"
 
 void HardwareTimer::initialize()
 {
@@ -83,6 +85,22 @@ u8 HardwareTimer::readTimer(u16 address) const
 void HardwareTimer::initialize(CentralProcessingUnit* cpuPtr)
 {
     this->CPU = cpuPtr;
-    
+
     dividerRegister = 0xABCC;
+}
+
+void HardwareTimer::serialize(SaveStateWriter& writer) const
+{
+    writer.write(dividerRegister);
+    writer.write(timerCounter);
+    writer.write(timerModulo);
+    writer.write(timerControl);
+}
+
+void HardwareTimer::deserialize(SaveStateReader& reader)
+{
+    reader.read(dividerRegister);
+    reader.read(timerCounter);
+    reader.read(timerModulo);
+    reader.read(timerControl);
 }

@@ -3,9 +3,10 @@
 #include <array>
 
 #include "Common.h"
+#include "save/ISaveStateSerializable.h"
 
 // Channel 1: Pulse wave with frequency sweep (NR10-NR14, 0xFF10-0xFF14)
-struct PulseSweepChannel
+struct PulseSweepChannel : public ISaveStateSerializable
 {
     //Raw register fields
     u8 sweepPace = 0;                      //NR10 bits 6-4
@@ -34,10 +35,13 @@ struct PulseSweepChannel
     void initialize();
     void trigger();
     u8 getCurrentSample() const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };
 
 // Channel 2: Pulse wave without sweep (NR21-NR24, 0xFF16-0xFF19)
-struct PulseChannel
+struct PulseChannel : public ISaveStateSerializable
 {
     //Raw register fields
     u8 waveDuty = 0;                       //NR21 bits 7-6
@@ -60,10 +64,13 @@ struct PulseChannel
     void initialize();
     void trigger();
     u8 getCurrentSample() const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };
 
 // Channel 3: Wave (NR30-NR34 + wave RAM, 0xFF1A-0xFF1E / 0xFF30-0xFF3F)
-struct WaveChannel
+struct WaveChannel : public ISaveStateSerializable
 {
     //Raw register fields
     bool dacEnabled = false;       //NR30 bit 7
@@ -82,10 +89,13 @@ struct WaveChannel
     void initialize();
     void trigger();
     u8 getCurrentSample() const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };
 
 // Channel 4: Noise (NR41-NR44, 0xFF20-0xFF23)
-struct NoiseChannel
+struct NoiseChannel : public ISaveStateSerializable
 {
     //Raw register fields
     u8 initialLengthTimer = 0;             //NR41 bits 5-0 (write-only)
@@ -110,10 +120,13 @@ struct NoiseChannel
     void trigger();
     u8 getCurrentSample() const;
     u16 getPeriodTimerReloadValue() const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };
 
 // Mixer / control (NR50-NR52, 0xFF24-0xFF26)
-struct AudioControl
+struct AudioControl : public ISaveStateSerializable
 {
     bool masterEnabled = false;    //NR52 bit 7
 
@@ -129,4 +142,7 @@ struct AudioControl
     bool channel4Left = false, channel4Right = false;
 
     void initialize();
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 };

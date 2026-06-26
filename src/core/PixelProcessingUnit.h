@@ -6,11 +6,12 @@
 #include "Common.h"
 #include "CentralProcessingUnitTypes.h"
 #include "PixelProcessingUnitTypes.h"
+#include "save/ISaveStateSerializable.h"
 
 class MemoryBus;
 class CentralProcessingUnit;
 
-class PixelProcessingUnit
+class PixelProcessingUnit : public ISaveStateSerializable
 {
 public:
     static constexpr u32 LinesPerFrame = 154;
@@ -58,6 +59,9 @@ public:
     using Tile = std::array<u8, TileSize * TileSize>;
     Tile decodeTileAtAddress(u16 tileAddress) const;
     Tile decodeTileAIndex(u32 tileIndex) const;
+
+    virtual void serialize(SaveStateWriter& writer) const override;
+    virtual void deserialize(SaveStateReader& reader) override;
 
 private:
     void updateHorizontalBlankMode();
