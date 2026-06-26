@@ -83,8 +83,8 @@ target_link_libraries(GameBoyUI PUBLIC GameBoyCore ImGui-SFML ImGuiFileDialog SF
 target_compile_features(GameBoyUI PUBLIC cxx_std_20)
 
 # Create executable file
-add_executable(${ProjectName} "src/main.cpp")
-target_link_libraries(${ProjectName} PRIVATE GameBoyUI)
+add_executable(${ProjectName} WIN32 "src/main.cpp")
+target_link_libraries(${ProjectName} PRIVATE GameBoyUI SFML::Main)
 target_compile_features(${ProjectName} PUBLIC cxx_std_20)
 
 message(STATUS "Sources: ${CORE_SOURCES}")
