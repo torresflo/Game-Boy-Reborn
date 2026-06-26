@@ -2,10 +2,10 @@
 
 #include "FileDialogWindow.h"
 
-class RomFileDialog : public FileDialogWindow
+class SaveStateFileDialog : public FileDialogWindow
 {
 public:
-    RomFileDialog();
+    SaveStateFileDialog();
 
 protected:
     void onFileChosen(GameBoyEmulator& emulator, const std::string& filePath) override;

@@ -12,9 +12,11 @@
 #include "GameBoyAudioStream.h"
 
 #include "CartridgeViewerWindow.h"
+#include "RomFileDialog.h"
+#include "SaveStateFileDialog.h"
+#include "LoadStateFileDialog.h"
 #include "ObjectViewerWindow.h"
 #include "RegisterViewerWindow.h"
-#include "RomFileDialog.h"
 #include "TileDataViewerWindow.h"
 #include "LogViewerWindow.h"
 
@@ -59,6 +61,8 @@ private:
     GameBoyAudioStream audioStream{audioRingBuffer};
 
     RomFileDialog romFileDialog;
+    SaveStateFileDialog saveStateFileDialog;
+    LoadStateFileDialog loadStateFileDialog;
     RegisterViewerWindow registerViewerWindow;
     CartridgeViewerWindow cartridgeViewerWindow;
     TileDataViewerWindow tileDataViewerWindow;

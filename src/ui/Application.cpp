@@ -116,6 +116,18 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
             setSpeedMultiplier(1.0f);
             break;
         }
+        case sf::Keyboard::Key::F5:
+        {
+            if(emulator.isROMLoaded())
+                emulator.quickSaveState();
+            break;
+        }
+        case sf::Keyboard::Key::F9:
+        {
+            if(emulator.isROMLoaded())
+                emulator.quickLoadState();
+            break;
+        }
         default:
         {
             std::optional<Gamepad::Button> button = convertSFMLKeyboardKey(key.code);
@@ -216,6 +228,8 @@ void Application::update()
     updateGameScreenTransform(window.getSize());
 
     romFileDialog.update(emulator);
+    saveStateFileDialog.update(emulator);
+    loadStateFileDialog.update(emulator);
     registerViewerWindow.update(emulator);
     cartridgeViewerWindow.update(emulator);
     tileDataViewerWindow.update(emulator);
@@ -240,6 +254,20 @@ void Application::drawMenuBar()
             {
                 emulator.setPaused(true);
                 romFileDialog.setOpen(true);
+            }
+
+            ImGui::Separator();
+
+            if(ImGui::MenuItem("Save State As...", nullptr, false, emulator.isROMLoaded()))
+            {
+                emulator.setPaused(true);
+                saveStateFileDialog.setOpen(true);
+            }
+
+            if(ImGui::MenuItem("Load State...", nullptr, false, emulator.isROMLoaded()))
+            {
+                emulator.setPaused(true);
+                loadStateFileDialog.setOpen(true);
             }
 
             ImGui::EndMenu();
