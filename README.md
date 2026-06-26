@@ -9,6 +9,8 @@
   <p align="center">
     A cycle-accurate Nintendo Game Boy (DMG-01) emulator written in modern C++20, created just for fun!
     <br/>
+    <strong>Windows only.</strong>
+    <br/>
     <a href="https://github.com/torresflo/Game-Boy-Reborn/issues">Report a bug or request a feature</a>
   </p>
 </p>
@@ -103,6 +105,7 @@ Game Boy Reborn does not ship with, host, or link to any ROM files. To use the e
 
 ### Prerequisites
 
+- **Windows** (the only platform currently supported, via MSVC)
 - **CMake 3.28+**
 - **MSVC** (Visual Studio 2022 or later, with the "Desktop development with C++" workload)
 
