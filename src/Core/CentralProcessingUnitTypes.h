@@ -15,12 +15,11 @@ struct Registers
     u16 SP; //Stack Pointer
     u16 PC; //Program Counter
 
-    u16 getHL() const { return (static_cast<u16>(H) << 8) | L; }
-    void setHL(u16 value)
-    {
-        H = static_cast<u8>(value >> 8);
-        L = static_cast<u8>(value & 0xFF);
-    }
+    u16 getAF() const;
+    u16 getBC() const;
+    u16 getDE() const;
+    u16 getHL() const;
+    void setHL(u16 value);
 };
 
 // Bit positions within the IF/IE registers, for use with getBitValue/setBitValue.
