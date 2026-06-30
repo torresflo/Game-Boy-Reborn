@@ -73,12 +73,21 @@ if(MSVC)
     target_compile_options(ImGuiFileDialog PRIVATE /wd4244)
 endif()
 
+FetchContent_Declare(
+    imgui_club
+    GIT_REPOSITORY https://github.com/ocornut/imgui_club.git
+    GIT_TAG        main
+    GIT_SHALLOW    TRUE
+)
+FetchContent_MakeAvailable(imgui_club)
+
 # UI Sources
 file (GLOB_RECURSE UI_SOURCES CONFIGURE_DEPENDS "src/UI/*.cpp")
 file (GLOB_RECURSE UI_HEADERS CONFIGURE_DEPENDS "src/UI/*.h")
 
 add_library(GameBoyUI STATIC ${UI_SOURCES})
 target_include_directories(GameBoyUI PUBLIC "src/UI")
+target_include_directories(GameBoyUI PUBLIC "${imgui_club_SOURCE_DIR}/imgui_memory_editor")
 target_link_libraries(GameBoyUI PUBLIC GameBoyCore ImGui-SFML ImGuiFileDialog SFML::Audio)
 target_compile_features(GameBoyUI PUBLIC cxx_std_20)
 

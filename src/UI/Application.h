@@ -20,6 +20,7 @@
 #include "TileDataViewerWindow.h"
 #include "LogViewerWindow.h"
 #include "DisassemblyWindow.h"
+#include "MemoryHexViewerWindow.h"
 #include "NotificationManager.h"
 
 class Application
@@ -75,6 +76,7 @@ private:
     ObjectViewerWindow objectViewerWindow;
     LogViewerWindow logViewerWindow;
     DisassemblyWindow disassemblyWindow;
+    MemoryHexViewerWindow memoryHexViewerWindow;
     NotificationManager notificationManager;
 
     static Application* instancePointer;

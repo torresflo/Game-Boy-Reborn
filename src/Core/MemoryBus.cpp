@@ -1,5 +1,6 @@
 #include "MemoryBus.h"
 
+#include <algorithm>
 #include <format>
 
 #include "AudioProcessingUnit.h"
@@ -434,6 +435,43 @@ void MemoryBus::writeIO(u16 address, u8 value)
     }
     else
         Log::print(LogLevel::Error, std::format("Unsupported IO writing (0x{:4X}).", address));
+}
+
+void MemoryBus::dumpMemory(std::array<u8, 0x10000>& buffer) const
+{
+    if(cartridge != nullptr)
+    {
+        for(u32 address = 0x0000; address < 0x8000; address++)
+            buffer[address] = cartridge->read(static_cast<u16>(address));
+    }
+    else
+        std::fill(buffer.begin(), buffer.begin() + 0x8000, u8{0xFF});
+
+    std::copy(VRAM.begin(), VRAM.end(), buffer.begin() + 0x8000);
+
+    if(cartridge != nullptr)
+    {
+        for(u32 address = 0xA000; address < 0xC000; address++)
+            buffer[address] = cartridge->read(static_cast<u16>(address));
+    }
+    else
+        std::fill(buffer.begin() + 0xA000, buffer.begin() + 0xC000, u8{0xFF});
+
+    std::copy(WRAM.begin(), WRAM.end(), buffer.begin() + 0xC000);
+
+    std::fill(buffer.begin() + 0xE000, buffer.begin() + 0xFE00, u8{0});
+
+    const u8* oamBytes = reinterpret_cast<const u8*>(OAM.data());
+    std::copy(oamBytes, oamBytes + 0xA0, buffer.begin() + 0xFE00);
+
+    std::fill(buffer.begin() + 0xFEA0, buffer.begin() + 0xFF00, u8{0});
+
+    for(u32 address = 0xFF00; address < 0xFF80; address++)
+        buffer[address] = readIO(static_cast<u16>(address));
+
+    std::copy(HRAM.begin(), HRAM.begin() + 0x7F, buffer.begin() + 0xFF80);
+
+    buffer[0xFFFF] = interruptEnableRegister;
 }
 
 void DirectMemoryAccessContext::serialize(SaveStateWriter& writer) const

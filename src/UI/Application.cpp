@@ -263,6 +263,7 @@ void Application::update(sf::Time deltaTime)
     objectViewerWindow.update(emulator);
     logViewerWindow.update(emulator);
     disassemblyWindow.update(emulator);
+    memoryHexViewerWindow.update(emulator);
 
     notificationManager.update(deltaTime);
     notificationManager.draw(window, menuBarHeight);
@@ -346,6 +347,10 @@ void Application::drawMenuBar()
             bool objectViewerOpen = objectViewerWindow.isOpen();
             if(ImGui::MenuItem("Objects (sprites)", nullptr, &objectViewerOpen))
                 objectViewerWindow.setOpen(objectViewerOpen);
+
+            bool memoryHexViewerOpen = memoryHexViewerWindow.isOpen();
+            if(ImGui::MenuItem("Memory Viewer", nullptr, &memoryHexViewerOpen))
+                memoryHexViewerWindow.setOpen(memoryHexViewerOpen);
 
             ImGui::Separator();
 

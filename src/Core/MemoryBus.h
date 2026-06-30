@@ -59,6 +59,8 @@ public:
     virtual u8 readInterruptFlags() const;
     virtual void writeInterruptFlags(u8 value);
 
+    void dumpMemory(std::array<u8, 0x10000>& buffer) const;
+
     virtual void serialize(SaveStateWriter& writer) const override;
     virtual void deserialize(SaveStateReader& reader) override;
 

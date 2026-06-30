@@ -46,7 +46,7 @@ Current highlights:
 - **Battery-backed cartridge RAM**: saved next to the ROM as a `.sav` file.
 - **Input**: keyboard and gamepad (Xbox-style layout) support.
 - **Adjustable emulation speed**: from 0.125x up to 8x.
-- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, a log viewer, and a disassembly viewer.
+- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, a log viewer, a disassembly viewer, and a full memory hex viewer (0x0000–0xFFFF).
 
 ## ROM Compatibility
 
@@ -117,6 +117,7 @@ All other dependencies are fetched automatically by CMake's `FetchContent`, ther
 | [SFML 3.1.0](https://www.sfml-dev.org/)                                                           | Window, input and audio output (Network module disabled, unused)              |
 | [Dear ImGui](https://github.com/ocornut/imgui) + [imgui-sfml](https://github.com/SFML/imgui-sfml) | Debug UI widgets                                                              |
 | [ImGuiFileDialog](https://github.com/aiekick/ImGuiFileDialog)                                     | ROM / save-state file pickers                                                 |
+| [imgui_club](https://github.com/ocornut/imgui_club) (`imgui_memory_editor`)                       | Hex viewer widget for the Memory Viewer debug tool                            |
 | [doctest](https://github.com/doctest/doctest) + [nlohmann/json](https://github.com/nlohmann/json) | Unit test framework (test target only)                                        |
 | [SingleStepTests/sm83](https://github.com/SingleStepTests/sm83)                                   | External per-opcode CPU test vectors (test target only, build directory only) |
 
@@ -167,9 +168,10 @@ All debug windows are accessible from the **Debug** menu:
 |-------------------|---------------------------------------------------------------------------|
 | Cartridge Info    | ROM/RAM size, MBC type and licensee                                       |
 | CPU Registers     | Live view of all CPU registers, flags, IME, halt state, and cycle count   |
-| Disassembly       | Scrollable list of upcoming instructions starting at the current PC.      |
+| Disassembly       | Scrollable list of upcoming instructions starting at the current PC       |
 | Tile Data         | Visual grid of all tiles currently in VRAM                                |
 | Objects (sprites) | State of the 40 OAM sprite entries                                        |
+| Memory Viewer     | Hex viewer for the full 0x0000–0xFFFF address space, updated every frame  |
 | Log               | Scrollable log output with level filtering                                |
 
 ## Contributing
