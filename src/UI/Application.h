@@ -19,6 +19,7 @@
 #include "RegisterViewerWindow.h"
 #include "TileDataViewerWindow.h"
 #include "LogViewerWindow.h"
+#include "DisassemblyWindow.h"
 #include "NotificationManager.h"
 
 class Application
@@ -36,7 +37,7 @@ public:
 private:
     static constexpr double MaxAccumulatedFrames = 5.0;
     static constexpr float JoystickAxisThreshold = 50.f;
-    static constexpr std::array<float, 7> SpeedPresets = {0.25f, 0.5f, 1.f, 1.5f, 2.f, 4.f, 8.f};
+    static constexpr std::array<float, 8> SpeedPresets = {0.125f, 0.25f, 0.5f, 1.f, 1.5f, 2.f, 4.f, 8.f};
 
     void createWindow();
     void processEvents();
@@ -73,6 +74,7 @@ private:
     TileDataViewerWindow tileDataViewerWindow;
     ObjectViewerWindow objectViewerWindow;
     LogViewerWindow logViewerWindow;
+    DisassemblyWindow disassemblyWindow;
     NotificationManager notificationManager;
 
     static Application* instancePointer;

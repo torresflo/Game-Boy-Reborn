@@ -60,6 +60,11 @@ u64 CentralProcessingUnit::getCycleCount() const
     return cycles;
 }
 
+const InstructionData& CentralProcessingUnit::getInstructionFromOpCode(u8 opcode) const
+{
+    return Instructions[opcode];
+}
+
 void CentralProcessingUnit::serialize(SaveStateWriter& writer) const
 {
     writer.write(registers);
@@ -140,11 +145,6 @@ void CentralProcessingUnit::execute()
         exit(-1);
     }
     (this->*instructionFunc)();
-}
-
-const InstructionData& CentralProcessingUnit::getInstructionFromOpCode(u8 opcode) const
-{
-    return Instructions[opcode];
 }
 
 u16 CentralProcessingUnit::readRegister(RegisterType type) const

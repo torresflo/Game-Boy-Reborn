@@ -22,7 +22,7 @@ namespace
 }
 
 ObjectViewerWindow::ObjectViewerWindow()
-    : ToolWindow("Objects", WindowWidth, WindowHeight), objectsSprite(objectsTexture)
+    : ToolWindow("Objects (sprites)", WindowWidth, WindowHeight), objectsSprite(objectsTexture)
 {
     if(!objectsTexture.resize({ImageWidth, ImageHeight}))
         Log::print(LogLevel::Error, "Failed to create the objects texture");

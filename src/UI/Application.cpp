@@ -262,6 +262,7 @@ void Application::update(sf::Time deltaTime)
     tileDataViewerWindow.update(emulator);
     objectViewerWindow.update(emulator);
     logViewerWindow.update(emulator);
+    disassemblyWindow.update(emulator);
 
     notificationManager.update(deltaTime);
     notificationManager.draw(window, menuBarHeight);
@@ -326,21 +327,27 @@ void Application::drawMenuBar()
 
         if(ImGui::BeginMenu("Debug"))
         {
+            bool cartridgeViewerOpen = cartridgeViewerWindow.isOpen();
+            if(ImGui::MenuItem("Cartridge Info", nullptr, &cartridgeViewerOpen))
+                cartridgeViewerWindow.setOpen(cartridgeViewerOpen);
+
             bool registerViewerOpen = registerViewerWindow.isOpen();
             if(ImGui::MenuItem("CPU Registers", nullptr, &registerViewerOpen))
                 registerViewerWindow.setOpen(registerViewerOpen);
 
-            bool cartridgeViewerOpen = cartridgeViewerWindow.isOpen();
-            if(ImGui::MenuItem("Cartridge Info", nullptr, &cartridgeViewerOpen))
-                cartridgeViewerWindow.setOpen(cartridgeViewerOpen);
+            bool disassemblyOpen = disassemblyWindow.isOpen();
+            if(ImGui::MenuItem("Disassembly", nullptr, &disassemblyOpen))
+                disassemblyWindow.setOpen(disassemblyOpen);
 
             bool tileDataViewerOpen = tileDataViewerWindow.isOpen();
             if(ImGui::MenuItem("Tile Data", nullptr, &tileDataViewerOpen))
                 tileDataViewerWindow.setOpen(tileDataViewerOpen);
 
             bool objectViewerOpen = objectViewerWindow.isOpen();
-            if(ImGui::MenuItem("Objects", nullptr, &objectViewerOpen))
+            if(ImGui::MenuItem("Objects (sprites)", nullptr, &objectViewerOpen))
                 objectViewerWindow.setOpen(objectViewerOpen);
+
+            ImGui::Separator();
 
             bool logViewerOpen = logViewerWindow.isOpen();
             if(ImGui::MenuItem("Log", nullptr, &logViewerOpen))

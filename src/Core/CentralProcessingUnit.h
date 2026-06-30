@@ -24,6 +24,8 @@ public:
     bool isHalted() const;
     u64 getCycleCount() const;
 
+    const InstructionData& getInstructionFromOpCode(u8 opcode) const;
+
     virtual void serialize(SaveStateWriter& writer) const override;
     virtual void deserialize(SaveStateReader& reader) override;
 
@@ -38,8 +40,6 @@ private:
     void fetchData();
     void printDebugMessages(u16 pc);
     void execute();
-
-    const InstructionData& getInstructionFromOpCode(u8 opcode) const;
 
     u16 readRegister(RegisterType type) const;
     void writeRegister(RegisterType type, u16 value);
