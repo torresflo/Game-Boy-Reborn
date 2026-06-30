@@ -28,6 +28,7 @@
   * [Building](#building)
   * [Running Tests](#running-tests)
   * [Project Layout](#project-layout)
+  * [Debugging tools](#debugging-tools)
 * [Contributing](#contributing)
 * [License](#license)
 * [References](#references)
@@ -44,8 +45,8 @@ Current highlights:
 - **Save states**: quick save/load (F5/F9) plus save to file/load from file dialogs.
 - **Battery-backed cartridge RAM**: saved next to the ROM as a `.sav` file.
 - **Input**: keyboard and gamepad (Xbox-style layout) support.
-- **Adjustable emulation speed**: from 0.25x up to 8x.
-- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, and a log viewer.
+- **Adjustable emulation speed**: from 0.125x up to 8x.
+- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, a log viewer, and a disassembly viewer.
 
 ## ROM Compatibility
 
@@ -157,6 +158,19 @@ docs/                   > hardware reference docs
 ```
 
 Each layer follows a consistent pattern: emulator-side state is exposed through small `const` accessors, and the UI layer reads them to draw widgets without owning emulation state itself.
+
+### Debugging tools
+
+All debug windows are accessible from the **Debug** menu:
+
+| Window            | Description                                                               |
+|-------------------|---------------------------------------------------------------------------|
+| Cartridge Info    | ROM/RAM size, MBC type and licensee                                       |
+| CPU Registers     | Live view of all CPU registers, flags, IME, halt state, and cycle count   |
+| Disassembly       | Scrollable list of upcoming instructions starting at the current PC.      |
+| Tile Data         | Visual grid of all tiles currently in VRAM                                |
+| Objects (sprites) | State of the 40 OAM sprite entries                                        |
+| Log               | Scrollable log output with level filtering                                |
 
 ## Contributing
 
