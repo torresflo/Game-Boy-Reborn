@@ -97,13 +97,36 @@ void RegisterViewerWindow::drawContent(GameBoyEmulator& emulator)
     ImGui::SameLine();
     drawFlag("C", cpu.flagC());
 
-    drawSectionHeader("System Registers");
-    if(beginRegisterTable("SystemRegistersTable"))
+    drawSectionHeader("PPU Registers");
+    if(beginRegisterTable("PPURegistersTable"))
     {
         drawRegisterCell("LCDC", std::format("0x{:02X}", ppu.readRegister(0xFF40)));
         drawRegisterCell("STAT", std::format("0x{:02X}", ppu.readRegister(0xFF41)));
-        drawRegisterCell("LY", std::format("0x{:02X}", ppu.readRegister(0xFF44)));
-        drawRegisterCell("DIV", std::format("0x{:02X}", bus.read(0xFF04)));
+        drawRegisterCell("SCY",  std::format("0x{:02X}", ppu.readRegister(0xFF42)));
+        drawRegisterCell("SCX",  std::format("0x{:02X}", ppu.readRegister(0xFF43)));
+        drawRegisterCell("LY",   std::format("0x{:02X}", ppu.readRegister(0xFF44)));
+        drawRegisterCell("LYC",  std::format("0x{:02X}", ppu.readRegister(0xFF45)));
+        drawRegisterCell("WY",   std::format("0x{:02X}", ppu.readRegister(0xFF4A)));
+        drawRegisterCell("WX",   std::format("0x{:02X}", ppu.readRegister(0xFF4B)));
+        drawRegisterCell("BGP",  std::format("0x{:02X}", ppu.readRegister(0xFF47)));
+        drawRegisterCell("OBP0", std::format("0x{:02X}", ppu.readRegister(0xFF48)));
+        drawRegisterCell("OBP1", std::format("0x{:02X}", ppu.readRegister(0xFF49)));
+        ImGui::EndTable();
+    }
+
+    drawSectionHeader("Timer Registers");
+    if(beginRegisterTable("TimerRegistersTable"))
+    {
+        drawRegisterCell("DIV",  std::format("0x{:02X}", bus.read(0xFF04)));
+        drawRegisterCell("TIMA", std::format("0x{:02X}", bus.read(0xFF05)));
+        drawRegisterCell("TMA",  std::format("0x{:02X}", bus.read(0xFF06)));
+        drawRegisterCell("TAC",  std::format("0x{:02X}", bus.read(0xFF07)));
+        ImGui::EndTable();
+    }
+
+    drawSectionHeader("Interrupt Registers");
+    if(beginRegisterTable("InterruptRegistersTable"))
+    {
         drawRegisterCell("IE", std::format("0x{:02X}", bus.readInterruptEnableRegister()));
         drawRegisterCell("IF", std::format("0x{:02X}", bus.readInterruptFlags()));
         ImGui::EndTable();

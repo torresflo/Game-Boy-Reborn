@@ -22,7 +22,7 @@ private:
     void drawInfoLine(const char* name, const std::string& valueText);
 
     static constexpr unsigned int WindowWidth = 300;
-    static constexpr unsigned int WindowHeight = 460;
+    static constexpr unsigned int WindowHeight = 580;
 
     static constexpr ImVec4 HeaderColor{0.6f, 0.6f, 0.65f, 1.f};
     static constexpr ImVec4 NameColor{0.55f, 0.75f, 1.f, 1.f};
