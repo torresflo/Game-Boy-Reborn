@@ -7,9 +7,6 @@
 #include "Common.h"
 #include "AudioRingBuffer.h"
 
-// Pulls decoded PCM samples from an AudioRingBuffer and feeds them to SFML's
-// audio backend. onGetData/onSeek run on SFML's internal audio thread, which
-// is what makes AudioRingBuffer's thread safety necessary.
 class GameBoyAudioStream : public sf::SoundStream
 {
 public:
