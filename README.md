@@ -46,7 +46,7 @@ Current highlights:
 - **Battery-backed cartridge RAM**: saved next to the ROM as a `.sav` file.
 - **Input**: keyboard and gamepad (Xbox-style layout) support.
 - **Adjustable emulation speed**: from 0.125x up to 8x.
-- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, a log viewer, a disassembly viewer, and a full memory hex viewer (0x0000–0xFFFF).
+- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, a background & window map viewer, a log viewer, a disassembly viewer, and a full memory hex viewer (0x0000–0xFFFF).
 
 ## ROM Compatibility
 
@@ -88,7 +88,7 @@ Other shortcuts:
 | `F1`                  | Show/hide the menu bar                    |
 | `F11`                 | Toggle fullscreen                         |
 | `Pause`               | Pause/resume emulation                    |
-| `+` / `-` (numpad)    | Cycle through speed presets (0.25x to 8x) |
+| `+` / `-` (numpad)    | Cycle through speed presets (0.125x to 8x)|
 | `=`                   | Reset speed to 1x                         |
 | `F5`                  | Quick-save state                          |
 | `F9`                  | Quick-load state                          |
@@ -164,15 +164,16 @@ Each layer follows a consistent pattern: emulator-side state is exposed through 
 
 All debug windows are accessible from the **Debug** menu:
 
-| Window            | Description                                                               |
-|-------------------|---------------------------------------------------------------------------|
-| Cartridge Info    | ROM/RAM size, MBC type and licensee                                       |
-| CPU Registers     | Live view of all CPU registers, flags, IME, halt state, and cycle count   |
-| Disassembly       | Scrollable list of upcoming instructions starting at the current PC       |
-| Tile Data         | Visual grid of all tiles currently in VRAM                                |
-| Objects (sprites) | State of the 40 OAM sprite entries                                        |
-| Memory Viewer     | Hex viewer for the full 0x0000–0xFFFF address space, updated every frame  |
-| Log               | Scrollable log output with level filtering                                |
+| Window                    | Description                                                                                                   |
+|---------------------------|---------------------------------------------------------------------------------------------------------------|
+| Cartridge Info            | ROM/RAM size, MBC type and licensee                                                                           |
+| CPU Registers             | Live view of all CPU registers, flags, IME, halt state, and cycle count                                       |
+| Disassembly               | Scrollable list of upcoming instructions starting at the current PC                                           |
+| Tile Data                 | Visual grid of all tiles currently in VRAM                                                                    |
+| Objects (sprites)         | State of the 40 OAM sprite entries                                                                            |
+| Background & Window Map   | Full 256×256 BG or Window tilemap with a viewport overlay (SCX/SCY) and scroll/position register readouts     |
+| Memory Viewer             | Hex viewer for the full 0x0000–0xFFFF address space, updated every frame                                      |
+| Log                       | Scrollable log output with level filtering                                                                    |
 
 ## Contributing
 
