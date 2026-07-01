@@ -22,6 +22,7 @@
 #include "DisassemblyWindow.h"
 #include "MemoryHexViewerWindow.h"
 #include "ApuViewerWindow.h"
+#include "BackgroundMapViewerWindow.h"
 #include "NotificationManager.h"
 
 class Application
@@ -79,6 +80,7 @@ private:
     DisassemblyWindow disassemblyWindow;
     MemoryHexViewerWindow memoryHexViewerWindow;
     ApuViewerWindow apuViewerWindow;
+    BackgroundMapViewerWindow backgroundMapViewerWindow;
     NotificationManager notificationManager;
 
     static Application* instancePointer;

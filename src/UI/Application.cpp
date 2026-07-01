@@ -265,6 +265,7 @@ void Application::update(sf::Time deltaTime)
     disassemblyWindow.update(emulator);
     memoryHexViewerWindow.update(emulator);
     apuViewerWindow.update(emulator);
+    backgroundMapViewerWindow.update(emulator);
 
     notificationManager.update(deltaTime);
     notificationManager.draw(window, menuBarHeight);
@@ -354,6 +355,10 @@ void Application::drawMenuBar()
             bool objectViewerOpen = objectViewerWindow.isOpen();
             if(ImGui::MenuItem("Objects (sprites)", nullptr, &objectViewerOpen))
                 objectViewerWindow.setOpen(objectViewerOpen);
+
+            bool backgroundMapViewerOpen = backgroundMapViewerWindow.isOpen();
+            if(ImGui::MenuItem("Background & Window Map", nullptr, &backgroundMapViewerOpen))
+                backgroundMapViewerWindow.setOpen(backgroundMapViewerOpen);
 
             ImGui::Separator();
 
