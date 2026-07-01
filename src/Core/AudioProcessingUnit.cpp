@@ -669,6 +669,31 @@ void AudioProcessingUnit::writeNR52(u8 value)
     }
 }
 
+const PulseSweepChannel& AudioProcessingUnit::getChannel1() const
+{
+    return channel1;
+}
+
+const PulseChannel& AudioProcessingUnit::getChannel2() const
+{
+    return channel2;
+}
+
+const WaveChannel& AudioProcessingUnit::getChannel3() const
+{
+    return channel3;
+}
+
+const NoiseChannel& AudioProcessingUnit::getChannel4() const
+{
+    return channel4;
+}
+
+const AudioControl& AudioProcessingUnit::getAudioControl() const
+{
+    return control;
+}
+
 void AudioProcessingUnit::serialize(SaveStateWriter& writer) const
 {
     channel1.serialize(writer);

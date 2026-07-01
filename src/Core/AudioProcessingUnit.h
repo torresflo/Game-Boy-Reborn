@@ -30,6 +30,12 @@ public:
 
     u8 getChannelEnabledMask() const; //NR52 bits 3-0
 
+    const PulseSweepChannel& getChannel1() const;
+    const PulseChannel& getChannel2() const;
+    const WaveChannel& getChannel3() const;
+    const NoiseChannel& getChannel4() const;
+    const AudioControl& getAudioControl() const;
+
     virtual void serialize(SaveStateWriter& writer) const override;
     virtual void deserialize(SaveStateReader& reader) override;
 

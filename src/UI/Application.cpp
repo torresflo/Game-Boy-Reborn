@@ -264,6 +264,7 @@ void Application::update(sf::Time deltaTime)
     logViewerWindow.update(emulator);
     disassemblyWindow.update(emulator);
     memoryHexViewerWindow.update(emulator);
+    apuViewerWindow.update(emulator);
 
     notificationManager.update(deltaTime);
     notificationManager.draw(window, menuBarHeight);
@@ -340,6 +341,12 @@ void Application::drawMenuBar()
             if(ImGui::MenuItem("Disassembly", nullptr, &disassemblyOpen))
                 disassemblyWindow.setOpen(disassemblyOpen);
 
+            bool memoryHexViewerOpen = memoryHexViewerWindow.isOpen();
+            if(ImGui::MenuItem("Memory Viewer", nullptr, &memoryHexViewerOpen))
+                memoryHexViewerWindow.setOpen(memoryHexViewerOpen);
+
+            ImGui::Separator();
+
             bool tileDataViewerOpen = tileDataViewerWindow.isOpen();
             if(ImGui::MenuItem("Tile Data", nullptr, &tileDataViewerOpen))
                 tileDataViewerWindow.setOpen(tileDataViewerOpen);
@@ -348,9 +355,11 @@ void Application::drawMenuBar()
             if(ImGui::MenuItem("Objects (sprites)", nullptr, &objectViewerOpen))
                 objectViewerWindow.setOpen(objectViewerOpen);
 
-            bool memoryHexViewerOpen = memoryHexViewerWindow.isOpen();
-            if(ImGui::MenuItem("Memory Viewer", nullptr, &memoryHexViewerOpen))
-                memoryHexViewerWindow.setOpen(memoryHexViewerOpen);
+            ImGui::Separator();
+
+            bool apuViewerOpen = apuViewerWindow.isOpen();
+            if(ImGui::MenuItem("APU Channels", nullptr, &apuViewerOpen))
+                apuViewerWindow.setOpen(apuViewerOpen);
 
             ImGui::Separator();
 
