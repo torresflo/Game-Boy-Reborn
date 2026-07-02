@@ -7,7 +7,9 @@
   <h1 align="center">Game Boy Reborn</h3>
 
   <p align="center">
-    A cycle-accurate Nintendo Game Boy (DMG-01) emulator written in modern C++20, created just for fun!
+    A cycle-accurate Nintendo Game Boy (DMG-01) emulator written in modern C++20.
+    <br/>
+    Comes with a complete, extensive and modulable <strong>debugger</strong>.
     <br/>
     <strong>Windows only.</strong>
     <br/>
@@ -35,18 +37,21 @@
 
 ## Overview
 
-Game Boy Reborn aims to emulate the original DMG-01 Game Boy as faithfully as possible, down to per-cycle CPU and PPU timing, rather than just running games "well enough".
+Game Boy Reborn aims to emulate the original DMG-01 Game Boy as faithfully as possible, down to per-cycle CPU and PPU timing. It provides an advanced and extensive debugger.
 
 Current highlights:
 
 - **CPU**: full SM83 instruction set, verified against the [SingleStepTests/sm83](https://github.com/SingleStepTests/sm83) per-opcode test vectors.
 - **PPU**: background, window and sprite (OBJ) rendering to a 160x144 framebuffer.
 - **APU**: all 4 original sound channels (2 pulse, wave, noise) with the frame sequencer and mixer, resampled to 44100 Hz stereo output.
-- **Save states**: quick save/load (F5/F9) plus save to file/load from file dialogs.
+- **Save states**: quick save/load (Ctrl+S/Ctrl+L) plus save to file/load from file dialogs.
 - **Battery-backed cartridge RAM**: saved next to the ROM as a `.sav` file.
 - **Input**: keyboard and gamepad (Xbox-style layout) support.
 - **Adjustable emulation speed**: from 0.125x up to 8x.
-- **Built-in debugger**: a Debugger window showing multiple debug panels at once: registers, cartridge info, tile data, objects (sprites), background & window tilemaps, log, disassembly, APU data, and a full memory hex viewer (0x0000–0xFFFF).
+- **Full built-in debugger**: a single Debugger window with everything you need to test and dissect any ROM:
+    - Execution controls (pause/resume, step one instruction or one frame)
+    - Address **breakpoints** that pause the emulator when the PC reaches them.
+    - Live panels for CPU/PPU registers, disassembly, stack, cartridge info, tile data, objects (sprites), background & window tilemaps, APU data, a full memory hex viewer (0x0000–0xFFFF), and the log.
 
 ![Debugger image](https://github.com/torresflo/Game-Boy-Reborn/blob/main/images/Debugger.png)
 
@@ -89,15 +94,17 @@ Other shortcuts:
 |-----------------------|-------------------------------------------|
 | `F1`                  | Show/hide the menu bar                    |
 | `F11`                 | Toggle fullscreen                         |
-| `Pause`               | Pause/resume emulation                    |
+| `F5`                  | Pause/resume emulation                    |
 | `+` / `-` (numpad)    | Cycle through speed presets (0.125x to 8x)|
 | `=`                   | Reset speed to 1x                         |
-| `F5`                  | Quick-save state                          |
-| `F9`                  | Quick-load state                          |
+| `Ctrl+S`              | Quick-save state                          |
+| `Ctrl+L`              | Quick-load state                          |
+
+Developer stepping/breakpoint shortcuts are listed under [Debugging tools](#debugging-tools).
 
 ### Save States & Battery Saves
 
-- **Save states** snapshot the entire emulator (CPU, memory, PPU, APU, cartridge) so you can resume later. Use `F5`/`F9` for a quick slot, or `File > Save State As...` / `File > Load State...` to pick a file.
+- **Save states** snapshot the entire emulator (CPU, memory, PPU, APU, cartridge) so you can resume later. Use `Ctrl+S`/`Ctrl+L` for a quick slot, or `File > Save State As...` / `File > Load State...` to pick a file.
 - **Battery saves**: for cartridges with battery-backed RAM (most games that save progress on real hardware), the RAM is automatically written to a `.sav` file next to the ROM when the ROM changes or the emulator closes, and reloaded the next time you open that ROM.
 
 ### Getting ROMs
@@ -164,19 +171,32 @@ Each layer follows a consistent pattern: emulator-side state is exposed through 
 
 ### Debugging tools
 
+Game Boy Reborn ships with a full debugger so you can run **any ROM under inspection**: halt execution wherever you want, set address breakpoints, step forward one instruction or one whole frame at a time, and watch every part of the emulated hardware update live as you go. This makes it straightforward to see exactly what a game is doing and to track down bugs.
+
 All debug panels are shown together in a single window, opened from **Debug > Debugger**, docked in a default arrangement that you can freely drag, resize, or re-tab (the layout is remembered between sessions):
 
-| Panel                     | Description                                                                                                   |
-|---------------------------|---------------------------------------------------------------------------------------------------------------|
-| Cartridge Info            | ROM/RAM size, MBC type and licensee                                                                           |
-| CPU Registers             | Live view of all CPU registers, flags, IME, halt state, and cycle count                                       |
-| Disassembly               | Scrollable list of upcoming instructions starting at the current PC                                           |
-| Tile Data                 | Visual grid of all tiles currently in VRAM                                                                    |
-| Objects (sprites)         | State of the 40 OAM sprite entries                                                                            |
-| Background & Window Map   | Full 256×256 BG or Window tilemap with a viewport overlay (SCX/SCY) and scroll/position register readouts     |
-| APU Viewer                | Live state of all 4 sound channels (duty/envelope/sweep/wave RAM/LFSR) and the NR50/NR51/NR52 mixer           |
-| Memory Viewer             | Hex viewer for the full 0x0000–0xFFFF address space, updated every frame                                      |
-| Log                       | Scrollable log output with level filtering                                                                    |
+| Panel                     | Description                                                                                                               |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------------|
+| Breakpoints               | Execution controls (run/pause, step one instruction, step one frame) and a list of address breakpoints that pause the emulator when the PC reaches them. Also toggleable by clicking a line in the Disassembly panel |
+| Cartridge Info            | ROM/RAM size, MBC type and licensee                                                                                       |
+| CPU Registers             | Live view of all CPU registers, flags, IME, halt state, and cycle count                                                   |
+| Stack                     | Live view of the stack contents around the current stack pointer (SP)                                                     |
+| Disassembly               | Scrollable list of upcoming instructions starting at the current PC, with a red marker on any line that has a breakpoint  |
+| Tile Data                 | Visual grid of all tiles currently in VRAM                                                                                |
+| Objects (sprites)         | State of the 40 OAM sprite entries                                                                                        |
+| Background & Window Map   | Full 256×256 BG or Window tilemap with a viewport overlay (SCX/SCY) and scroll/position register readouts                 |
+| APU Viewer                | Live state of all 4 sound channels (duty/envelope/sweep/wave RAM/LFSR) and the NR50/NR51/NR52 mixer                       |
+| Memory Viewer             | Hex viewer for the full 0x0000–0xFFFF address space                                                                       |
+| Log                       | Scrollable log output with level filtering                                                                                |
+
+The execution controls are also bound to global keyboard shortcuts (using the same keys as Visual Studio), so you can step through a ROM without leaving the game window:
+
+| Key    | Action                                        |
+|--------|-----------------------------------------------|
+| `F5`   | Pause/resume emulation (Continue)             |
+| `F6`   | Step one frame                                |
+| `F9`   | Toggle a breakpoint at the current PC         |
+| `F10`  | Step one instruction                          |
 
 ## Contributing
 

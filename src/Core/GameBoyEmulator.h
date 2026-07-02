@@ -1,5 +1,6 @@
 #pragma once
 
+#include <set>
 #include <vector>
 
 #include "Common.h"
@@ -20,6 +21,7 @@ public:
 
     bool loadROM(std::string path);
     void stepOneFrame();
+    void stepOneInstruction();
     bool saveRAM() const;
 
     bool saveState(const std::string& path) const;
@@ -32,6 +34,12 @@ public:
     bool isROMLoaded() const;
     bool isPaused() const;
     void setPaused(bool value);
+
+    void toggleBreakpoint(u16 address);
+    void removeBreakpoint(u16 address);
+    void clearBreakpoints();
+    bool hasBreakpoint(u16 address) const;
+    const std::set<u16>& getBreakpoints() const;
 
     const Cartridge& getCartridge() const;
     const CentralProcessingUnit& getCPU() const;
@@ -52,4 +60,6 @@ private:
 
     bool romLoaded = false;
     bool paused = false;
+
+    std::set<u16> breakpoints;
 };

@@ -41,6 +41,8 @@ bool GameBoyEmulator::loadROM(std::string path)
     romLoaded = true;
     paused = false;
 
+    breakpoints.clear();
+
     return true;
 }
 
@@ -48,7 +50,19 @@ void GameBoyEmulator::stepOneFrame()
 {
     u64 targetCycles = CPU.getCycleCount() + CyclesPerFrame;
     while(CPU.getCycleCount() < targetCycles)
+    {
         CPU.step();
+        if(!breakpoints.empty() && breakpoints.contains(CPU.getRegisters().PC))
+        {
+            paused = true;
+            break;
+        }
+    }
+}
+
+void GameBoyEmulator::stepOneInstruction()
+{
+    CPU.step();
 }
 
 bool GameBoyEmulator::saveRAM() const
@@ -183,6 +197,32 @@ bool GameBoyEmulator::isPaused() const
 void GameBoyEmulator::setPaused(bool value)
 {
     paused = value;
+}
+
+void GameBoyEmulator::toggleBreakpoint(u16 address)
+{
+    if(!breakpoints.erase(address))
+        breakpoints.insert(address);
+}
+
+void GameBoyEmulator::removeBreakpoint(u16 address)
+{
+    breakpoints.erase(address);
+}
+
+void GameBoyEmulator::clearBreakpoints()
+{
+    breakpoints.clear();
+}
+
+bool GameBoyEmulator::hasBreakpoint(u16 address) const
+{
+    return breakpoints.contains(address);
+}
+
+const std::set<u16>& GameBoyEmulator::getBreakpoints() const
+{
+    return breakpoints;
 }
 
 const Cartridge& GameBoyEmulator::getCartridge() const

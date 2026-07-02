@@ -8,6 +8,7 @@
 #include "StackViewerPanel.h"
 #include "CartridgeViewerPanel.h"
 #include "DisassemblyPanel.h"
+#include "BreakpointPanel.h"
 #include "TileDataViewerPanel.h"
 #include "ObjectViewerPanel.h"
 #include "BackgroundMapViewerPanel.h"
@@ -37,6 +38,7 @@ private:
     StackViewerPanel stackViewerPanel;
     CartridgeViewerPanel cartridgeViewerPanel;
     DisassemblyPanel disassemblyPanel;
+    BreakpointPanel breakpointPanel;
     TileDataViewerPanel tileDataViewerPanel;
     ObjectViewerPanel objectViewerPanel;
     BackgroundMapViewerPanel backgroundMapViewerPanel;

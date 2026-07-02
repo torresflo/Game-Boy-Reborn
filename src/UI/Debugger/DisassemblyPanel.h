@@ -38,4 +38,5 @@ private:
     static constexpr ImVec4 BytesColor{0.55f, 0.55f, 0.55f, 1.f};
     static constexpr ImVec4 MnemonicColor{1.0f, 0.85f, 0.35f, 1.f};
     static constexpr ImVec4 PCHighlightColor{0.95f, 0.50f, 0.10f, 0.35f};
+    static constexpr ImVec4 BreakpointColor{0.90f, 0.25f, 0.25f, 1.f};
 };

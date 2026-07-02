@@ -9,6 +9,7 @@
 
 #include "Cartridge.h"
 #include "Common.h"
+#include "CentralProcessingUnit.h"
 #include "PixelProcessingUnit.h"
 
 Application* Application::instancePointer = nullptr;
@@ -98,6 +99,34 @@ void Application::processEvents()
 
 void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
 {
+    if(key.control)
+    {
+        if(key.code == sf::Keyboard::Key::S)
+        {
+            if(emulator.isROMLoaded())
+            {
+                std::string fileName = std::filesystem::path(emulator.getQuickSaveStatePath()).filename().string();
+                if(emulator.quickSaveState())
+                    notificationManager.push(NotificationLevel::Info, "State saved: " + fileName);
+                else
+                    notificationManager.push(NotificationLevel::Error, "Failed to save state: " + fileName);
+            }
+            return;
+        }
+        if(key.code == sf::Keyboard::Key::L)
+        {
+            if(emulator.isROMLoaded())
+            {
+                std::string fileName = std::filesystem::path(emulator.getQuickSaveStatePath()).filename().string();
+                if(emulator.quickLoadState())
+                    notificationManager.push(NotificationLevel::Info, "State loaded: " + fileName);
+                else
+                    notificationManager.push(NotificationLevel::Error, "Failed to load state: " + fileName);
+            }
+            return;
+        }
+    }
+
     switch(key.code)
     {
         case sf::Keyboard::Key::F1:
@@ -109,11 +138,6 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
         {
             windowState = (windowState == sf::State::Windowed ? sf::State::Fullscreen : sf::State::Windowed);
             createWindow();
-            break;
-        }
-        case sf::Keyboard::Key::Pause:
-        {
-            emulator.setPaused(!emulator.isPaused());
             break;
         }
         case sf::Keyboard::Key::Subtract:
@@ -134,24 +158,32 @@ void Application::processKeyPressedEvent(const sf::Event::KeyPressed &key)
         case sf::Keyboard::Key::F5:
         {
             if(emulator.isROMLoaded())
+                emulator.setPaused(!emulator.isPaused());
+            break;
+        }
+        case sf::Keyboard::Key::F6:
+        {
+            if(emulator.isROMLoaded())
             {
-                std::string fileName = std::filesystem::path(emulator.getQuickSaveStatePath()).filename().string();
-                if(emulator.quickSaveState())
-                    notificationManager.push(NotificationLevel::Info, "State saved: " + fileName);
-                else
-                    notificationManager.push(NotificationLevel::Error, "Failed to save state: " + fileName);
+                emulator.setPaused(true);
+                emulator.stepOneFrame();
+                audioRingBuffer.push(emulator.drainAudioSamples());
             }
             break;
         }
         case sf::Keyboard::Key::F9:
         {
             if(emulator.isROMLoaded())
+                emulator.toggleBreakpoint(emulator.getCPU().getRegisters().PC);
+            break;
+        }
+        case sf::Keyboard::Key::F10:
+        {
+            if(emulator.isROMLoaded())
             {
-                std::string fileName = std::filesystem::path(emulator.getQuickSaveStatePath()).filename().string();
-                if(emulator.quickLoadState())
-                    notificationManager.push(NotificationLevel::Info, "State loaded: " + fileName);
-                else
-                    notificationManager.push(NotificationLevel::Error, "Failed to load state: " + fileName);
+                emulator.setPaused(true);
+                emulator.stepOneInstruction();
+                audioRingBuffer.push(emulator.drainAudioSamples());
             }
             break;
         }

@@ -223,6 +223,19 @@ void DisassemblyPanel::draw(GameBoyEmulator& emulator)
                 ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::ColorConvertFloat4ToU32(PCHighlightColor));
 
             ImGui::TableNextColumn();
+
+            ImGui::PushID(index);
+            if(ImGui::Selectable("##breakpointToggle", false,
+                ImGuiSelectableFlags_SpanAllColumns | ImGuiSelectableFlags_AllowOverlap))
+                emulator.toggleBreakpoint(address);
+            ImGui::PopID();
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Text, emulator.hasBreakpoint(address) ? BreakpointColor : ImVec4(0.f, 0.f, 0.f, 0.f));
+            ImGui::Bullet();
+            ImGui::PopStyleColor();
+            ImGui::SameLine();
+
             ImGui::TextColored(AddressColor, "0x%04X", address);
 
             ImGui::TableNextColumn();
