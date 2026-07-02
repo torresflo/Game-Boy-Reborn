@@ -48,6 +48,8 @@ Current highlights:
 - **Adjustable emulation speed**: from 0.125x up to 8x.
 - **Built-in debugger**: a Debugger window showing multiple debug panels at once: registers, cartridge info, tile data, objects (sprites), background & window tilemaps, log, disassembly, APU data, and a full memory hex viewer (0x0000–0xFFFF).
 
+![Debugger image](https://github.com/torresflo/Game-Boy-Reborn/blob/main/images/Debugger.png)
+
 ## ROM Compatibility
 
 The emulator targets original DMG cartridges. Game Boy Color-only titles are not supported, but Game Boy / Super Game Boy / GBC dual-mode cartridges run in their DMG mode.
