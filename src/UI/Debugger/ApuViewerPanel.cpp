@@ -1,4 +1,4 @@
-#include "ApuViewerWindow.h"
+#include "ApuViewerPanel.h"
 
 #include <array>
 #include <format>
@@ -8,20 +8,13 @@
 #include "AudioProcessingUnit.h"
 #include "GameBoyEmulator.h"
 
-ApuViewerWindow::ApuViewerWindow()
-    : ToolWindow("APU Viewer", WindowWidth, WindowHeight)
+ApuViewerPanel::ApuViewerPanel()
+    : DebugPanel("APU Viewer")
 {
 }
 
-void ApuViewerWindow::drawContent(GameBoyEmulator& emulator)
+void ApuViewerPanel::draw(GameBoyEmulator& emulator)
 {
-    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth),
-                                    static_cast<float>(WindowHeight)));
-    ImGui::Begin("APU Viewer", nullptr,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove     | ImGuiWindowFlags_NoCollapse);
-
     const AudioProcessingUnit& apu = emulator.getAPU();
     const AudioControl& control = apu.getAudioControl();
 
@@ -30,18 +23,16 @@ void ApuViewerWindow::drawContent(GameBoyEmulator& emulator)
     drawChannel3Section(apu.getChannel3(), control);
     drawChannel4Section(apu.getChannel4(), control);
     drawMasterControlSection(control);
-
-    ImGui::End();
 }
 
-void ApuViewerWindow::drawSectionHeader(const char* label)
+void ApuViewerPanel::drawSectionHeader(const char* label)
 {
     ImGui::Spacing();
     ImGui::TextColored(HeaderColor, "%s", label);
     ImGui::Separator();
 }
 
-void ApuViewerWindow::drawChannelStatusIndicator(bool channelEnabled, bool dacEnabled)
+void ApuViewerPanel::drawChannelStatusIndicator(bool channelEnabled, bool dacEnabled)
 {
     ImGui::TextColored(channelEnabled ? EnabledColor : DisabledColor,
                        channelEnabled ? "[ON] " : "[OFF]");
@@ -50,7 +41,7 @@ void ApuViewerWindow::drawChannelStatusIndicator(bool channelEnabled, bool dacEn
                        dacEnabled ? "DAC: ON" : "DAC: OFF");
 }
 
-void ApuViewerWindow::drawPanningIndicator(bool left, bool right)
+void ApuViewerPanel::drawPanningIndicator(bool left, bool right)
 {
     ImGui::TextColored(NameColor, "Pan:");
     ImGui::SameLine();
@@ -59,8 +50,8 @@ void ApuViewerWindow::drawPanningIndicator(bool left, bool right)
     ImGui::TextColored(right ? EnabledColor : DisabledColor, "R");
 }
 
-void ApuViewerWindow::drawEnvelopeState(u8 initialVolume, bool envelopeDirectionIncrease,
-                                         u8 envelopeSweepPace, u8 currentVolume, u8 envelopeTimer)
+void ApuViewerPanel::drawEnvelopeState(u8 initialVolume, bool envelopeDirectionIncrease,
+                                        u8 envelopeSweepPace, u8 currentVolume, u8 envelopeTimer)
 {
     ImGui::TextColored(NameColor, "Volume:");
     ImGui::SameLine();
@@ -71,7 +62,7 @@ void ApuViewerWindow::drawEnvelopeState(u8 initialVolume, bool envelopeDirection
         envelopeTimer);
 }
 
-void ApuViewerWindow::drawDutyWaveform(u8 waveDuty, u8 dutyPosition)
+void ApuViewerPanel::drawDutyWaveform(u8 waveDuty, u8 dutyPosition)
 {
     static constexpr std::array<std::array<u8, 8>, 4> DutyPatterns = {{
         {{0, 0, 0, 0, 0, 0, 0, 1}},
@@ -97,7 +88,7 @@ void ApuViewerWindow::drawDutyWaveform(u8 waveDuty, u8 dutyPosition)
     }
 }
 
-void ApuViewerWindow::drawLengthTimer(bool lengthEnabled, u16 lengthTimer)
+void ApuViewerPanel::drawLengthTimer(bool lengthEnabled, u16 lengthTimer)
 {
     ImGui::TextColored(NameColor, "Length:");
     ImGui::SameLine();
@@ -107,21 +98,21 @@ void ApuViewerWindow::drawLengthTimer(bool lengthEnabled, u16 lengthTimer)
         ImGui::TextColored(DisabledColor, "%u (disabled)", lengthTimer);
 }
 
-float ApuViewerWindow::calculatePulseFrequencyHz(u16 periodValue) const
+float ApuViewerPanel::calculatePulseFrequencyHz(u16 periodValue) const
 {
     if(periodValue >= 2048)
         return 0.f;
     return 131072.f / static_cast<float>(2048 - periodValue);
 }
 
-float ApuViewerWindow::calculateWaveFrequencyHz(u16 periodValue) const
+float ApuViewerPanel::calculateWaveFrequencyHz(u16 periodValue) const
 {
     if(periodValue >= 2048)
         return 0.f;
     return 65536.f / static_cast<float>(2048 - periodValue);
 }
 
-float ApuViewerWindow::calculateNoiseFrequencyHz(u8 clockShift, u8 clockDivider) const
+float ApuViewerPanel::calculateNoiseFrequencyHz(u8 clockShift, u8 clockDivider) const
 {
     static constexpr std::array<u16, 8> NoiseDivisors = {8, 16, 32, 48, 64, 80, 96, 112};
     u32 period = static_cast<u32>(NoiseDivisors[clockDivider]) << clockShift;
@@ -130,7 +121,7 @@ float ApuViewerWindow::calculateNoiseFrequencyHz(u8 clockShift, u8 clockDivider)
     return 4194304.f / static_cast<float>(period);
 }
 
-void ApuViewerWindow::drawChannel1Section(const PulseSweepChannel& channel, const AudioControl& control)
+void ApuViewerPanel::drawChannel1Section(const PulseSweepChannel& channel, const AudioControl& control)
 {
     drawSectionHeader("Channel 1 - Pulse + Sweep (NR10-NR14)");
     drawChannelStatusIndicator(channel.channelEnabled, channel.dacEnabled);
@@ -157,7 +148,7 @@ void ApuViewerWindow::drawChannel1Section(const PulseSweepChannel& channel, cons
         channel.shadowFrequency, channel.sweepTimer);
 }
 
-void ApuViewerWindow::drawChannel2Section(const PulseChannel& channel, const AudioControl& control)
+void ApuViewerPanel::drawChannel2Section(const PulseChannel& channel, const AudioControl& control)
 {
     drawSectionHeader("Channel 2 - Pulse (NR21-NR24)");
     drawChannelStatusIndicator(channel.channelEnabled, channel.dacEnabled);
@@ -175,7 +166,7 @@ void ApuViewerWindow::drawChannel2Section(const PulseChannel& channel, const Aud
         calculatePulseFrequencyHz(channel.periodValue), channel.periodValue);
 }
 
-void ApuViewerWindow::drawChannel3Section(const WaveChannel& channel, const AudioControl& control)
+void ApuViewerPanel::drawChannel3Section(const WaveChannel& channel, const AudioControl& control)
 {
     drawSectionHeader("Channel 3 - Wave (NR30-NR34 + wave RAM)");
     drawChannelStatusIndicator(channel.channelEnabled, channel.dacEnabled);
@@ -210,10 +201,10 @@ void ApuViewerWindow::drawChannel3Section(const WaveChannel& channel, const Audi
                      static_cast<int>(waveRamSamples.size()),
                      static_cast<int>(channel.sampleIndex),
                      nullptr, 0.f, 15.f,
-                     ImVec2(static_cast<float>(WindowWidth) - 20.f, 40.f));
+                     ImVec2(ImGui::GetContentRegionAvail().x - 20.f, 40.f));
 }
 
-void ApuViewerWindow::drawChannel4Section(const NoiseChannel& channel, const AudioControl& control)
+void ApuViewerPanel::drawChannel4Section(const NoiseChannel& channel, const AudioControl& control)
 {
     drawSectionHeader("Channel 4 - Noise (NR41-NR44)");
     drawChannelStatusIndicator(channel.channelEnabled, channel.dacEnabled);
@@ -239,7 +230,7 @@ void ApuViewerWindow::drawChannel4Section(const NoiseChannel& channel, const Aud
     ImGui::TextColored(ValueColor, "0x%04X", channel.noiseShiftRegister);
 }
 
-void ApuViewerWindow::drawMasterControlSection(const AudioControl& control)
+void ApuViewerPanel::drawMasterControlSection(const AudioControl& control)
 {
     drawSectionHeader("Master Control (NR50-NR52)");
 
@@ -259,10 +250,10 @@ void ApuViewerWindow::drawMasterControlSection(const AudioControl& control)
         ImGui::TableSetupColumn("Right",   ImGuiTableColumnFlags_WidthFixed, 50.f);
         ImGui::TableHeadersRow();
 
-        auto drawPanRow = [&](const char* name, bool left, bool right)
+        auto drawPanRow = [&](const char* channelName, bool left, bool right)
         {
             ImGui::TableNextRow();
-            ImGui::TableNextColumn(); ImGui::TextColored(NameColor, "%s", name);
+            ImGui::TableNextColumn(); ImGui::TextColored(NameColor, "%s", channelName);
             ImGui::TableNextColumn(); ImGui::TextColored(left  ? EnabledColor : DisabledColor, left  ? "on" : "--");
             ImGui::TableNextColumn(); ImGui::TextColored(right ? EnabledColor : DisabledColor, right ? "on" : "--");
         };

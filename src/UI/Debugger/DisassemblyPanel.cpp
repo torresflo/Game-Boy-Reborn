@@ -1,4 +1,4 @@
-#include "DisassemblyWindow.h"
+#include "DisassemblyPanel.h"
 
 #include <array>
 #include <format>
@@ -10,12 +10,12 @@
 #include "CentralProcessingUnit.h"
 #include "InstructionDefinitions.h"
 
-DisassemblyWindow::DisassemblyWindow()
-    : ToolWindow("Disassembly", WindowWidth, WindowHeight)
+DisassemblyPanel::DisassemblyPanel()
+    : DebugPanel("Disassembly")
 {
 }
 
-DisassemblyWindow::DecodedInstruction DisassemblyWindow::decodeInstruction(const MemoryBus& bus, u16 address) const
+DisassemblyPanel::DecodedInstruction DisassemblyPanel::decodeInstruction(const MemoryBus& bus, u16 address) const
 {
     const u8 opcode = bus.read(address);
     const InstructionData& data = Instructions[opcode];
@@ -72,7 +72,7 @@ DisassemblyWindow::DecodedInstruction DisassemblyWindow::decodeInstruction(const
     return {bytes, mnemonic, length};
 }
 
-std::string DisassemblyWindow::formatOperands(const InstructionData& data, const MemoryBus& bus, u16 address) const
+std::string DisassemblyPanel::formatOperands(const InstructionData& data, const MemoryBus& bus, u16 address) const
 {
     const u8 lo = bus.read(address + 1);
     const u8 hi = bus.read(address + 2);
@@ -165,7 +165,7 @@ std::string DisassemblyWindow::formatOperands(const InstructionData& data, const
     }
 }
 
-std::string DisassemblyWindow::formatCBInstruction(u8 cbByte) const
+std::string DisassemblyPanel::formatCBInstruction(u8 cbByte) const
 {
     static constexpr std::array<const char*, 8> RegisterNames =
         {"B", "C", "D", "E", "H", "L", "(HL)", "A"};
@@ -192,14 +192,8 @@ std::string DisassemblyWindow::formatCBInstruction(u8 cbByte) const
     }
 }
 
-void DisassemblyWindow::drawContent(GameBoyEmulator& emulator)
+void DisassemblyPanel::draw(GameBoyEmulator& emulator)
 {
-    ImGui::SetNextWindowPos({0.f, 0.f});
-    ImGui::SetNextWindowSize({static_cast<float>(WindowWidth), static_cast<float>(WindowHeight)});
-    ImGui::Begin("Disassembly", nullptr,
-        ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize |
-        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
     viewAddress = emulator.getCPU().getRegisters().PC;
 
     constexpr ImGuiTableFlags tableFlags =
@@ -242,6 +236,4 @@ void DisassemblyWindow::drawContent(GameBoyEmulator& emulator)
 
         ImGui::EndTable();
     }
-
-    ImGui::End();
 }

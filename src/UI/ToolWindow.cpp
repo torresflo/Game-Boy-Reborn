@@ -5,8 +5,8 @@
 
 #include "Common.h"
 
-ToolWindow::ToolWindow(std::string windowTitle, unsigned int windowWidth, unsigned int windowHeight)
-    : title(std::move(windowTitle)), width(windowWidth), height(windowHeight)
+ToolWindow::ToolWindow(std::string windowTitle, unsigned int windowWidth, unsigned int windowHeight, u32 style)
+    : title(std::move(windowTitle)), width(windowWidth), height(windowHeight), windowStyle(style)
 {
 }
 
@@ -28,7 +28,7 @@ void ToolWindow::createWindow(bool startVisible)
     if(window)
         return;
 
-    window.emplace(sf::VideoMode({width, height}), title, sf::Style::Titlebar | sf::Style::Close);
+    window.emplace(sf::VideoMode({width, height}), title, windowStyle);
     window->setVisible(startVisible);
 
     if(!ImGui::SFML::Init(*window))

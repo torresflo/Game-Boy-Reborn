@@ -257,15 +257,7 @@ void Application::update(sf::Time deltaTime)
     romFileDialog.update(emulator);
     saveStateFileDialog.update(emulator);
     loadStateFileDialog.update(emulator);
-    registerViewerWindow.update(emulator);
-    cartridgeViewerWindow.update(emulator);
-    tileDataViewerWindow.update(emulator);
-    objectViewerWindow.update(emulator);
-    logViewerWindow.update(emulator);
-    disassemblyWindow.update(emulator);
-    memoryHexViewerWindow.update(emulator);
-    apuViewerWindow.update(emulator);
-    backgroundMapViewerWindow.update(emulator);
+    debuggerWindow.update(emulator);
 
     notificationManager.update(deltaTime);
     notificationManager.draw(window, menuBarHeight);
@@ -330,47 +322,9 @@ void Application::drawMenuBar()
 
         if(ImGui::BeginMenu("Debug"))
         {
-            bool cartridgeViewerOpen = cartridgeViewerWindow.isOpen();
-            if(ImGui::MenuItem("Cartridge Info", nullptr, &cartridgeViewerOpen))
-                cartridgeViewerWindow.setOpen(cartridgeViewerOpen);
-
-            bool registerViewerOpen = registerViewerWindow.isOpen();
-            if(ImGui::MenuItem("CPU Registers", nullptr, &registerViewerOpen))
-                registerViewerWindow.setOpen(registerViewerOpen);
-
-            bool disassemblyOpen = disassemblyWindow.isOpen();
-            if(ImGui::MenuItem("Disassembly", nullptr, &disassemblyOpen))
-                disassemblyWindow.setOpen(disassemblyOpen);
-
-            bool memoryHexViewerOpen = memoryHexViewerWindow.isOpen();
-            if(ImGui::MenuItem("Memory Viewer", nullptr, &memoryHexViewerOpen))
-                memoryHexViewerWindow.setOpen(memoryHexViewerOpen);
-
-            ImGui::Separator();
-
-            bool tileDataViewerOpen = tileDataViewerWindow.isOpen();
-            if(ImGui::MenuItem("Tile Data", nullptr, &tileDataViewerOpen))
-                tileDataViewerWindow.setOpen(tileDataViewerOpen);
-
-            bool objectViewerOpen = objectViewerWindow.isOpen();
-            if(ImGui::MenuItem("Objects (sprites)", nullptr, &objectViewerOpen))
-                objectViewerWindow.setOpen(objectViewerOpen);
-
-            bool backgroundMapViewerOpen = backgroundMapViewerWindow.isOpen();
-            if(ImGui::MenuItem("Background & Window Map", nullptr, &backgroundMapViewerOpen))
-                backgroundMapViewerWindow.setOpen(backgroundMapViewerOpen);
-
-            ImGui::Separator();
-
-            bool apuViewerOpen = apuViewerWindow.isOpen();
-            if(ImGui::MenuItem("APU Channels", nullptr, &apuViewerOpen))
-                apuViewerWindow.setOpen(apuViewerOpen);
-
-            ImGui::Separator();
-
-            bool logViewerOpen = logViewerWindow.isOpen();
-            if(ImGui::MenuItem("Log", nullptr, &logViewerOpen))
-                logViewerWindow.setOpen(logViewerOpen);
+            bool debuggerOpen = debuggerWindow.isOpen();
+            if(ImGui::MenuItem("Debugger", nullptr, &debuggerOpen))
+                debuggerWindow.setOpen(debuggerOpen);
 
             ImGui::EndMenu();
         }

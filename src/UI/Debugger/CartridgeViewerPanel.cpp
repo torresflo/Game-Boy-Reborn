@@ -1,4 +1,4 @@
-#include "CartridgeViewerWindow.h"
+#include "CartridgeViewerPanel.h"
 
 #include <format>
 
@@ -7,17 +7,13 @@
 #include "Cartridge.h"
 #include "GameBoyEmulator.h"
 
-CartridgeViewerWindow::CartridgeViewerWindow()
-    : ToolWindow("Cartridge Info", WindowWidth, WindowHeight)
+CartridgeViewerPanel::CartridgeViewerPanel()
+    : DebugPanel("Cartridge Info")
 {
 }
 
-void CartridgeViewerWindow::drawContent(GameBoyEmulator& emulator)
+void CartridgeViewerPanel::draw(GameBoyEmulator& emulator)
 {
-    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight)));
-    ImGui::Begin("Cartridge Info", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
     if(emulator.isROMLoaded())
     {
         const Cartridge& cartridge = emulator.getCartridge();
@@ -35,6 +31,4 @@ void CartridgeViewerWindow::drawContent(GameBoyEmulator& emulator)
     {
         ImGui::Text("No Rom loaded");
     }
-
-    ImGui::End();
 }

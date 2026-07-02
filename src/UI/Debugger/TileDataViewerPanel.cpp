@@ -1,45 +1,32 @@
-#include "TileDataViewerWindow.h"
+#include "TileDataViewerPanel.h"
 
 #include <algorithm>
 
+#include <imgui.h>
+#include <imgui-SFML.h>
+
 #include "GameBoyEmulator.h"
 
-namespace
-{
-    // Classic DMG 4-shade palette (white, light gray, dark gray, black), RGBA8.
-    constexpr std::array<std::array<u8, 4>, 4> ShadeColors =
-    {{
-        {0xFF, 0xFF, 0xFF, 0xFF},
-        {0xAA, 0xAA, 0xAA, 0xFF},
-        {0x55, 0x55, 0x55, 0xFF},
-        {0x00, 0x00, 0x00, 0xFF},
-    }};
-
-    constexpr std::array<u8, 4> GridLineColor = {0x00, 0x80, 0x80, 0xFF};
-    constexpr std::array<u8, 4> NoObjectColor = {0xFF, 0x87, 0xF6, 0xFF};
-}
-
-TileDataViewerWindow::TileDataViewerWindow()
-    : ToolWindow("Tile Data", WindowWidth, WindowHeight), tileDataSprite(tileDataTexture)
+TileDataViewerPanel::TileDataViewerPanel()
+    : DebugPanel("Tile Data"), tileDataSprite(tileDataTexture)
 {
     if(!tileDataTexture.resize({ImageWidth, ImageHeight}))
         Log::print(LogLevel::Error, "Failed to create the tile data texture");
 
     tileDataSprite.setTexture(tileDataTexture, true);
-    tileDataSprite.setScale({PixelScale, PixelScale});
 }
 
-void TileDataViewerWindow::drawContent(GameBoyEmulator& emulator)
+void TileDataViewerPanel::draw(GameBoyEmulator& emulator)
 {
     if(!emulator.isROMLoaded())
         return;
 
     updateTexture(emulator.getPPU());
 
-    window->draw(tileDataSprite);
+    ImGui::Image(tileDataSprite, sf::Vector2f(static_cast<float>(DisplayWidth), static_cast<float>(DisplayHeight)));
 }
 
-void TileDataViewerWindow::updateTexture(const PixelProcessingUnit& PPU)
+void TileDataViewerPanel::updateTexture(const PixelProcessingUnit& PPU)
 {
     for(u32 pixelIndex = 0; pixelIndex < ImageWidth * ImageHeight; ++pixelIndex)
     {

@@ -4,18 +4,15 @@
 
 #include <imgui.h>
 
-#include "ToolWindow.h"
+#include "DebugPanel.h"
 #include "AudioProcessingUnitTypes.h"
 
-class GameBoyEmulator;
-
-class ApuViewerWindow : public ToolWindow
+class ApuViewerPanel : public DebugPanel
 {
 public:
-    ApuViewerWindow();
+    ApuViewerPanel();
 
-protected:
-    void drawContent(GameBoyEmulator& emulator) override;
+    void draw(GameBoyEmulator& emulator) override;
 
 private:
     void drawSectionHeader(const char* label);
@@ -36,9 +33,6 @@ private:
     float calculateNoiseFrequencyHz(u8 clockShift, u8 clockDivider) const;
 
     std::array<float, 32> waveRamSamples{};
-
-    static constexpr unsigned int WindowWidth  = 520;
-    static constexpr unsigned int WindowHeight = 720;
 
     static constexpr ImVec4 HeaderColor {0.6f,  0.6f,  0.65f, 1.f};
     static constexpr ImVec4 NameColor {0.55f, 0.75f, 1.f,   1.f};

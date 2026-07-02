@@ -11,18 +11,10 @@
 #include "AudioRingBuffer.h"
 #include "GameBoyAudioStream.h"
 
-#include "CartridgeViewerWindow.h"
 #include "RomFileDialog.h"
 #include "SaveStateFileDialog.h"
 #include "LoadStateFileDialog.h"
-#include "ObjectViewerWindow.h"
-#include "RegisterViewerWindow.h"
-#include "TileDataViewerWindow.h"
-#include "LogViewerWindow.h"
-#include "DisassemblyWindow.h"
-#include "MemoryHexViewerWindow.h"
-#include "ApuViewerWindow.h"
-#include "BackgroundMapViewerWindow.h"
+#include "Debugger/DebuggerWindow.h"
 #include "NotificationManager.h"
 
 class Application
@@ -72,15 +64,7 @@ private:
     RomFileDialog romFileDialog;
     SaveStateFileDialog saveStateFileDialog;
     LoadStateFileDialog loadStateFileDialog;
-    RegisterViewerWindow registerViewerWindow;
-    CartridgeViewerWindow cartridgeViewerWindow;
-    TileDataViewerWindow tileDataViewerWindow;
-    ObjectViewerWindow objectViewerWindow;
-    LogViewerWindow logViewerWindow;
-    DisassemblyWindow disassemblyWindow;
-    MemoryHexViewerWindow memoryHexViewerWindow;
-    ApuViewerWindow apuViewerWindow;
-    BackgroundMapViewerWindow backgroundMapViewerWindow;
+    DebuggerWindow debuggerWindow;
     NotificationManager notificationManager;
 
     static Application* instancePointer;

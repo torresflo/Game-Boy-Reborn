@@ -39,6 +39,10 @@ build/
 # Project specific
 roms/officials/*
 
+# Dear ImGui
+imgui.ini
+DebuggerLayout.ini
+
 # AI
 CLAUDE.md
 GEMINI.md

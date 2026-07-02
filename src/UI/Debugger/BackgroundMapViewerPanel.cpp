@@ -1,30 +1,20 @@
-#include "BackgroundMapViewerWindow.h"
+#include "BackgroundMapViewerPanel.h"
+
+#include <imgui-SFML.h>
 
 #include "GameBoyEmulator.h"
 #include "PixelProcessingUnitTypes.h"
 
-namespace
-{
-    constexpr std::array<std::array<u8, 4>, 4> ShadeColors = {{
-        {0xFF, 0xFF, 0xFF, 0xFF},
-        {0xAA, 0xAA, 0xAA, 0xFF},
-        {0x55, 0x55, 0x55, 0xFF},
-        {0x00, 0x00, 0x00, 0xFF},
-    }};
-}
-
-BackgroundMapViewerWindow::BackgroundMapViewerWindow()
-    : ToolWindow("Background & Window Map", WindowWidth, WindowHeight), mapSprite(mapTexture)
+BackgroundMapViewerPanel::BackgroundMapViewerPanel()
+    : DebugPanel("Background & Window Map"), mapSprite(mapTexture)
 {
     if(!mapTexture.resize({MapPixels, MapPixels}))
         Log::print(LogLevel::Error, "Failed to create background map viewer texture");
 
     mapSprite.setTexture(mapTexture, true);
-    mapSprite.setScale({PixelScale, PixelScale});
-    mapSprite.setPosition({0.f, static_cast<float>(InfoPanelHeight)});
 }
 
-void BackgroundMapViewerWindow::drawContent(GameBoyEmulator& emulator)
+void BackgroundMapViewerPanel::draw(GameBoyEmulator& emulator)
 {
     if(!emulator.isROMLoaded())
         return;
@@ -32,20 +22,27 @@ void BackgroundMapViewerWindow::drawContent(GameBoyEmulator& emulator)
     const PixelProcessingUnit& ppu = emulator.getPPU();
     const MemoryBus& bus = emulator.getMemoryBus();
 
+    drawInfoPanel(ppu);
+    ImGui::Separator();
+
     updateTexture(ppu, bus);
-    window->draw(mapSprite);
+
+    ImGui::BeginChild("##BgMapImageScroll", ImVec2(0.f, 0.f), ImGuiChildFlags_None, ImGuiWindowFlags_HorizontalScrollbar);
+
+    ImGui::Image(mapSprite, sf::Vector2f(MapDisplaySize, MapDisplaySize));
+    ImVec2 imageTopLeft = ImGui::GetItemRectMin();
 
     if(selectedMap == 0)
     {
         u8 scx = ppu.readRegister(0xFF43);
         u8 scy = ppu.readRegister(0xFF42);
-        drawViewportOverlay(scx, scy);
+        drawViewportOverlay(scx, scy, imageTopLeft);
     }
 
-    drawInfoPanel(ppu);
+    ImGui::EndChild();
 }
 
-void BackgroundMapViewerWindow::updateTexture(const PixelProcessingUnit& ppu, const MemoryBus& bus)
+void BackgroundMapViewerPanel::updateTexture(const PixelProcessingUnit& ppu, const MemoryBus& bus)
 {
     TileMapArea mapArea = (selectedMap == 0) ? ppu.getBackgroundTileMapArea() : ppu.getWindowTileMapArea();
     u16 mapBase = static_cast<u16>(mapArea);
@@ -94,21 +91,19 @@ void BackgroundMapViewerWindow::updateTexture(const PixelProcessingUnit& ppu, co
     mapTexture.update(pixels.data());
 }
 
-void BackgroundMapViewerWindow::drawViewportOverlay(u8 scx, u8 scy)
+void BackgroundMapViewerPanel::drawViewportOverlay(u8 scx, u8 scy, ImVec2 imageTopLeft)
 {
     float mx = static_cast<float>(scx);
     float my = static_cast<float>(scy);
     float vw = static_cast<float>(ViewportWidth);
     float vh = static_cast<float>(ViewportHeight);
 
+    ImDrawList* drawList = ImGui::GetWindowDrawList();
     auto drawOutlineRect = [&](float x, float y, float w, float h)
     {
-        sf::RectangleShape rect({w * PixelScale, h * PixelScale});
-        rect.setPosition({x * PixelScale, y * PixelScale + static_cast<float>(InfoPanelHeight)});
-        rect.setFillColor(sf::Color::Transparent);
-        rect.setOutlineColor(sf::Color(255, 80, 80, 220));
-        rect.setOutlineThickness(-1.5f);
-        window->draw(rect);
+        ImVec2 rectMin{imageTopLeft.x + x * PixelScale, imageTopLeft.y + y * PixelScale};
+        ImVec2 rectMax{rectMin.x + w * PixelScale, rectMin.y + h * PixelScale};
+        drawList->AddRect(rectMin, rectMax, IM_COL32(255, 80, 80, 220), 0.f, 0, 1.5f);
     };
 
     float wRight = (mx + vw > 256.f) ? (mx + vw - 256.f) : 0.f;
@@ -128,18 +123,8 @@ void BackgroundMapViewerWindow::drawViewportOverlay(u8 scx, u8 scy)
         drawOutlineRect(0.f, 0.f, wRight, hBottom);
 }
 
-void BackgroundMapViewerWindow::drawInfoPanel(const PixelProcessingUnit& ppu)
+void BackgroundMapViewerPanel::drawInfoPanel(const PixelProcessingUnit& ppu)
 {
-    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth), static_cast<float>(InfoPanelHeight)));
-    ImGui::Begin("##BgMapInfoPanel", nullptr, 
-        ImGuiWindowFlags_NoTitleBar
-        | ImGuiWindowFlags_NoResize   
-        | ImGuiWindowFlags_NoMove      
-        | ImGuiWindowFlags_NoCollapse  
-        | ImGuiWindowFlags_NoScrollbar 
-        | ImGuiWindowFlags_NoSavedSettings);
-
     ImGui::RadioButton("Background", &selectedMap, 0);
     ImGui::SameLine(0.f, 16.f);
     ImGui::RadioButton("Window", &selectedMap, 1);
@@ -199,6 +184,4 @@ void BackgroundMapViewerWindow::drawInfoPanel(const PixelProcessingUnit& ppu)
     ImGui::TextColored(NameColor, "WIN map:");
     ImGui::SameLine(0.f, 4.f);
     ImGui::TextColored(ValueColor, winArea == TileMapArea::High ? "0x9C00" : "0x9800");
-
-    ImGui::End();
 }

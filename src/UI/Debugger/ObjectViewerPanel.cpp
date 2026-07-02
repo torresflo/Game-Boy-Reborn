@@ -1,49 +1,44 @@
-#include "ObjectViewerWindow.h"
+#include "ObjectViewerPanel.h"
 
 #include <algorithm>
 #include <format>
 
 #include <imgui.h>
+#include <imgui-SFML.h>
 
 #include "GameBoyEmulator.h"
 #include "MathUtils.h"
 
-namespace
+std::array<u8, 4> ObjectViewerPanel::decodeShade(u32 color)
 {
-    constexpr std::array<u8, 4> GridLineColor = {0x00, 0x80, 0x80, 0xFF};
-    constexpr std::array<u8, 4> NoObjectColor = {0xFF, 0x87, 0xF6, 0xFF};
-
-    std::array<u8, 4> decodeShade(u32 color)
-    {
-        u8 gray = static_cast<u8>((color >> 16) & 0xFF);
-        u8 alpha = static_cast<u8>((color >> 24) & 0xFF);
-        return {gray, gray, gray, alpha};
-    }
+    u8 gray = static_cast<u8>((color >> 16) & 0xFF);
+    u8 alpha = static_cast<u8>((color >> 24) & 0xFF);
+    return {gray, gray, gray, alpha};
 }
 
-ObjectViewerWindow::ObjectViewerWindow()
-    : ToolWindow("Objects (sprites)", WindowWidth, WindowHeight), objectsSprite(objectsTexture)
+ObjectViewerPanel::ObjectViewerPanel()
+    : DebugPanel("Objects (sprites)"), objectsSprite(objectsTexture)
 {
     if(!objectsTexture.resize({ImageWidth, ImageHeight}))
         Log::print(LogLevel::Error, "Failed to create the objects texture");
 
     objectsSprite.setTexture(objectsTexture, true);
-    objectsSprite.setScale({PixelScale, PixelScale});
 }
 
-void ObjectViewerWindow::drawContent(GameBoyEmulator& emulator)
+void ObjectViewerPanel::draw(GameBoyEmulator& emulator)
 {
     if(!emulator.isROMLoaded())
         return;
 
     updateTexture(emulator.getPPU(), emulator.getMemoryBus());
 
-    window->draw(objectsSprite);
+    ImGui::Image(objectsSprite, sf::Vector2f(static_cast<float>(DisplayWidth), static_cast<float>(DisplayHeight)));
+    ImVec2 imageTopLeft = ImGui::GetItemRectMin();
 
-    drawHoveredObjectTooltip(emulator.getMemoryBus());
+    drawHoveredObjectTooltip(emulator.getMemoryBus(), imageTopLeft);
 }
 
-void ObjectViewerWindow::updateTexture(const PixelProcessingUnit& PPU, const MemoryBus& bus)
+void ObjectViewerPanel::updateTexture(const PixelProcessingUnit& PPU, const MemoryBus& bus)
 {
     for(u32 pixelIndex = 0; pixelIndex < ImageWidth * ImageHeight; ++pixelIndex)
     {
@@ -101,11 +96,14 @@ void ObjectViewerWindow::updateTexture(const PixelProcessingUnit& PPU, const Mem
     objectsTexture.update(pixels.data());
 }
 
-void ObjectViewerWindow::drawHoveredObjectTooltip(const MemoryBus& bus) const
+void ObjectViewerPanel::drawHoveredObjectTooltip(const MemoryBus& bus, ImVec2 imageTopLeft) const
 {
-    sf::Vector2i mousePosition = sf::Mouse::getPosition(*window);
-    float imageX = static_cast<float>(mousePosition.x) / PixelScale;
-    float imageY = static_cast<float>(mousePosition.y) / PixelScale;
+    if(!ImGui::IsItemHovered())
+        return;
+
+    ImVec2 mousePosition = ImGui::GetMousePos();
+    float imageX = (mousePosition.x - imageTopLeft.x) / PixelScale;
+    float imageY = (mousePosition.y - imageTopLeft.y) / PixelScale;
 
     if(imageX < 0.f || imageY < 0.f || imageX >= ImageWidth || imageY >= ImageHeight)
         return;
@@ -124,28 +122,32 @@ void ObjectViewerWindow::drawHoveredObjectTooltip(const MemoryBus& bus) const
 
     ImVec2 textSize = ImGui::CalcTextSize(text.c_str());
     ImVec2 padding = ImGui::GetStyle().WindowPadding;
-    sf::Vector2f tooltipSize{textSize.x + padding.x * 2.f, textSize.y + padding.y * 2.f};
+    ImVec2 tooltipSize{textSize.x + padding.x * 2.f, textSize.y + padding.y * 2.f};
 
-    sf::Vector2f tooltipPosition = calculateTooltipPosition(mousePosition, tooltipSize);
+    ImVec2 tooltipPosition = calculateTooltipPosition(mousePosition, tooltipSize);
 
-    ImGui::SetNextWindowPos(ImVec2(tooltipPosition.x, tooltipPosition.y), ImGuiCond_Always);
+    ImGui::SetNextWindowPos(tooltipPosition, ImGuiCond_Always);
     ImGui::BeginTooltip();
     ImGui::TextUnformatted(text.c_str());
     ImGui::EndTooltip();
 }
 
-sf::Vector2f ObjectViewerWindow::calculateTooltipPosition(sf::Vector2i mousePosition, sf::Vector2f tooltipSize) const
+ImVec2 ObjectViewerPanel::calculateTooltipPosition(ImVec2 mousePosition, ImVec2 tooltipSize) const
 {
-    float tooltipX = static_cast<float>(mousePosition.x) + TooltipCursorOffset;
-    if(tooltipX + tooltipSize.x > static_cast<float>(WindowWidth))
-        tooltipX = static_cast<float>(mousePosition.x) - TooltipCursorOffset - tooltipSize.x;
+    const ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImVec2 workMin = viewport->WorkPos;
+    ImVec2 workMax{viewport->WorkPos.x + viewport->WorkSize.x, viewport->WorkPos.y + viewport->WorkSize.y};
 
-    float tooltipY = static_cast<float>(mousePosition.y) + TooltipCursorOffset;
-    if(tooltipY + tooltipSize.y > static_cast<float>(WindowHeight))
-        tooltipY = static_cast<float>(mousePosition.y) - TooltipCursorOffset - tooltipSize.y;
+    float tooltipX = mousePosition.x + TooltipCursorOffset;
+    if(tooltipX + tooltipSize.x > workMax.x)
+        tooltipX = mousePosition.x - TooltipCursorOffset - tooltipSize.x;
 
-    tooltipX = std::max(0.f, std::min(tooltipX, static_cast<float>(WindowWidth) - tooltipSize.x));
-    tooltipY = std::max(0.f, std::min(tooltipY, static_cast<float>(WindowHeight) - tooltipSize.y));
+    float tooltipY = mousePosition.y + TooltipCursorOffset;
+    if(tooltipY + tooltipSize.y > workMax.y)
+        tooltipY = mousePosition.y - TooltipCursorOffset - tooltipSize.y;
+
+    tooltipX = std::max(workMin.x, std::min(tooltipX, workMax.x - tooltipSize.x));
+    tooltipY = std::max(workMin.y, std::min(tooltipY, workMax.y - tooltipSize.y));
 
     return {tooltipX, tooltipY};
 }

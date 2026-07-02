@@ -4,20 +4,18 @@
 
 #include <imgui.h>
 
-#include "ToolWindow.h"
+#include "DebugPanel.h"
 #include "Common.h"
 
-class GameBoyEmulator;
 class MemoryBus;
 struct InstructionData;
 
-class DisassemblyWindow : public ToolWindow
+class DisassemblyPanel : public DebugPanel
 {
 public:
-    DisassemblyWindow();
+    DisassemblyPanel();
 
-protected:
-    void drawContent(GameBoyEmulator& emulator) override;
+    void draw(GameBoyEmulator& emulator) override;
 
 private:
     struct DecodedInstruction
@@ -34,8 +32,6 @@ private:
     bool followProgramCounter = true;
     u16 viewAddress = 0x0000;
 
-    static constexpr unsigned int WindowWidth = 550;
-    static constexpr unsigned int WindowHeight = 400;
     static constexpr int InstructionCount = 50;
 
     static constexpr ImVec4 AddressColor{0.60f, 0.60f, 0.65f, 1.f};

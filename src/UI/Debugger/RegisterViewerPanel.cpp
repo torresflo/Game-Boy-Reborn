@@ -1,4 +1,4 @@
-#include "RegisterViewerWindow.h"
+#include "RegisterViewerPanel.h"
 
 #include <format>
 
@@ -7,19 +7,19 @@
 #include "MemoryBus.h"
 #include "PixelProcessingUnit.h"
 
-RegisterViewerWindow::RegisterViewerWindow()
-    : ToolWindow("CPU Registers", WindowWidth, WindowHeight)
+RegisterViewerPanel::RegisterViewerPanel()
+    : DebugPanel("CPU Registers")
 {
 }
 
-void RegisterViewerWindow::drawSectionHeader(const char* label)
+void RegisterViewerPanel::drawSectionHeader(const char* label)
 {
     ImGui::Spacing();
     ImGui::TextColored(HeaderColor, "%s", label);
     ImGui::Separator();
 }
 
-bool RegisterViewerWindow::beginRegisterTable(const char* id)
+bool RegisterViewerPanel::beginRegisterTable(const char* id)
 {
     if(!ImGui::BeginTable(id, 4, ImGuiTableFlags_SizingFixedFit))
         return false;
@@ -31,32 +31,28 @@ bool RegisterViewerWindow::beginRegisterTable(const char* id)
     return true;
 }
 
-void RegisterViewerWindow::drawRegisterCell(const char* name, const std::string& valueText)
+void RegisterViewerPanel::drawRegisterCell(const char* registerName, const std::string& valueText)
 {
     ImGui::TableNextColumn();
-    ImGui::TextColored(NameColor, "%s", name);
+    ImGui::TextColored(NameColor, "%s", registerName);
     ImGui::TableNextColumn();
     ImGui::TextColored(ValueColor, "%s", valueText.c_str());
 }
 
-void RegisterViewerWindow::drawFlag(const char* label, bool set)
+void RegisterViewerPanel::drawFlag(const char* label, bool set)
 {
     ImGui::TextColored(set ? FlagSetColor : FlagClearColor, "%s", label);
 }
 
-void RegisterViewerWindow::drawInfoLine(const char* name, const std::string& valueText)
+void RegisterViewerPanel::drawInfoLine(const char* fieldName, const std::string& valueText)
 {
-    ImGui::TextColored(NameColor, "%s", name);
+    ImGui::TextColored(NameColor, "%s", fieldName);
     ImGui::SameLine();
     ImGui::TextColored(ValueColor, "%s", valueText.c_str());
 }
 
-void RegisterViewerWindow::drawContent(GameBoyEmulator& emulator)
+void RegisterViewerPanel::draw(GameBoyEmulator& emulator)
 {
-    ImGui::SetNextWindowPos(ImVec2(0.f, 0.f));
-    ImGui::SetNextWindowSize(ImVec2(static_cast<float>(WindowWidth), static_cast<float>(WindowHeight)));
-    ImGui::Begin("CPU Registers", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
     const CentralProcessingUnit& cpu = emulator.getCPU();
     const Registers& registers = cpu.getRegisters();
     const PixelProcessingUnit& ppu = emulator.getPPU();
@@ -136,6 +132,4 @@ void RegisterViewerWindow::drawContent(GameBoyEmulator& emulator)
     drawInfoLine("IME", cpu.isInterruptMasterEnabled() ? "enabled" : "disabled");
     drawInfoLine("Halted", cpu.isHalted() ? "yes" : "no");
     drawInfoLine("Cycles", std::format("{}", cpu.getCycleCount()));
-
-    ImGui::End();
 }

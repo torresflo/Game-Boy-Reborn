@@ -46,7 +46,7 @@ Current highlights:
 - **Battery-backed cartridge RAM**: saved next to the ROM as a `.sav` file.
 - **Input**: keyboard and gamepad (Xbox-style layout) support.
 - **Adjustable emulation speed**: from 0.125x up to 8x.
-- **Built-in debugging tools**: CPU register viewer, cartridge info, tile data viewer, object (sprite) viewer, a background & window map viewer, a log viewer, a disassembly viewer, and a full memory hex viewer (0x0000–0xFFFF).
+- **Built-in debugger**: a Debugger window showing multiple debug panels at once: registers, cartridge info, tile data, objects (sprites), background & window tilemaps, log, disassembly, APU data, and a full memory hex viewer (0x0000–0xFFFF).
 
 ## ROM Compatibility
 
@@ -67,7 +67,7 @@ Compatibility depends on the cartridge's Memory Bank Controller (MBC), declared 
 | `0x22`                        | MBC7 (+Sensor, +Rumble, +RAM, +Battery)   | ❌ Not supported  |
 | `0xFE`–`0xFF`                 | HuC3 / HuC1                               | ❌ Not supported  |
 
-The detected cartridge type, ROM/RAM size and licensee are shown in the in-app **Debug > Cartridge Info** window, which is the quickest way to check why a given ROM refuses to load.
+The detected cartridge type, ROM/RAM size and licensee are shown in the Cartridge Info panel of the in-app **Debug > Debugger** window, which is the quickest way to check why a given ROM refuses to load.
 
 ## For Players
 
@@ -162,9 +162,9 @@ Each layer follows a consistent pattern: emulator-side state is exposed through 
 
 ### Debugging tools
 
-All debug windows are accessible from the **Debug** menu:
+All debug panels are shown together in a single window, opened from **Debug > Debugger**, docked in a default arrangement that you can freely drag, resize, or re-tab (the layout is remembered between sessions):
 
-| Window                    | Description                                                                                                   |
+| Panel                     | Description                                                                                                   |
 |---------------------------|---------------------------------------------------------------------------------------------------------------|
 | Cartridge Info            | ROM/RAM size, MBC type and licensee                                                                           |
 | CPU Registers             | Live view of all CPU registers, flags, IME, halt state, and cycle count                                       |
@@ -172,6 +172,7 @@ All debug windows are accessible from the **Debug** menu:
 | Tile Data                 | Visual grid of all tiles currently in VRAM                                                                    |
 | Objects (sprites)         | State of the 40 OAM sprite entries                                                                            |
 | Background & Window Map   | Full 256×256 BG or Window tilemap with a viewport overlay (SCX/SCY) and scroll/position register readouts     |
+| APU Viewer                | Live state of all 4 sound channels (duty/envelope/sweep/wave RAM/LFSR) and the NR50/NR51/NR52 mixer           |
 | Memory Viewer             | Hex viewer for the full 0x0000–0xFFFF address space, updated every frame                                      |
 | Log                       | Scrollable log output with level filtering                                                                    |
 

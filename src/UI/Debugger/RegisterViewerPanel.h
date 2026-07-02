@@ -4,25 +4,21 @@
 
 #include <imgui.h>
 
-#include "ToolWindow.h"
+#include "DebugPanel.h"
 
-class RegisterViewerWindow : public ToolWindow
+class RegisterViewerPanel : public DebugPanel
 {
 public:
-    RegisterViewerWindow();
+    RegisterViewerPanel();
 
-protected:
-    void drawContent(GameBoyEmulator& emulator) override;
+    void draw(GameBoyEmulator& emulator) override;
 
 private:
     void drawSectionHeader(const char* label);
     bool beginRegisterTable(const char* id);
-    void drawRegisterCell(const char* name, const std::string& valueText);
+    void drawRegisterCell(const char* registerName, const std::string& valueText);
     void drawFlag(const char* label, bool set);
-    void drawInfoLine(const char* name, const std::string& valueText);
-
-    static constexpr unsigned int WindowWidth = 300;
-    static constexpr unsigned int WindowHeight = 580;
+    void drawInfoLine(const char* fieldName, const std::string& valueText);
 
     static constexpr ImVec4 HeaderColor{0.6f, 0.6f, 0.65f, 1.f};
     static constexpr ImVec4 NameColor{0.55f, 0.75f, 1.f, 1.f};

@@ -5,12 +5,14 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "TypeDefinitions.h"
+
 class GameBoyEmulator;
 
 class ToolWindow
 {
 public:
-    ToolWindow(std::string title, unsigned int width, unsigned int height);
+    ToolWindow(std::string title, unsigned int width, unsigned int height, u32 style = sf::Style::Titlebar | sf::Style::Close);
     virtual ~ToolWindow() = default;
 
     bool isOpen() const;
@@ -36,6 +38,7 @@ private:
     std::string title;
     unsigned int width;
     unsigned int height;
+    u32 windowStyle;
     sf::Clock deltaClock;
     bool openRequested = false;
 };
