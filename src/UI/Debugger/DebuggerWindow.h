@@ -5,6 +5,7 @@
 #include "ToolWindow.h"
 
 #include "RegisterViewerPanel.h"
+#include "StackViewerPanel.h"
 #include "CartridgeViewerPanel.h"
 #include "DisassemblyPanel.h"
 #include "TileDataViewerPanel.h"
@@ -33,6 +34,7 @@ private:
     static constexpr unsigned int WindowHeight = 960;
 
     RegisterViewerPanel registerViewerPanel;
+    StackViewerPanel stackViewerPanel;
     CartridgeViewerPanel cartridgeViewerPanel;
     DisassemblyPanel disassemblyPanel;
     TileDataViewerPanel tileDataViewerPanel;

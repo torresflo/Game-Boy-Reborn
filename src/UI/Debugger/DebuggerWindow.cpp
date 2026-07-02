@@ -59,6 +59,7 @@ void DebuggerWindow::buildDefaultDockLayout(ImGuiID dockspaceId)
 
     ImGui::DockBuilderDockWindow(cartridgeViewerPanel.getName().c_str(), cartridgeNode);
     ImGui::DockBuilderDockWindow(registerViewerPanel.getName().c_str(), registersNode);
+    ImGui::DockBuilderDockWindow(stackViewerPanel.getName().c_str(), registersNode);
     ImGui::DockBuilderDockWindow(disassemblyPanel.getName().c_str(), disassemblyNode);
     ImGui::DockBuilderDockWindow(logViewerPanel.getName().c_str(), logNode);
     ImGui::DockBuilderDockWindow(tileDataViewerPanel.getName().c_str(), tileDataNode);
@@ -103,6 +104,7 @@ void DebuggerWindow::drawContent(GameBoyEmulator& emulator)
     ImGui::End();
 
     drawDockedPanel(registerViewerPanel, emulator);
+    drawDockedPanel(stackViewerPanel, emulator);
     drawDockedPanel(cartridgeViewerPanel, emulator);
     drawDockedPanel(disassemblyPanel, emulator);
     drawDockedPanel(tileDataViewerPanel, emulator);
