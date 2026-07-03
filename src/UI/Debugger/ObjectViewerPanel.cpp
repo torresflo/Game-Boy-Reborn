@@ -73,8 +73,10 @@ void ObjectViewerPanel::updateTexture(const PixelProcessingUnit& PPU, const Memo
 
         const std::array<u32, 4>& colors = PPU.getObjectColors(object.paletteNumber);
 
-        for(u32 row = 0; row < objectHeight; ++row)
+        for(u32 row = 0; row < ObjectCellHeight; ++row)
         {
+            bool rowBelongsToObject = row < objectHeight;
+
             const PixelProcessingUnit::Tile& tile = (row < PixelProcessingUnit::TileSize) ? topTile : bottomTile;
 
             u32 rowInTile = row % PixelProcessingUnit::TileSize;
@@ -87,7 +89,7 @@ void ObjectViewerPanel::updateTexture(const PixelProcessingUnit& PPU, const Memo
                 u8 colorIndex = tile[rowInTile * PixelProcessingUnit::TileSize + columnInTile];
 
                 u32 pixelOffset = ((cellOriginY + row) * ImageWidth + (cellOriginX + column)) * 4;
-                const std::array<u8, 4> shade = isBlank ? NoObjectColor : decodeShade(colors[colorIndex]);
+                const std::array<u8, 4> shade = (isBlank || !rowBelongsToObject) ? NoObjectColor : decodeShade(colors[colorIndex]);
                 std::copy(shade.begin(), shade.end(), pixels.begin() + pixelOffset);
             }
         }
